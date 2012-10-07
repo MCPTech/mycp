@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbpm-configuration>
+ 
+    <!-- jBPM Configuration Files -->
+    <import resource="jbpm.default.cfg.xml" />
+    <import resource="jbpm.businesscalendar.cfg.xml" />
+    <import resource="jbpm.tx.hibernate.cfg.xml" />
+    <import resource="jbpm.jpdl.cfg.xml" />
+    <import resource="jbpm.identity.cfg.xml" />
+    <import resource="jbpm.jobexecutor.cfg.xml"/>
+ 
+	<service name='persistence' factory='org.jbpm.persistence.db.DbPersistenceServiceFactory' />
+	
+    <!-- Spring Specific Configuration -->
+    
+    
+    <process-engine-context>
+        <command-service name="txRequiredCommandService">
+            <retry-interceptor />
+            <environment-interceptor />
+            <spring-transaction-interceptor current="true"/>
+        </command-service>
+    </process-engine-context>
+ 
+    <transaction-context>
+		<repository-session />
+	    <db-session />
+	    <message-session />
+	    <timer-session />
+	    <identity-session />
+	    <timer-session/>
+	    <hibernate-session />
+	    <history-sessions/>
+	    <transaction type="spring" />
+    </transaction-context>
+</jbpm-configuration>

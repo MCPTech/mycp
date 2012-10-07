@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+    <definition extends="plain" name="config/infra">
+        <put-attribute name="body" value="/WEB-INF/views/config/infra.jsp"/>
+    </definition>
+    
+        <definition extends="plain" name="config/product">
+        <put-attribute name="body" value="/WEB-INF/views/config/product.jsp"/>
+    </definition>
+    
+  
+    
+        <definition extends="plain" name="config/quotas">
+        <put-attribute name="body" value="/WEB-INF/views/config/quotas.jsp"/>
+    </definition>
+    
+	<definition extends="plain" name="config/zone">
+	        <put-attribute name="body" value="/WEB-INF/views/config/zone.jsp"/>
+	    </definition>
+    
+        <definition extends="plain" name="config/region">
+        <put-attribute name="body" value="/WEB-INF/views/config/region.jsp"/>
+    </definition>
+    
+        <definition extends="plain" name="config/assettype">
+        <put-attribute name="body" value="/WEB-INF/views/config/assettype.jsp"/>
+    </definition>
+    
+        <definition extends="plain" name="config/metermetric">
+        <put-attribute name="body" value="/WEB-INF/views/config/metermetric.jsp"/>
+    </definition>
+    
+        
+    
+</tiles-definitions>

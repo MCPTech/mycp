@@ -1,0 +1,48 @@
+
+------------------------------------------------------------------------------
+README	
+------------------------------------------------------------------------------
+As an enterprise cloud management solution the idea of my cloud portal is to provide a single pane of glass for the user to 
+Consume and Govern any service from any cloud. This cloud management solution can be used as a cloud broker, cloud gateway or a 
+cloud control panel.
+In its current state it enables users to consume, monitor and manage services from Eucalyptus private cloud & 
+AWS public cloud (Amazon Web Services).
+
+------------------------------------------------------------------------------
+AUTHORS	
+------------------------------------------------------------------------------
+Charudath doddanakatte - charu@mycloudportal.in
+Mokshendra - mokshendra@gmail.com
+Keshava - keshmg@gmail.com
+Saravana - ankamsarav@gmail.com
+Dilip - mddilip@gmail.com
+
+------------------------------------------------------------------------------
+THANKS	
+------------------------------------------------------------------------------
+Typica, jClouds, Spring, ROO and other open source projects.
+
+------------------------------------------------------------------------------
+INSTALL	
+------------------------------------------------------------------------------
+Follow the instructions at http://code.google.com/p/mycloudportal/
+
+------------------------------------------------------------------------------
+COPYING / LICENSE
+------------------------------------------------------------------------------
+My Cloud Portal is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License.
+
+My Cloud Portal is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with My Cloud Portal.  If not, see <http://www.gnu.org/licenses/>.
+
+------------------------------------------------------------------------------
+BUGS
+------------------------------------------------------------------------------
+no known.

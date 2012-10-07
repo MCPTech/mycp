@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+ 	
+ 
+    
+    <definition extends="plain" name="cloud-portal/userdash">
+        <put-attribute name="body" value="/WEB-INF/views/login/userdash.jsp"/>
+    </definition>
+    
+    <definition extends="plain" name="cloud-portal/managerdash">
+        <put-attribute name="body" value="/WEB-INF/views/login/managerdash.jsp"/>
+    </definition>
+    
+    <definition extends="plain" name="cloud-portal/admindash">
+        <put-attribute name="body" value="/WEB-INF/views/login/admindash.jsp"/>
+    </definition>
+    
+    <definition extends="plain" name="cloud-portal/superadmindash">
+        <put-attribute name="body" value="/WEB-INF/views/login/superadmindash.jsp"/>
+    </definition>
+        
+</tiles-definitions>

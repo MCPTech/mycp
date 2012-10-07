@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process name="Volume Request" key="Volume_Request" xmlns="http://jbpm.org/4.4/jpdl">
+
+  <start>
+    <transition to="Verification by Admin" />
+  </start>
+
+  <state name="Verification by Admin">
+    <transition name="Approve" to="Approval by Manager" />
+    <transition name="Reject" to="Rejected" />
+  </state>
+  
+	<state name="Approval by Manager">
+		<transition name="Approve" to="Approved" />
+	    <transition name="Reject" to="Rejected" />
+	</state>
+
+  <end name="Approved" />
+  <end-cancel name="Rejected" />
+
+</process>

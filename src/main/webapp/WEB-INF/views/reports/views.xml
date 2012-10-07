@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+    <definition extends="plain" name="reports/usage">
+        <put-attribute name="body" value="/WEB-INF/views/reports/usage.jsp"/>
+    </definition>
+    
+    <definition extends="plain" name="reports/usageAll">
+        <put-attribute name="body" value="/WEB-INF/views/reports/usageAll.jsp"/>
+    </definition>
+    
+     <definition extends="plain" name="reports/usageDept">
+        <put-attribute name="body" value="/WEB-INF/views/reports/usageDept.jsp"/>
+    </definition>
+     <definition extends="plain" name="reports/usageProj">
+        <put-attribute name="body" value="/WEB-INF/views/reports/usageProj.jsp"/>
+    </definition>
+     <definition extends="plain" name="reports/usageUser">
+        <put-attribute name="body" value="/WEB-INF/views/reports/usageUser.jsp"/>
+    </definition>
+      
+</tiles-definitions>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="mycloudportal" default="copyfiles" basedir=".">
+  <target name ="copyfiles" description="copy resources">
+    <copy todir="src/main/webapp/WEB-INF/classes">
+	   <fileset dir="src/main/resources" includes="**/*.*"/>
+	</copy>
+	<copy todir="src/main/webapp/WEB-INF/lib" >
+	   <fileset dir="target/mycp-0.1.0.BUILD-SNAPSHOT/WEB-INF/lib" includes="**/*.*"/>
+	</copy>
+	
+  </target>
+</project>
+
+
+

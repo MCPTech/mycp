@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+ 
+    <!-- ========================================================= -->
+    <!-- =================== jBPM Bean Definitions =============== -->
+    <!-- ========================================================= -->
+    <bean id="springHelper" class="org.jbpm.pvm.internal.processengine.SpringHelper">
+        <property name="jbpmCfg" value="jbpm/jbpm.cfg.xml"></property>
+    </bean>
+    
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource" />  
+        <property name="mappingResources">  
+             <list>  
+                <value>jbpm.repository.hbm.xml</value>  
+                <value>jbpm.execution.hbm.xml</value>  
+                <value>jbpm.history.hbm.xml</value>  
+                 <value>jbpm.task.hbm.xml</value>  
+                <value>jbpm.identity.hbm.xml</value>  
+            </list>  
+        </property>
+        </bean>
+ 
+    <bean id="processEngine" factory-bean="springHelper" factory-method="createProcessEngine" />
+ 
+    <bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService" />
+ 
+    <bean id="executionService" factory-bean="processEngine" factory-method="getExecutionService" />
+ 
+    <bean id="taskService" factory-bean="processEngine" factory-method="getTaskService" />
+ 
+    <bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
+ 
+    <bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
+ 
+</beans>

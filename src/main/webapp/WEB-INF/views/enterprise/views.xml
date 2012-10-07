@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+    <definition extends="plain" name="enterprise/company">
+        <put-attribute name="body" value="/WEB-INF/views/enterprise/company.jsp"/>
+    </definition>
+    
+    <definition extends="plain" name="enterprise/project">
+        <put-attribute name="body" value="/WEB-INF/views/enterprise/project.jsp"/>
+    </definition>
+    <definition extends="plain" name="enterprise/department">
+        <put-attribute name="body" value="/WEB-INF/views/enterprise/department.jsp"/>
+    </definition>
+    <definition extends="plain" name="enterprise/manager">
+        <put-attribute name="body" value="/WEB-INF/views/enterprise/manager.jsp"/>
+    </definition>
+    <definition extends="plain" name="enterprise/employee">
+        <put-attribute name="body" value="/WEB-INF/views/enterprise/employee.jsp"/>
+    </definition>
+        
+    
+        
+    
+</tiles-definitions>

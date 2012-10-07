@@ -1,0 +1,109 @@
+* { margin:0;
+		padding:0;
+	}
+	
+	a:link {
+			text-decoration: none;
+			color:grey;
+		}
+		a:visited {
+			text-decoration: none;
+			color:grey;
+		}
+		
+	.clr{clear:both; height:0; font-size:0; line-height:0}
+	body{background:white; font-family: verdana, helvetica, sans-serif; font-size: 15px; color: grey}
+	.band{background:#000; padding:10px 0}
+	#wrapper, #header, #footer{width:960px; margin:0 auto; padding:0 10px; clear:both}
+	#header{height:80px; padding-top:10px}
+	.logo{width: 380px; float:left; font-weight:bold; font-size: 24px; font: arial, helvetica, sans-serif; font: bold; padding-left:10px; padding-top:10px; color:#f60}
+	.logo span{font-size: 12px; padding-right: 145px; color:#999;}
+	.logo sup{font-size:10px; color:#999}
+	.login{width:440px; float:right; font-weight:normal; font-size:11px;}
+	.login input{margin-top:5px;}
+	.login li{list-style:none; float:left}
+	.login #login_button{color:#888}
+	.leftMain{width:660px; float:left; padding:0 10px 20px;}
+	.intro{font-size: 14px; color:grey; margin:15px 10px 10px 0px;}
+	.intro p{padding:10px 0;}
+	.intro span{color: #000}
+	.features{margin:20px 0 25px; font-size:12px; clear:both; line-height:18px}
+	.newsfeatures{margin:20px 0 25px; font-size:12px; clear:both; line-height:18px;border-radius: 5px 5px 5px 5px;background-color: #f0f0f0;}
+	.features .icon{float:left; width:90px; padding-top:5px}
+	.features h5{font-size:14px; color:#f60; margin:5px}
+	.rightMain{width:270px; float:left; padding:0 10px 0 0}
+	.rgtnForm{border-radius: 5px 5px 5px 5px; font-weight:lighter; font-stretch: wider; font-size: 12px; background-color: #f0f0f0; line-height:20px; padding:0 30px 15px}
+	.rgtnForm .contactArea{display:none}
+	.rgtnForm p{padding:10px 0 0; color:#555; font-weight:bold}
+	.rgtnForm td{padding:10px 0 0}
+	.demoVideo{border-radius: 5px 5px 5px 5px; cursor:pointer; background-color: #f0f0f0; margin-bottom:20px; padding:15px;}
+	.demoVideo p{font-size:12px; text-align:center; color:#555; font-weight:bold; line-height:18px; margin:10px 0 0}
+	.demoVideo img{border:1px solid #888; margin:0 15%}
+	#footer .nav a{text-decoration:none; color:#fff}
+	#footer .nav a:hover{color:#f60}
+	#footer .copyright{text-align:right; font-size:11px; color:#888}
+	div#menu{margin:5px auto}
+	div#copyright{font:0px 'arial, helvetica, sans-serif'; color:#222; text-indent:0px; padding:0px 0 0 0}
+	div#copyright a { color:#000; }
+	div#copyright a:hover { color:#222; }
+	div.centered{display:block; position:absolute; top:30%; left:35%; width:350px; color: white}
+	.mycpfooter {
+		clear: both;
+		text-align: center;
+		margin-top: 3.5em;
+		margin-bottom: 1em;
+		height: 53px;
+		background-repeat: no-repeat;
+		background-position: left center;
+		background-color: black;
+		font-weight: bold;
+		padding-top: 10px;
+	}
+
+	.popupContact_login{
+		display:none;
+		position:fixed;
+		_position:absolute; /* hack for internet explorer 6*/
+		height:520px;
+		width:854px;
+		background-color: black;
+		border:2px solid #cecece;
+		z-index:2;
+		padding:12px;
+		font-size:18px;
+		color: grey;
+	}
+	
+	.login-button {
+	display: inline-block;
+	position: relative;
+	padding: .4em 1em;
+	padding-top: 0.4em;
+	padding-right: 1em;
+	padding-bottom: 0.4em;
+	padding-left: 1em;
+	margin-right: .1em;
+	text-decoration: none !important;
+	cursor: pointer;
+	text-align: center;
+	zoom: 1;
+	overflow: visible;
+	border: 1px solid #CCC;
+	background: #ADADAD url(/images/ui-bg_highlight-soft_35_adadad_1x100.png) 50% 50% repeat-x;
+	font-weight: normal;
+	color: #333;
+	moz-border-radius-topright: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-khtml-border-top-right-radius: 5px;
+	border-top-right-radius: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-khtml-border-bottom-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-webkit-border-top-left-radius: 5px;
+	-khtml-border-top-left-radius: 5px;
+	border-top-left-radius: 5px;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 0.8em;
+	}
