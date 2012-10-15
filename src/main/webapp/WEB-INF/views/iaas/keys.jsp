@@ -109,21 +109,22 @@
                 	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_keys('+p[i].id+')>';
         	}
 			
-			oTable.fnAddData( [start+i+1,p[i].keyName, p[i].keyFingerprint,p[i].status,'<a href=\"#\" onClick=\"+showKeyMaterial('+p[i].id+')\">Show/Hide</a>'+d,
+			oTable.fnAddData( [start+i+1,p[i].keyName, p[i].keyFingerprint,p[i].status,'<a href=\"#\" onClick=\"+showKeyMaterial('+p[i].id+')\">Download</a>'+d,
 			                   p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}
-		
-		
-	
 	}
 
 	function showKeyMaterial(id){
-		if (document.getElementById('keyMat'+id).style.display == 'none') {
+		KeyPairInfoP.writeFileContentInResponse(id, function(data) {
+		    dwr.engine.openInDownload(data);
+		  });
+		
+		/* if (document.getElementById('keyMat'+id).style.display == 'none') {
 			document.getElementById('keyMat'+id).style.display = 'block';
 		}else{
 			document.getElementById('keyMat'+id).style.display = 'none';
-		}
+		} */
 		//KeyPairInfoP.findById(id,showKey);
 	}
 	

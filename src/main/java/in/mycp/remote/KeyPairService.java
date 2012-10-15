@@ -18,21 +18,19 @@ package in.mycp.remote;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
-import in.mycp.domain.GroupDescriptionP;
-import in.mycp.domain.Infra;
-import in.mycp.domain.InstanceP;
 import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.User;
-import in.mycp.domain.VolumeInfoP;
 import in.mycp.utils.Commons;
 import in.mycp.workers.KeyPairWorker;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
+import org.directwebremoting.io.FileTransfer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,6 +59,11 @@ public class KeyPairService {
 
 	@Autowired
 	WorkflowService workflowService;
+	
+	@RemoteMethod
+	public FileTransfer writeFileContentInResponse(int id) throws IOException {
+		 return new FileTransfer("private.key", "application/key", KeyPairInfoP.findKeyPairInfoP(id).getKeyMaterial().getBytes());
+        }
 	
 	@RemoteMethod
 	public KeyPairInfoP saveOrUpdate(KeyPairInfoP instance) {

@@ -21,9 +21,6 @@ privileged aspect KeyPairInfoP_Roo_DbManaged {
     @Column(name = "keyFingerprint", length = 512)
     private String KeyPairInfoP.keyFingerprint;
     
-    @Column(name = "keyMaterial", length = 2048)
-    private String KeyPairInfoP.keyMaterial;
-    
     @Column(name = "status", length = 45)
     private String KeyPairInfoP.status;
     
@@ -49,14 +46,6 @@ privileged aspect KeyPairInfoP_Roo_DbManaged {
     
     public void KeyPairInfoP.setKeyFingerprint(String keyFingerprint) {
         this.keyFingerprint = keyFingerprint;
-    }
-    
-    public String KeyPairInfoP.getKeyMaterial() {
-        return keyMaterial;
-    }
-    
-    public void KeyPairInfoP.setKeyMaterial(String keyMaterial) {
-        this.keyMaterial = keyMaterial;
     }
     
     public String KeyPairInfoP.getStatus() {

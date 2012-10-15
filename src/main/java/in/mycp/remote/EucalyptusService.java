@@ -58,7 +58,6 @@ import com.xerox.amazonws.ec2.GroupDescription.IpPermission;
 import com.xerox.amazonws.ec2.ImageDescription;
 import com.xerox.amazonws.ec2.Jec2;
 import com.xerox.amazonws.ec2.KeyPairInfo;
-import com.xerox.amazonws.ec2.RegionInfo;
 import com.xerox.amazonws.ec2.ReservationDescription;
 import com.xerox.amazonws.ec2.ReservationDescription.Instance;
 import com.xerox.amazonws.ec2.SnapshotInfo;
@@ -1100,17 +1099,20 @@ public class EucalyptusService {
 			try{
 			List<ImageDescription> images = ec2.describeImages(params);
 			logger.info("Available Images");
-			
 			int imageCount=0;
-			outer: for (ImageDescription img : images) {
-				
+
+			
+			outer: for (Iterator imagesIterator = images.iterator(); imagesIterator.hasNext();) {
+				ImageDescription img = (ImageDescription) imagesIterator
+						.next();
+		
 				try {
 					
 				
 				if (img.getImageState().equals("available")) {
 					
 					if(infra.getServer()!=null && infra.getServer().contains("ec2.amazon")){
-						//if syncing from ec2, just load 100 bitnami ubuntu images 
+						//if syncing from ec2, just load 10 bitnami ubuntu images 
 						// and check if they are public ones.
 						if(!img.isPublic()){
 							continue;
@@ -1118,8 +1120,8 @@ public class EucalyptusService {
 						if(img.getName()!=null &&
 								(img.getName().contains("bitnami") && img.getName().contains("ubuntu"))){
 							imageCount = imageCount+1;
-							if(imageCount > 100){
-								logger.info("more than 100 images, cutting short the import process.");
+							if(imageCount > 10){
+								logger.info("more than 10 images, cutting short the import process.");
 								break outer;
 							}
 						}else{
@@ -1127,8 +1129,17 @@ public class EucalyptusService {
 						}
 						
 					}
+					
+					//euca gives back eri and eki assets during the image listing, need to avoid that.
+					if(img.getImageId()!=null &&
+							!img.getImageId().startsWith("emi")){
+						continue;
+					}
+					
+					
 					logger.info(img.getImageId() + "\t" + img.getImageLocation() + "\t" + img.getImageOwnerId());
 					ImageDescriptionP imageDescriptionP = null;
+					
 					try {
 						imageDescriptionP = ImageDescriptionP.findImageDescriptionPsByImageIdEqualsAndCompanyEquals(img.getImageId(),company).getSingleResult();
 					} catch (Exception e) {

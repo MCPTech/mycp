@@ -481,7 +481,7 @@ public class AWSQueryConnection extends AWSConnection {
 				// 200's : parse normal response into requested object
 				if (respType != null) {
 					InputStream iStr = httpResponse.getEntity().getContent();
-					//Charu - print out webservice response here 
+					//Charu - print out webservice response here - debug typica
 					/*BufferedReader in = new BufferedReader(new InputStreamReader(iStr));
 					String line = null;
 					while((line = in.readLine()) != null) {

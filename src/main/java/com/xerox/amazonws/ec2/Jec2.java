@@ -712,9 +712,11 @@ public class Jec2 extends AWSQueryConnection {
 		HttpGet method = new HttpGet();
 		DescribeInstancesResponse response =
 				makeRequestInt(method, "DescribeInstances", params, DescribeInstancesResponse.class);
+		
 		List<ReservationDescription> result = new ArrayList<ReservationDescription>();
 		ReservationSetType res_set = response.getReservationSet();
 			for (ReservationInfoType item : res_set.getItems()) {
+			
 				ReservationDescription res = new ReservationDescription(response.getRequestId(),
 											item.getOwnerId(), item.getReservationId(),
 											item.getRequesterId(), item.getGroupSet(),
@@ -2244,13 +2246,14 @@ public class Jec2 extends AWSQueryConnection {
 	protected <T> T makeRequestInt(HttpRequestBase method, String action, Map<String, String> params, Class<T> respType)
 		throws EC2Exception {
 		try {
-			Set<String> pars = params.keySet();
+			//charu - debug typica
+			/*Set<String> pars = params.keySet();
 			for (Iterator iterator = pars.iterator(); iterator.hasNext();) {
 				String string = (String) iterator.next();
 				
 				//System.out.println("key ="+string + " Value = "+params.get(string));
 			}
-			
+			*/
 			return makeRequest(method, action, params, respType);
 		} catch (AWSException ex) {
 			throw new EC2Exception(ex);

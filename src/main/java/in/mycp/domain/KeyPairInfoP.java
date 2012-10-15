@@ -1,6 +1,7 @@
 package in.mycp.domain;
 
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.Transient;
@@ -19,6 +20,9 @@ import org.springframework.roo.addon.tostring.RooToString;
 @RooJpaActiveRecord(versionField = "", table = "key_pair_info_p", finders = { "findKeyPairInfoPsByKeyNameEquals", "findKeyPairInfoPsByAsset" })
 public class KeyPairInfoP {
 
+    @Column(name = "keyMaterial", length = 2048)
+    private String keyMaterial;
+
     @Transient
     public String product;
 
@@ -28,6 +32,14 @@ public class KeyPairInfoP {
 
     public void setProduct(String product) {
         this.product = product;
+    }
+
+    public String getKeyMaterial() {
+        return cleanUpKeys(keyMaterial);
+    }
+
+    public void setKeyMaterial(String keyMaterialL) {
+        this.keyMaterial = keyMaterialL;
     }
 
     public static List<in.mycp.domain.KeyPairInfoP> findAllKeyPairInfoPs() {
@@ -113,5 +125,19 @@ public class KeyPairInfoP {
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    public static String cleanUpKeys(String keyMaterial) {
+        try {
+            String begin = "-----BEGIN RSA PRIVATE KEY-----";
+            String end = "-----END RSA PRIVATE KEY-----";
+            String part = keyMaterial.substring(keyMaterial.indexOf(begin) + begin.length(), keyMaterial.indexOf(end));
+            part = part.replaceAll(" ", System.getProperty("line.separator").toString());
+            keyMaterial = begin + part + end;
+        } catch (Exception e) {
+            e.printStackTrace();
+            keyMaterial = "not imported";
+        }
+        return keyMaterial;
     }
 }
