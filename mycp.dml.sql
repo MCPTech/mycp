@@ -72,6 +72,8 @@ ALTER TABLE availability_zone_p CHANGE COLUMN state state VARCHAR(255) NULL DEFA
 
 ALTER TABLE address_info_p CHANGE COLUMN instanceId instanceId VARCHAR(255) NULL DEFAULT NULL;
 
+--charu - session log chnages start 22-Oct-2012
+
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
@@ -119,6 +121,8 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+--charu - session log chnages end 22-Oct-2012
 
-
+--Gangu - quota chnages start 22-Oct-2012
 ALTER TABLE `company` ADD COLUMN `quota` INT(11) NULL DEFAULT 0  AFTER `currency` , ADD COLUMN `min_bal` INT(11) NULL DEFAULT 0  AFTER `quota` ;
+--Gangu - quota chnages end 22-Oct-2012
