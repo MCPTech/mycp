@@ -18,7 +18,7 @@ privileged aspect AvailabilityZoneP_Roo_DbManaged {
     @Column(name = "name", length = 45)
     private String AvailabilityZoneP.name;
     
-    @Column(name = "state", length = 45)
+    @Column(name = "state", length = 255)
     private String AvailabilityZoneP.state;
     
     @Column(name = "regionName", length = 45)

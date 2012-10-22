@@ -1,0 +1,112 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
+<%@ page import="java.util.*" %>
+<%@ page import="java.text.*" %>
+<%@ page import="in.mycp.domain.*" %>
+<%@ page import="in.mycp.utils.*" %>
+<html><center>
+
+<script type='text/javascript' src='/dwr/interface/AccountLogService.js'></script>
+
+<script type="text/javascript">
+
+
+$(document).ready(function() {
+	
+	AccountLogService.getAllAccountLogTypes(function(p){
+		dwr.util.removeAllOptions('accountLogType');
+		dwr.util.addOptions('accountLogType', p, 'id', 'name');
+		//dwr.util.setValue(id, sel);
+	});
+	
+});
+</script>
+
+
+ 						
+						
+<div class="dataTableHeader">Session log.	
+</div>
+
+						
+	  						
+<table align="center" width="95%" ><!-- just for border -->
+<tr><td>
+
+							<table align="center" width="100%"  id="sessionLog" >
+							<thead>
+								<tr >
+									<td width="80%" align="right">Filter:</td>
+									<td width="20%" align="right">
+										<select id="accountLogType" name="accountLogType" style="width: 200px;" >
+								    	</select>
+							    	</td>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody></table>
+							
+	  						
+							<table align="center" width="100%"  id="sessionLog" >
+							<thead>
+								<tr style="background-color: black;color: white;">
+									<td width="90%">Message</td>
+									<td width="10%">Status</td>
+								</tr>
+							</thead>
+							<tbody>
+							
+<% 
+List<AccountLog> accountLogList = (List)request.getAttribute("sessionLogList");
+SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh.mm");
+  int i =1;
+	for (Iterator iterator = accountLogList.iterator(); iterator.hasNext();) {
+		AccountLog accountLog = (AccountLog) iterator.next();
+		i++;
+		if(i%2 ==0){
+%>
+			<tr style="background-color: white;">
+<%
+		}else{
+			
+%>
+			<tr>
+<%
+		}//end of else
+%>
+			<td width="90%">
+				User <%=accountLog.getUserId().getEmail() %> 
+				executed task <%=accountLog.getTask() %> 
+				on  <%=formatter.format(accountLog.getTimeOfEntry()) %> 
+				with details:  <%=accountLog.getDetails() %>.
+			</td>
+			<td width="10%">
+				<% 
+				if( accountLog.getStatus() == Commons.task_status.SUCCESS.ordinal())
+				{
+				%>
+				<font color="green">
+					<%=Commons.task_status.SUCCESS.name()%>
+				</font> 
+				<% 
+				}else{
+				%>
+				<font color="red">
+					<%=Commons.task_status.FAIL.name()%>
+				</font>
+				<% 
+				}
+				%>
+			</tr>
+<%
+  }//end of for looop deptList.iterator()
+%>
+							
+	
+		</tbody>
+		</table>			
+						
+</td></tr></table> <!-- end of just border table -->						
+		
+</center></html>

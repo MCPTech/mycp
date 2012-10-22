@@ -104,6 +104,7 @@
          <li><a class="dropdown" href="#">Control<span class="arrow"></span></a>
 			<ul class="width-3">
 			    <li><a href="/workflow/processInstance">Workflows</a></li>
+			    <li><a href="/log/session">Session Log</a></li>
 			</ul>
 		</li>
 	  	<%} %>

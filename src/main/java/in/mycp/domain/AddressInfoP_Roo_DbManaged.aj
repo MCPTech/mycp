@@ -18,7 +18,7 @@ privileged aspect AddressInfoP_Roo_DbManaged {
     @Column(name = "publicIp", length = 45)
     private String AddressInfoP.publicIp;
     
-    @Column(name = "instanceId", length = 45)
+    @Column(name = "instanceId", length = 255)
     private String AddressInfoP.instanceId;
     
     @Column(name = "name", length = 45)

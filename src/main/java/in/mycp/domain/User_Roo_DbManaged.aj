@@ -3,6 +3,7 @@
 
 package in.mycp.domain;
 
+import in.mycp.domain.AccountLog;
 import in.mycp.domain.Asset;
 import in.mycp.domain.Project;
 import in.mycp.domain.Role;
@@ -20,6 +21,9 @@ import javax.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 privileged aspect User_Roo_DbManaged {
+    
+    @OneToMany(mappedBy = "userId")
+    private Set<AccountLog> User.accountLogs;
     
     @OneToMany(mappedBy = "user")
     private Set<Asset> User.assets;
@@ -66,6 +70,14 @@ privileged aspect User_Roo_DbManaged {
     
     @Column(name = "designation", length = 90)
     private String User.designation;
+    
+    public Set<AccountLog> User.getAccountLogs() {
+        return accountLogs;
+    }
+    
+    public void User.setAccountLogs(Set<AccountLog> accountLogs) {
+        this.accountLogs = accountLogs;
+    }
     
     public Set<Asset> User.getAssets() {
         return assets;

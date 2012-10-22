@@ -15,11 +15,13 @@
 
 package in.mycp.utils;
 
+import in.mycp.domain.AccountLog;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.User;
 import in.mycp.domain.Workflow;
+import in.mycp.domain.AccountLogTypeDTO;
 import in.mycp.web.MycpSession;
 
 import java.lang.reflect.Field;
@@ -36,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.directwebremoting.WebContextFactory;
 import org.jbpm.api.ProcessInstance;
+import org.joda.time.DateTime;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -96,6 +99,10 @@ public class Commons {
 	
 	static public enum sync_status {
 		running,failed,success
+	}
+	
+	static public enum task_status {
+		FAIL, SUCCESS
 	}
 
 	public static String VOLUME_STATUS_AVAILABLE = "available";
@@ -289,4 +296,18 @@ public class Commons {
 		a.merge();
 	}
 
+	public static List<AccountLogTypeDTO> getAllAccountLogTypes(){
+		
+		List<AccountLogTypeDTO> list = new ArrayList<AccountLogTypeDTO>();
+			list.add(new AccountLogTypeDTO(1, "today"));
+			list.add(new AccountLogTypeDTO(2, "last 7 day"));
+			int acctLogTypeId = 3;
+			DateTime dt = new DateTime();
+			
+			for(int i =0;i<6;i++ ){
+				list.add(new AccountLogTypeDTO(acctLogTypeId, dt.minusMonths(i).monthOfYear().getAsText()));
+				acctLogTypeId++;
+			}
+		return list;
+	}
 }
