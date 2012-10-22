@@ -135,7 +135,7 @@ public class KeyPairInfoP {
             part = part.replaceAll(" ", System.getProperty("line.separator").toString());
             keyMaterial = begin + part + end;
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             keyMaterial = "not imported";
         }
         return keyMaterial;

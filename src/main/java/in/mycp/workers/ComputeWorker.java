@@ -463,6 +463,7 @@ public class ComputeWorker extends Worker {
 						setAssetStartTime(a.getAsset());
 						a.merge();
 					} catch (Exception e) {
+						Commons.setSessionMsg("Error while createrCompute, Instance "+instance.getName()+"<br> Reason: "+e.getMessage());
 						e.printStackTrace();
 						logger.error(e);
 					}

@@ -373,6 +373,9 @@ function afterRemove_compute(){
 	}
 	
 function afterSave_compute(){
+	CommonService.getSessionMsg(function(p){
+		$.sticky(p);
+	});
 	viewed_compute = -1;
 	$("#popupbutton_computelist").click();
 	}

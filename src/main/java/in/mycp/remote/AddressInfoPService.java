@@ -47,6 +47,9 @@ public class AddressInfoPService {
 
 	@Autowired
 	WorkflowService workflowService;
+	
+	@Autowired
+	ReportService reportService;
 
 	@RemoteMethod
 	public AddressInfoP saveOrUpdate(AddressInfoP instance) {
@@ -62,8 +65,10 @@ public class AddressInfoPService {
 			instance = instance.merge();
 			AssetType assetType = AssetType.findAssetTypesByNameEquals("" + Commons.ASSET_TYPE.IpAddress).getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			
-			Asset asset = Commons.getNewAsset(assetType, currentUser,productId);
+			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+			currentUser = User.findUser(currentUser.getId());
+			Company company = currentUser.getProject().getDepartment().getCompany();
+			Asset asset = Commons.getNewAsset(assetType, currentUser,productId, allAssetTotalCosts,company);
 			asset.setActive(false);
 			instance.setAsset(asset);
 			instance = instance.merge();
@@ -83,7 +88,7 @@ public class AddressInfoPService {
 			return instance;
 		} catch (Exception e) {
 			//e.printStackTrace();
-			Commons.setSessionMsg("Error during Ip Address save");
+			Commons.setSessionMsg("Error while saving Instance "+instance.getName()+"<br> Reason: "+e.getMessage());
 			log.error(e);
 		}
 		return null;

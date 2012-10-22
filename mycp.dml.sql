@@ -102,7 +102,6 @@ CREATE  TABLE IF NOT EXISTS `mycp`.`account_log` (
 
     FOREIGN KEY (`user_id` )
 
-    REFERENCES `mycp`.`user` (`id` )
 
     ON DELETE NO ACTION
 
@@ -115,11 +114,11 @@ DEFAULT CHARACTER SET = latin1
 COLLATE = latin1_swedish_ci;
 
 
-
-
-
 SET SQL_MODE=@OLD_SQL_MODE;
 
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+ALTER TABLE `company` ADD COLUMN `quota` INT(11) NULL DEFAULT 0  AFTER `currency` , ADD COLUMN `min_bal` INT(11) NULL DEFAULT 0  AFTER `quota` ;

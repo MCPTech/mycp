@@ -18,6 +18,7 @@ package in.mycp.utils;
 import in.mycp.domain.AccountLog;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
+import in.mycp.domain.Company;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.User;
 import in.mycp.domain.Workflow;
@@ -27,7 +28,6 @@ import in.mycp.web.MycpSession;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +43,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class Commons {
-
+	
 	private static final Logger log = Logger.getLogger(Commons.class.getName());
 
 	static public enum ASSET_TYPE {
@@ -128,6 +128,8 @@ public class Commons {
 	static public enum WORKFLOW_TRANSITION {
 		Reject,Approve
 	}
+	
+	public static String QUOTA_EXCEED_MSG = "Quota Exceeded.";
 
 	public static List getAllJbpmProcDefNames() {
 		// public static final String JBPM_PROC_DEF_NAME_FVC_BILL = "fvc bill";
@@ -145,10 +147,14 @@ public class Commons {
 		return fieldList;
 	}
 
-	public static Asset getNewAsset(AssetType at, User currentUser, String productCatalogId) {
+	public static Asset getNewAsset(AssetType at, User currentUser, String productCatalogId, long allAssetTotalCosts, Company company) throws Exception {
 		Asset asset = new Asset();
 		asset.setActive(true);
-
+		
+		System.out.println(company);
+		if(company.getQuota()>0 && (company.getQuota()-allAssetTotalCosts <= company.getMinBal())){
+			throw new Exception(QUOTA_EXCEED_MSG);
+		}
 		asset.setStartTime(new Date());
 		asset.setAssetType(at);
 		asset.setDetails("from mycp");

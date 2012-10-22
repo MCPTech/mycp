@@ -56,6 +56,9 @@ public class SecurityGroupService {
 	
 	@Autowired
 	IpPermissionService ipPermissionService;
+	
+	@Autowired
+	ReportService reportService;
 
 	@RemoteMethod
 	public GroupDescriptionP saveOrUpdate(GroupDescriptionP instance) {
@@ -94,7 +97,10 @@ public class SecurityGroupService {
 				instance = GroupDescriptionP.findGroupDescriptionP(instance.getId());
 			} else {
 				User currentUser = Commons.getCurrentUser();
-				Asset asset = Commons.getNewAsset(assetTypeSecurityGroup, currentUser,instance.getProduct());
+				long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+				currentUser = User.findUser(currentUser.getId());
+				Company company = currentUser.getProject().getDepartment().getCompany();
+				Asset asset = Commons.getNewAsset(assetTypeSecurityGroup, currentUser,instance.getProduct(),allAssetTotalCosts, company);
 				instance.setAsset(asset);
 				
 				if (true == assetTypeSecurityGroup.getWorkflowEnabled()) {

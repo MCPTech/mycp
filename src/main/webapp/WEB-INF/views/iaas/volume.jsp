@@ -248,6 +248,7 @@ $(function(){
 		});
 		
 	function submitForm_volume(f){
+		CommonService.getSessionMsg(function(p){   $.sticky(p);  });
 		var volumeinfop = {  id:viewed_volume,name:null, size:null, zone:null,product:null };
 		  dwr.util.getValues(volumeinfop);
 		  
