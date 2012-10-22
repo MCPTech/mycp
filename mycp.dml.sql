@@ -84,7 +84,7 @@ CREATE TABLE `account_log` (
   PRIMARY KEY (`id`),
   KEY `fk_account_log_user1_idx` (`user_id`),
   CONSTRAINT `fk_account_log_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1$$
+);
 
 --charu - session log chnages end 22-Oct-2012
 
