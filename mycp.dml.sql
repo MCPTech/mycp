@@ -71,3 +71,5 @@ ALTER TABLE infra CHANGE COLUMN zone zone VARCHAR(90) NULL  ;
 ALTER TABLE availability_zone_p CHANGE COLUMN state state VARCHAR(255) NULL DEFAULT NULL  ;
 
 ALTER TABLE address_info_p CHANGE COLUMN instanceId instanceId VARCHAR(255) NULL DEFAULT NULL;
+
+ALTER TABLE `company` ADD COLUMN `quota` INT(11) NULL DEFAULT 0  AFTER `currency` , ADD COLUMN `min_bal` INT(11) NULL DEFAULT 0  AFTER `quota` ;

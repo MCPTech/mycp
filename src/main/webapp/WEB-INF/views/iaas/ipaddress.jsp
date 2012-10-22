@@ -344,14 +344,14 @@ function remove_ipaddress(id){
 function afterRemove_ipaddress(){
 	viewed_ipaddress = -1;
 	$("#popupbutton_ipaddresslist").click();
-	$.sticky('<b>Ip Address Removed.</b><p>');
+	CommonService.getSessionMsg(function(p){   $.sticky(p);  });
 	}
 	
 	
 function afterSave_ipaddress(){
 	viewed_ipaddress = -1;
 	$("#popupbutton_ipaddresslist").click();
-	$.sticky('<b>Ip Address Saved.</b><p>');
+	CommonService.getSessionMsg(function(p){   $.sticky(p);  });
 	}
 	
 	function associate_ipaddress(id){
@@ -367,12 +367,12 @@ function afterSave_ipaddress(){
 		AddressInfoP.releaseAddress(id,afterRelease_ipaddress);
 	}
 	function afterRelease_ipaddress(){
-		$.sticky('<b>Releasing Ip Adress </b><p>');
+		CommonService.getSessionMsg(function(p){   $.sticky(p);  });
 		//AddressInfoP.findById(id,afterEdit_ipaddress);
 	}
 	
 	function afterDisassociate_ipaddress(){
-		$.sticky('<b>Detaching Ip Adress </b><p>');
+		CommonService.getSessionMsg(function(p){   $.sticky(p);  });
 		//AddressInfoP.findById(id,afterEdit_ipaddress);
 	}
 

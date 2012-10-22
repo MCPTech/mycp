@@ -256,6 +256,7 @@ $(function(){
 		});
 		
 	function submitForm_secgroup(f){
+		CommonService.getSessionMsg(function(p){   $.sticky(p);  });
 		var groupDescriptionp = {  id:viewed_secgroup,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null };
 	     dwr.util.getValues(groupDescriptionp); 
 		  if(viewed_secgroup == -1){

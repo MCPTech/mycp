@@ -205,7 +205,7 @@ $(function(){
 		  dwr.engine.endBatch();
 		  disablePopup_backup();
 		  viewed_backup=-1;
-		  $.sticky('<b>Snapshot scheduled to be created.</b><p>');
+		  CommonService.getSessionMsg(function(p){   $.sticky(p);  });
 	}
 	function cancelForm_backup(f){
 	

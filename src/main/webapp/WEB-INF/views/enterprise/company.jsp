@@ -179,7 +179,7 @@ $(function(){
 		
 function submitForm_company(f){
 	
-	var company = {  id:viewed_company,name:null,address:null,city:null,currency:null, country:null, phone:null, email:null};
+	var company = {  id:viewed_company,name:null,address:null,city:null,currency:null, country:null, phone:null, email:null, quota:0, minBal:0};
 	  dwr.util.getValues(company);
 	  
 	  if(viewed_company == -1){
@@ -299,6 +299,16 @@ function afterSave_company(){
 								  <tr>
 								    <td style="width: 50%;">Currency Code : </td>
 								    <td style="width: 50%;"><input type="text"  name="currency" id="currency" size="30" maxlength="3" minlength="3" class="required"></td>
+								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">Quota : </td>
+								    <td style="width: 50%;"><input type="text"  name="quota" id="quota" size="30" maxlength="10"></td>
+								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">Min Balance : </td>
+								    <td style="width: 50%;"><input type="text"  name="minBal" id="minBal" size="30" maxlength="10" ></td>
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;"></td>
