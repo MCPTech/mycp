@@ -53,6 +53,7 @@ public class CommonService {
 		} catch (Exception e) {
 			//e.printStackTrace();
 			log.error(e.getMessage());
+			CommonService.setSessionMsg(e.getMessage());
 		}
 		return null;
 	}// end of getCurrentUser

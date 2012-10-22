@@ -53,6 +53,9 @@ public class VolumeService {
 
 	@Autowired
 	WorkflowService workflowService;
+	
+	@Autowired
+	ReportService reportService;
 
 	@RemoteMethod
 	public VolumeInfoP requestVolume(VolumeInfoP volume) {
@@ -60,7 +63,10 @@ public class VolumeService {
 
 			AssetType assetTypeVolume = AssetType.findAssetTypesByNameEquals("Volume").getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser,volume.getProduct());
+			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+			currentUser = User.findUser(currentUser.getId());
+			Company company = currentUser.getProject().getDepartment().getCompany();
+			Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser,volume.getProduct(),allAssetTotalCosts,company);
 			volume.setAsset(asset);
 			volume = volume.merge();
 			if(true == assetTypeVolume.getWorkflowEnabled()){
@@ -77,7 +83,7 @@ public class VolumeService {
 			log.info("end of requestVolume");
 			return volume;
 		} catch (Exception e) {
-			Commons.setSessionMsg("Error while Scheduling Volume create");
+			Commons.setSessionMsg("Error while Scheduling Volume create: "+e.getMessage());
 			log.error(e);e.printStackTrace();
 		}
 		return null;

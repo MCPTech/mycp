@@ -48,6 +48,12 @@ public class KeyPairService {
 	@Autowired
 	KeyPairWorker keyPairWorker;
 
+	@Autowired
+	WorkflowService workflowService;
+	
+	@Autowired
+	ReportService reportService;
+
 	@RemoteMethod
 	public void save(KeyPairInfoP instance) {
 		try {
@@ -56,9 +62,6 @@ public class KeyPairService {
 			log.error(e);//e.printStackTrace();
 		}
 	}// end of save(KeyPairInfoP
-
-	@Autowired
-	WorkflowService workflowService;
 	
 	@RemoteMethod
 	public FileTransfer writeFileContentInResponse(int id) throws IOException {
@@ -85,7 +88,10 @@ public class KeyPairService {
 			if (instance.getId() != null && instance.getId() > 0) {
 			} else {
 				User currentUser = Commons.getCurrentUser();
-				Asset asset = Commons.getNewAsset(assetTypeKeyPair, currentUser,instance.getProduct());
+				currentUser = User.findUser(currentUser.getId());
+				long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+				Company company = currentUser.getProject().getDepartment().getCompany();
+				Asset asset = Commons.getNewAsset(assetTypeKeyPair, currentUser,instance.getProduct(),allAssetTotalCosts, company);
 				instance.setAsset(asset);
 				instance = instance.merge();
 				if (true == assetTypeKeyPair.getWorkflowEnabled()) {
@@ -104,8 +110,8 @@ public class KeyPairService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e);
-			if(e.getMessage().contains("Key with this name already exists")){
-				Commons.setSessionMsg("Key with this name already exists for this account, Choose another name.");
+			if(e.getMessage().contains("Key with this name already exists") || e.getMessage().contains(Commons.QUOTA_EXCEED_MSG)){
+				Commons.setSessionMsg(e.getMessage());
 			}
 			
 		}

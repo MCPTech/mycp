@@ -54,6 +54,8 @@ public class InstancePService {
 	WorkflowService workflowService;
 	@Autowired
 	ComputeWorker computeWorker;
+	@Autowired
+	ReportService reportService;
 
 	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
 
@@ -65,7 +67,10 @@ public class InstancePService {
 			AssetType assetTypeComputeInstance = AssetType.findAssetTypesByNameEquals(Commons.ASSET_TYPE.ComputeInstance + "")
 					.getSingleResult();
 
-			Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser,instance.getProduct());
+			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+			currentUser = User.findUser(currentUser.getId());
+			Company company = currentUser.getProject().getDepartment().getCompany();
+			Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser,instance.getProduct(), allAssetTotalCosts,company);
 			instance.setAsset(asset);
 			instance = instance.merge();
 			Set<InstanceP> instances = new HashSet<InstanceP>();
@@ -83,7 +88,9 @@ public class InstancePService {
 			}
 			log.info("end of requestCompute");
 		} catch (Exception e) {
-			log.error(e.getMessage());//e.printStackTrace();
+			log.error(e.getMessage());e.printStackTrace();
+			Commons.setSessionMsg("Error while requestCompute Instance "+instance.getName()
+					+"<br> Reason: "+e.getMessage());
 		}
 	}// end of requestCompute(InstanceP
 

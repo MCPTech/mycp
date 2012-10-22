@@ -55,7 +55,9 @@ public class ImageService {
 	WorkflowService workflowService;
     @Autowired
     ImageWorker imageWorker;
-	
+    @Autowired
+    ReportService reportService;
+    
     	@RemoteMethod
 		public void save(ImageDescriptionP instance){
 			try{
@@ -145,7 +147,11 @@ public class ImageService {
     			String instanceIdForImgCreation = instance.getInstanceIdForImgCreation();
     			AssetType assetTypeImageDescription = AssetType.findAssetTypesByNameEquals("" + Commons.ASSET_TYPE.ComputeImage).getSingleResult();
     			User currentUser = Commons.getCurrentUser();
-    			Asset asset = Commons.getNewAsset(assetTypeImageDescription, currentUser,"");
+    			
+    			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+    			currentUser = User.findUser(currentUser.getId());
+    			Company company = currentUser.getProject().getDepartment().getCompany();
+    			Asset asset = Commons.getNewAsset(assetTypeImageDescription, currentUser,"", allAssetTotalCosts,company);
     			instance.setAsset(asset);
     			instance = instance.merge();
     			if(true == assetTypeImageDescription.getWorkflowEnabled()){
@@ -159,6 +165,7 @@ public class ImageService {
     			log.info("end of requestImage");
     			return instance;
     		} catch (Exception e) {
+    			Commons.setSessionMsg("Error while requestImage, Instance "+instance.getName()+"<br> Reason: "+e.getMessage());
     			log.error(e);//e.printStackTrace();
     		}
     		return null;
