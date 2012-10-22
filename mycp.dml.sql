@@ -74,53 +74,18 @@ ALTER TABLE address_info_p CHANGE COLUMN instanceId instanceId VARCHAR(255) NULL
 
 --charu - session log chnages start 22-Oct-2012
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+CREATE TABLE `account_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `task` varchar(90) DEFAULT NULL,
+  `details` varchar(255) DEFAULT NULL,
+  `time_of_entry` datetime DEFAULT NULL,
+  `status` smallint(6) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_account_log_user1_idx` (`user_id`),
+  CONSTRAINT `fk_account_log_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1$$
 
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
-
-
-
-CREATE  TABLE IF NOT EXISTS `account_log` (
-
-  `id` INT(11) NOT NULL AUTO_INCREMENT ,
-
-  `task` VARCHAR(90) NULL DEFAULT NULL ,
-
-  `details` VARCHAR(255) NULL DEFAULT NULL ,
-
-  `time_of_entry` DATETIME NULL DEFAULT NULL ,
-
-  `status` TINYINT(4) NULL DEFAULT NULL ,
-
-  `user_id` INT(11) NOT NULL ,
-
-  PRIMARY KEY (`id`) ,
-
-  INDEX `fk_account_log_user1_idx` (`user_id` ASC) ,
-
-  CONSTRAINT `fk_account_log_user1`
-
-    FOREIGN KEY (`user_id` )
-
-
-    ON DELETE NO ACTION
-
-    ON UPDATE NO ACTION)
-
-ENGINE = InnoDB
-
-DEFAULT CHARACTER SET = latin1
-
-COLLATE = latin1_swedish_ci;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 --charu - session log chnages end 22-Oct-2012
 
 --Gangu - quota chnages start 22-Oct-2012
