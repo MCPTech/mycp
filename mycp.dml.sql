@@ -91,3 +91,10 @@ CREATE TABLE `account_log` (
 --Gangu - quota chnages start 22-Oct-2012
 ALTER TABLE `company` ADD COLUMN `quota` INT(11) NULL DEFAULT 0  AFTER `currency` , ADD COLUMN `min_bal` INT(11) NULL DEFAULT 0  AFTER `quota` ;
 --Gangu - quota chnages end 22-Oct-2012
+
+
+-- start charu 24 oct 2012 
+
+ALTER TABLE `account_log` CHANGE COLUMN `status` `status` INT NULL DEFAULT NULL  ;
+
+-- end charu 24 oct 2012

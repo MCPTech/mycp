@@ -35,60 +35,92 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
 @RemoteProxy(name = "AddressInfoP")
 public class AddressInfoPService {
 
-	private static final Logger log = Logger.getLogger(AddressInfoPService.class.getName());
+	private static final Logger log = Logger
+			.getLogger(AddressInfoPService.class.getName());
 
 	@Autowired
 	IpAddressWorker ipAddressWorker;
 
 	@Autowired
 	WorkflowService workflowService;
-	
+
 	@Autowired
 	ReportService reportService;
+
+	@Autowired
+	AccountLogService accountLogService;
 
 	@RemoteMethod
 	public AddressInfoP saveOrUpdate(AddressInfoP instance) {
 		try {
 			// if for update only
-			if (instance != null && instance.getId() != null && instance.getId() > 0) {
-				AddressInfoP instance_local = AddressInfoP.findAddressInfoP(instance.getId());
+			if (instance != null && instance.getId() != null
+					&& instance.getId() > 0) {
+				AddressInfoP instance_local = AddressInfoP
+						.findAddressInfoP(instance.getId());
 				instance_local.setReason(instance.getReason());
 				instance_local.setName(instance.getName());
 				return instance_local.merge();
 			}
 			String productId = instance.getProduct();
 			instance = instance.merge();
-			AssetType assetType = AssetType.findAssetTypesByNameEquals("" + Commons.ASSET_TYPE.IpAddress).getSingleResult();
+			AssetType assetType = AssetType.findAssetTypesByNameEquals(
+					"" + Commons.ASSET_TYPE.IpAddress).getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+			long allAssetTotalCosts = reportService.getAllAssetCosts()
+					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment().getCompany();
-			Asset asset = Commons.getNewAsset(assetType, currentUser,productId, allAssetTotalCosts,company);
+			Company company = currentUser.getProject().getDepartment()
+					.getCompany();
+			Asset asset = Commons.getNewAsset(assetType, currentUser,
+					productId, allAssetTotalCosts, company);
 			asset.setActive(false);
 			instance.setAsset(asset);
 			instance = instance.merge();
 
 			if (true == assetType.getWorkflowEnabled()) {
-				
-				Commons.createNewWorkflow(workflowService.createProcessInstance(Commons.PROCESS_DEFN.IpAddress_Request
-						+ ""), instance.getId(), asset.getAssetType().getName());
-				instance.setStatus(Commons.WORKFLOW_STATUS.PENDING_APPROVAL+"");
+				accountLogService
+						.saveLog(
+								"Ip Address with ID "
+										+ instance.getId()
+										+ " requested, workflow started, pending approval.",
+								Commons.task_name.IPADDRESS.name(),
+								Commons.task_status.SUCCESS.ordinal(),
+								currentUser.getEmail());
+
+				Commons.createNewWorkflow(
+						workflowService
+								.createProcessInstance(Commons.PROCESS_DEFN.IpAddress_Request
+										+ ""), instance.getId(), asset
+								.getAssetType().getName());
+				instance.setStatus(Commons.WORKFLOW_STATUS.PENDING_APPROVAL
+						+ "");
 				instance = instance.merge();
 			} else {
-				instance.setStatus(Commons.ipaddress_STATUS.starting+"");
+				accountLogService
+						.saveLog(
+								"Ip Address with ID "
+										+ instance.getId()
+										+ " requested, workflow approved automatically.",
+								Commons.task_name.IPADDRESS.name(),
+								Commons.task_status.SUCCESS.ordinal(),
+								currentUser.getEmail());
+
+				instance.setStatus(Commons.ipaddress_STATUS.starting + "");
 				instance = instance.merge();
 				workflowApproved(instance);
 			}
 			Commons.setSessionMsg("Ip Address saved");
 			return instance;
 		} catch (Exception e) {
-			//e.printStackTrace();
-			Commons.setSessionMsg("Error while saving Instance "+instance.getName()+"<br> Reason: "+e.getMessage());
+			// e.printStackTrace();
+			Commons.setSessionMsg("Error while saving Instance "
+					+ instance.getName() + "<br> Reason: " + e.getMessage());
 			log.error(e);
 		}
 		return null;
@@ -102,8 +134,9 @@ public class AddressInfoPService {
 	 * @param instance
 	 */
 	public void workflowApproved(AddressInfoP instance) {
-		log.info("Workflow approved for "+instance.getId()+" "+instance.getName());
-		instance.setStatus(Commons.ipaddress_STATUS.starting+"");
+		log.info("Workflow approved for " + instance.getId() + " "
+				+ instance.getName());
+		instance.setStatus(Commons.ipaddress_STATUS.starting + "");
 		instance = instance.merge();
 		allocateAddress(instance.getId());
 	}
@@ -111,12 +144,13 @@ public class AddressInfoPService {
 	@RemoteMethod
 	public void remove(int id) {
 		try {
-			//releaseAddress(id);
-			Commons.setAssetEndTime(AddressInfoP.findAddressInfoP(id).getAsset());
+			// releaseAddress(id);
+			Commons.setAssetEndTime(AddressInfoP.findAddressInfoP(id)
+					.getAsset());
 			AddressInfoP.findAddressInfoP(id).remove();
 			Commons.setSessionMsg("Scheduled Ip Address remove");
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			Commons.setSessionMsg("Error while Scheduling Ip Address remove");
 			log.error(e);
 		}
@@ -126,34 +160,42 @@ public class AddressInfoPService {
 	public AddressInfoP findById(int id) {
 		try {
 			AddressInfoP instance = AddressInfoP.findAddressInfoP(id);
-			instance.setProduct(""+instance.getAsset().getProductCatalog().getId());
+			instance.setProduct(""
+					+ instance.getAsset().getProductCatalog().getId());
 			return instance;
-			
+
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e);
 		}
 		return null;
 	}// end of method findById(int id
 
 	@RemoteMethod
-	public List<AddressInfoP> findAll(int start,int max,String search) {
+	public List<AddressInfoP> findAll(int start, int max, String search) {
 		try {
-			
+
 			User user = Commons.getCurrentUser();
 			List<AddressInfoP> allAddresses = null;
-			if(user.getRole().getName().equals(Commons.ROLE.ROLE_USER+"")){
-				allAddresses = AddressInfoP.findAddressInfoPsByUser(user,start,max,search).getResultList();
-			}else if (user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || user.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN+"")){
+			if (user.getRole().getName().equals(Commons.ROLE.ROLE_USER + "")) {
+				allAddresses = AddressInfoP.findAddressInfoPsByUser(user,
+						start, max, search).getResultList();
+			} else if (user.getRole().getName()
+					.equals(Commons.ROLE.ROLE_MANAGER + "")
+					|| user.getRole().getName()
+							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
 				allAddresses = AddressInfoP.findAddressInfoPsByCompany(
-						Company.findCompany(Commons.getCurrentSession().getCompanyId()),start,max,search).getResultList();
-			}else{
-				allAddresses = AddressInfoP.findAllAddressInfoPs(start,max,search);
+						Company.findCompany(Commons.getCurrentSession()
+								.getCompanyId()), start, max, search)
+						.getResultList();
+			} else {
+				allAddresses = AddressInfoP.findAllAddressInfoPs(start, max,
+						search);
 			}
-			
+
 			return allAddresses;
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e);
 		}
 		return null;
@@ -162,19 +204,22 @@ public class AddressInfoPService {
 	@RemoteMethod
 	public void associateAddress(AddressInfoP instance) {
 		try {
-			
+
 			log.info(instance.getInstanceId() + "   " + instance.getPublicIp());
 			String orig_instanceIdFromJS = instance.getInstanceId();
 			String orig_publicIpFromJS = instance.getPublicIp();
-			instance = AddressInfoP.findAddressInfoPsByInstanceIdLike(instance.getInstanceId()).getSingleResult();
+			instance = AddressInfoP.findAddressInfoPsByInstanceIdLike(
+					instance.getInstanceId()).getSingleResult();
 
 			// setit back to clean instance ID because it is in format
 			// 'i-595E09AE (eucalyptus)'
 			instance.setInstanceId(orig_instanceIdFromJS);
 			instance.setPublicIp(orig_publicIpFromJS);
-			
+
 			ipAddressWorker.associateAddress(
-					AddressInfoP.findAddressInfoP(instance.getId()).getAsset().getProductCatalog().getInfra(), instance);
+					AddressInfoP.findAddressInfoP(instance.getId()).getAsset()
+							.getProductCatalog().getInfra(), instance, Commons
+							.getCurrentUser().getEmail());
 			Commons.setSessionMsg("Scheduling Ip Address association");
 			// AddressInfoP.findAddressInfoP(id).remove();
 		} catch (Exception e) {
@@ -189,7 +234,9 @@ public class AddressInfoPService {
 		try {
 			AddressInfoP instance = AddressInfoP.findAddressInfoP(id);
 			ipAddressWorker.disassociateAddress(
-					AddressInfoP.findAddressInfoP(instance.getId()).getAsset().getProductCatalog().getInfra(), instance);
+					AddressInfoP.findAddressInfoP(instance.getId()).getAsset()
+							.getProductCatalog().getInfra(), instance, Commons
+							.getCurrentUser().getEmail());
 			Commons.setSessionMsg("Scheduling Ip Address disassociation");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Ip Address disassociation");
@@ -201,11 +248,14 @@ public class AddressInfoPService {
 	@RemoteMethod
 	public void allocateAddress(int id) {
 		try {
-			
+
 			AddressInfoP adressInfoP = AddressInfoP.findAddressInfoP(id);
-			log.info("Calling allocate address for Workflow approved for "+adressInfoP.getId()+" "+adressInfoP.getName());
-			ipAddressWorker.allocateAddress(AddressInfoP.findAddressInfoP(
-					adressInfoP.getId()).getAsset().getProductCatalog().getInfra(), adressInfoP);
+			log.info("Calling allocate address for Workflow approved for "
+					+ adressInfoP.getId() + " " + adressInfoP.getName());
+			ipAddressWorker.allocateAddress(
+					AddressInfoP.findAddressInfoP(adressInfoP.getId())
+							.getAsset().getProductCatalog().getInfra(),
+					adressInfoP, Commons.getCurrentUser().getEmail());
 			Commons.setSessionMsg("Scheduling Ip Address allocate");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Ip Address allocate");
@@ -219,8 +269,11 @@ public class AddressInfoPService {
 		try {
 			AddressInfoP adressInfoP = AddressInfoP.findAddressInfoP(id);
 			log.info("releasing IP adress " + adressInfoP.getPublicIp());
-			if (adressInfoP.getInstanceId() != null && adressInfoP.getInstanceId().startsWith("available")) {
-				ipAddressWorker.releaseAddress(adressInfoP.getAsset().getProductCatalog().getInfra(), adressInfoP);
+			if (adressInfoP.getInstanceId() != null
+					&& adressInfoP.getInstanceId().startsWith("available")) {
+				ipAddressWorker.releaseAddress(adressInfoP.getAsset()
+						.getProductCatalog().getInfra(), adressInfoP, Commons
+						.getCurrentUser().getEmail());
 			} else {
 				log.error("Cant release addresses not marked as available.");
 			}
@@ -234,14 +287,18 @@ public class AddressInfoPService {
 
 	@RemoteMethod
 	public List<ProductCatalog> findProductType() {
-		if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
-			return ProductCatalog.findProductCatalogsByProductTypeEquals(Commons.ProductType.IpAddress.getName()).getResultList();
-		}else{
-			
-			return ProductCatalog.findProductCatalogsByProductTypeAndCompany(Commons.ProductType.IpAddress.getName(),
-					Company.findCompany(Commons.getCurrentSession().getCompanyId())).getResultList();
+		if (Commons.getCurrentUser().getRole().getName()
+				.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			return ProductCatalog.findProductCatalogsByProductTypeEquals(
+					Commons.ProductType.IpAddress.getName()).getResultList();
+		} else {
+
+			return ProductCatalog.findProductCatalogsByProductTypeAndCompany(
+					Commons.ProductType.IpAddress.getName(),
+					Company.findCompany(Commons.getCurrentSession()
+							.getCompanyId())).getResultList();
 		}
-		
+
 	}
 
 }// end of class AddressInfoPController

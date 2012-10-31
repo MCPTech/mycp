@@ -17,6 +17,8 @@ package in.mycp.workers;
 
 import in.mycp.domain.ImageDescriptionP;
 import in.mycp.domain.Infra;
+import in.mycp.remote.AccountLogService;
+import in.mycp.utils.Commons;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,6 +26,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -34,42 +37,56 @@ import com.xerox.amazonws.ec2.Jec2;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
 
 @Component("imageWorker")
 public class ImageWorker extends Worker {
 	protected static Logger logger = Logger.getLogger(ImageWorker.class);
 
+	@Autowired
+	AccountLogService accountLogService;
+
 	@Async
-	public void createImage(final Infra infra, final ImageDescriptionP image) {
+	public void createImage(final Infra infra, final ImageDescriptionP image,final String userId) {
 		String threadName = Thread.currentThread().getName();
 
 		try {
-			logger.debug("threadName "+threadName+" started.");
-			
+			logger.debug("threadName " + threadName + " started.");
+			accountLogService.saveLog("Started : "+this.getClass().getName() + " : "
+					+ Thread.currentThread().getStackTrace()[1]
+							.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+									.getMethodName().indexOf("_"))
+					+ " for " + image.getId(), Commons.task_name.IMAGE.name(),
+					Commons.task_status.SUCCESS.ordinal(),userId);
+
 			Jec2 ec2 = getNewJce2(infra);
 			String imageId = "";
 			try {
-				imageId = ec2.createImage(image.getInstanceIdForImgCreation(), image.getName(), image.getDescription(), false);	
+				imageId = ec2.createImage(image.getInstanceIdForImgCreation(),
+						image.getName(), image.getDescription(), false);
 			} catch (Exception e) {
-				logger.error(e.getMessage());//e.printStackTrace();
+				logger.error(e.getMessage());// e.printStackTrace();
 			}
-			
-			ImageDescription imageFromEuca = ec2.describeImages(Collections.singletonList(imageId)).get(0);
-			
+
+			ImageDescription imageFromEuca = ec2.describeImages(
+					Collections.singletonList(imageId)).get(0);
+
 			String imageState = imageFromEuca.getImageState();
-			
+
 			int START_SLEEP_TIME = 10000;
-			while(!"available".equals(imageState)){
-				imageFromEuca = ec2.describeImages(Collections.singletonList(imageId)).get(0);
+			while (!"available".equals(imageState)) {
+				imageFromEuca = ec2.describeImages(
+						Collections.singletonList(imageId)).get(0);
 				imageState = imageFromEuca.getImageState();
-				logger.info("Image  " + imageFromEuca.getImageId() +" still getting created; sleeping "+ START_SLEEP_TIME + "ms");
+				logger.info("Image  " + imageFromEuca.getImageId()
+						+ " still getting created; sleeping "
+						+ START_SLEEP_TIME + "ms");
 				Thread.sleep(START_SLEEP_TIME);
-				
+
 			}
-			if("available".equals(imageState)){
-				
+			if ("available".equals(imageState)) {
+
 				image.setImageId(imageFromEuca.getImageId());
 				image.setImageLocation(imageFromEuca.getImageLocation());
 				image.setImageOwnerId(imageFromEuca.getImageOwnerId());
@@ -80,7 +97,7 @@ public class ImageWorker extends Worker {
 				for (Iterator iterator = prodCodes.iterator(); iterator
 						.hasNext();) {
 					String prodCode = (String) iterator.next();
-					prodCodes_str =prodCodes_str+ prodCode+",";
+					prodCodes_str = prodCodes_str + prodCode + ",";
 				}
 				prodCodes_str = StringUtils.removeEnd(prodCodes_str, ",");
 				image.setProductCodes(prodCodes_str);
@@ -91,19 +108,36 @@ public class ImageWorker extends Worker {
 				image.setPlatform(imageFromEuca.getPlatform());
 				image.setReason(imageFromEuca.getReason());
 				image.setImageOwnerAlias(imageFromEuca.getImageOwnerAlias());
-				
+
 				image.setName(imageFromEuca.getName());
 				image.setDescription(imageFromEuca.getDescription());
 				image.setRootDeviceType(imageFromEuca.getRootDeviceType());
 				image.setRootDeviceName(imageFromEuca.getRootDeviceName());
-				image.setVirtualizationType(imageFromEuca.getVirtualizationType());
-				
+				image.setVirtualizationType(imageFromEuca
+						.getVirtualizationType());
+
 				image.merge();
 			}
-			
+
+			accountLogService.saveLog(this.getClass().getName() + " : "
+					+ Thread.currentThread().getStackTrace()[1]
+							.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+									.getMethodName().indexOf("_"))
+					+ " for " + imageId, Commons.task_name.IMAGE.name(),
+					Commons.task_status.SUCCESS.ordinal(),userId);
 
 		} catch (Exception e) {
-			logger.error(e.getMessage());//e.printStackTrace();
+			logger.error(e.getMessage());// e.printStackTrace();
+
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for " + image.getId()
+							+ ", " + e.getMessage(), Commons.task_name.IMAGE
+							.name(), Commons.task_status.FAIL.ordinal(),userId);
 		}
 	}
 }

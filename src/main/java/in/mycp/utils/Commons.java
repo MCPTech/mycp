@@ -49,7 +49,7 @@ public class Commons {
 	static public enum ASSET_TYPE {
 		IpAddress, SecurityGroup, IpPermission, Volume, VolumeSnapshot, ComputeImage, ComputeInstance, KeyPair, addressInfo
 	}
-
+	
 	static public enum ProductType {
 		IpAddress("Ip Address"), SecurityGroup("Security Group"), Volume("Volume"), VolumeSnapshot("Snapshot"), ComputeImage("Image"), ComputeInstance(
 				"Instance"), KeyPair("Key Pair");
@@ -99,6 +99,10 @@ public class Commons {
 	
 	static public enum sync_status {
 		running,failed,success
+	}
+	
+	static public enum task_name {
+		SIGNIN, LOGOUT,COMPUTE, IPADDRESS, VOLUME, SECURITYGROUP, KEYPAIR,IMAGE, SNAPSHOT, PROJECT, DEPARTMENT,USER, CLOUD,AVAILABILITYZONE,PRODUCT,PRODUCTTYPE,WORKFLOW
 	}
 	
 	static public enum task_status {
@@ -305,8 +309,8 @@ public class Commons {
 	public static List<AccountLogTypeDTO> getAllAccountLogTypes(){
 		
 		List<AccountLogTypeDTO> list = new ArrayList<AccountLogTypeDTO>();
-			list.add(new AccountLogTypeDTO(1, "today"));
-			list.add(new AccountLogTypeDTO(2, "last 7 day"));
+			list.add(new AccountLogTypeDTO(1, "last 24 Hours"));
+			list.add(new AccountLogTypeDTO(2, "last 7 days"));
 			int acctLogTypeId = 3;
 			DateTime dt = new DateTime();
 			
@@ -316,4 +320,17 @@ public class Commons {
 			}
 		return list;
 	}
+	
+	public static DateTime getDateTimeFromMonthName(String monthName){
+		
+		DateTime dt = new DateTime();
+		for(int i =0;i<7;i++ ){
+			if(monthName.equals(dt.minusMonths(i).monthOfYear().getAsText())){
+				return dt.minusMonths(i);
+			}
+		}
+		return null;
+	}
+
+	
 }

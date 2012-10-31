@@ -83,7 +83,7 @@ SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh.mm");
 			</td>
 			<td width="10%">
 				<% 
-				if( accountLog.getStatus() == Commons.task_status.SUCCESS.ordinal())
+				if( accountLog.getStatus().intValue() == Commons.task_status.SUCCESS.ordinal())
 				{
 				%>
 				<font color="green">

@@ -16,7 +16,9 @@
 package in.mycp.service;
 
 import in.mycp.domain.Role;
+import in.mycp.remote.AccountLogService;
 import in.mycp.remote.InfraService;
+import in.mycp.utils.Commons;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,6 +30,7 @@ import javax.persistence.NonUniqueResultException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,6 +53,9 @@ public class MycpAuthService extends AbstractUserDetailsAuthenticationProvider {
 	private static final Logger log = Logger.getLogger(AbstractUserDetailsAuthenticationProvider.class
 			.getName());
 
+	@Autowired
+	AccountLogService accountLogService;
+	
 	@Override
 	protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication)
 			throws AuthenticationException {
@@ -92,6 +98,8 @@ public class MycpAuthService extends AbstractUserDetailsAuthenticationProvider {
 			throw new BadCredentialsException("Invalid username or password");
 		}
 
+		accountLogService.saveLog("User signed in", Commons.task_name.SIGNIN.name(), Commons.task_status.SUCCESS.ordinal(),mycpUser.getEmail());
+		
 		return new User(mycpUser.getEmail(), mycpUser.getPassword(), mycpUser.getActive(), // enabled
 				true, // account not expired
 				true, // credentials not expired

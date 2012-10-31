@@ -18,6 +18,7 @@ package in.mycp.workers;
 import in.mycp.domain.AttachmentInfoP;
 import in.mycp.domain.Infra;
 import in.mycp.domain.VolumeInfoP;
+import in.mycp.remote.AccountLogService;
 import in.mycp.utils.Commons;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +42,7 @@ import com.xerox.amazonws.ec2.VolumeInfo;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
 
 @Component("volumeWorker")
@@ -48,101 +50,169 @@ public class VolumeWorker extends Worker {
 
 	protected static Logger logger = Logger.getLogger(VolumeWorker.class);
 
+	@Autowired
+	AccountLogService accountLogService;
+
 	@Async
-	public void detachVolume(final Infra infra, final VolumeInfoP volumeInfoP) {
+	public void detachVolume(final Infra infra, final VolumeInfoP volumeInfoP,
+			final String userId) {
 		String threadName = Thread.currentThread().getName();
 
 		try {
 			logger.debug("threadName " + threadName + " started.");
+			accountLogService.saveLog(
+					"Started : "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							.name(), Commons.task_status.SUCCESS.ordinal(),
+					userId);
 			Jec2 ec2 = getNewJce2(infra);
 
-			List<AttachmentInfoP> attaches = AttachmentInfoP.findAttachmentInfoPsByVolumeIdEquals(volumeInfoP.getVolumeId())
-					.getResultList();
+			List<AttachmentInfoP> attaches = AttachmentInfoP
+					.findAttachmentInfoPsByVolumeIdEquals(
+							volumeInfoP.getVolumeId()).getResultList();
 			String instanceId = "";
 			String device = "";
 			if (attaches != null && attaches.size() > 0) {
-				for (Iterator iterator = attaches.iterator(); iterator.hasNext();) {
-					AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator.next();
+				for (Iterator iterator = attaches.iterator(); iterator
+						.hasNext();) {
+					AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator
+							.next();
 					instanceId = attachmentInfoP.getInstanceId();
 					device = attachmentInfoP.getDevice();
 				}
 			}
-			logger.info("detaching " + volumeInfoP.getVolumeId() + "  " + instanceId + " " + device);
-			AttachmentInfo attachmentInfo = ec2.detachVolume(volumeInfoP.getVolumeId(), instanceId, device, false);
+			logger.info("detaching " + volumeInfoP.getVolumeId() + "  "
+					+ instanceId + " " + device);
+			AttachmentInfo attachmentInfo = ec2.detachVolume(
+					volumeInfoP.getVolumeId(), instanceId, device, false);
 
 			int START_SLEEP_TIME = 10000;
 			String attachedStatus = "";
 
-			long timeout = START_SLEEP_TIME *100;
-			long runDuration=0;
-			outer: while (!Commons.VOLUME_STATUS_AVAILABLE.equals(attachedStatus)) {
-				runDuration = runDuration+START_SLEEP_TIME;
-				if(runDuration > timeout){
+			long timeout = START_SLEEP_TIME * 100;
+			long runDuration = 0;
+			outer: while (!Commons.VOLUME_STATUS_AVAILABLE
+					.equals(attachedStatus)) {
+				runDuration = runDuration + START_SLEEP_TIME;
+				if (runDuration > timeout) {
 					logger.info("Tried enough.Am bored, quitting.");
 					break outer;
 				}
 				try {
-					logger.info("Volume  " + attachmentInfo.getVolumeId() + " still detaching; sleeping " + START_SLEEP_TIME + "ms");
+					logger.info("Volume  " + attachmentInfo.getVolumeId()
+							+ " still detaching; sleeping " + START_SLEEP_TIME
+							+ "ms");
 					Thread.sleep(START_SLEEP_TIME);
 
 					List<String> params = new ArrayList<String>();
 					List<VolumeInfo> volumes = ec2.describeVolumes(params);
-					for (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
-						VolumeInfo volumeInfoLocal = (VolumeInfo) iterator.next();
-						if (volumeInfoLocal.getVolumeId().equals(volumeInfoP.getVolumeId())) {
-							if (volumeInfoLocal.getStatus().equals(Commons.VOLUME_STATUS_AVAILABLE)) {
+					for (Iterator iterator = volumes.iterator(); iterator
+							.hasNext();) {
+						VolumeInfo volumeInfoLocal = (VolumeInfo) iterator
+								.next();
+						if (volumeInfoLocal.getVolumeId().equals(
+								volumeInfoP.getVolumeId())) {
+							if (volumeInfoLocal.getStatus().equals(
+									Commons.VOLUME_STATUS_AVAILABLE)) {
 								attachedStatus = volumeInfoLocal.getStatus();
 								break outer;
 							}
 						}
 					}
 				} catch (Exception e) {
-					
-					logger.error(e.getMessage());e.printStackTrace();
+
+					logger.error(e.getMessage());
+					e.printStackTrace();
 				}
 			}
 
 			if (Commons.VOLUME_STATUS_AVAILABLE.equals(attachedStatus)) {
-				VolumeInfoP volumeInfoPLocal = VolumeInfoP.findVolumeInfoP(volumeInfoP.getId());
+				VolumeInfoP volumeInfoPLocal = VolumeInfoP
+						.findVolumeInfoP(volumeInfoP.getId());
 				volumeInfoPLocal.setInstanceId("");
 				volumeInfoPLocal.setDevice("");
 				volumeInfoPLocal.setStatus(Commons.VOLUME_STATUS_AVAILABLE);
 				volumeInfoPLocal.setDetails("");
 				// AttachmentInfoP.find
-				attaches = AttachmentInfoP.findAttachmentInfoPsByVolumeIdEquals(volumeInfoPLocal.getVolumeId()).getResultList();
+				attaches = AttachmentInfoP
+						.findAttachmentInfoPsByVolumeIdEquals(
+								volumeInfoPLocal.getVolumeId()).getResultList();
 
 				if (attaches != null && attaches.size() > 0) {
-					for (Iterator iterator = attaches.iterator(); iterator.hasNext();) {
-						AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator.next();
+					for (Iterator iterator = attaches.iterator(); iterator
+							.hasNext();) {
+						AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator
+								.next();
 						attachmentInfoP.remove();
 					}
 				}
 				volumeInfoPLocal = volumeInfoPLocal.merge();
-				logger.info("Volume  " + attachmentInfo.getVolumeId() + " detached.");
+				logger.info("Volume  " + attachmentInfo.getVolumeId()
+						+ " detached.");
+				accountLogService.saveLog(
+						"Complete : "
+								+ this.getClass().getName()
+								+ " : "
+								+ Thread.currentThread().getStackTrace()[1]
+										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+												.getMethodName().indexOf("_")) + " for "
+								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								.name(), Commons.task_status.SUCCESS.ordinal(),
+						userId);
+
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());e.printStackTrace();
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId() + ", " + e.getMessage(),
+					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
+							.ordinal(), userId);
 		}
 	}// end of detachVolume
 
 	@Async
-	public void deleteVolume(final Infra infra, final VolumeInfoP volumeInfoP) {
+	public void deleteVolume(final Infra infra, final VolumeInfoP volumeInfoP,
+			final String userId) {
 		try {
+			accountLogService.saveLog(
+					"Started : "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							.name(), Commons.task_status.SUCCESS.ordinal(),
+					userId);
+
 			Jec2 ec2 = getNewJce2(infra);
-			VolumeInfo volumeInfo = new VolumeInfo("", "", "", "", "", Calendar.getInstance());
+			VolumeInfo volumeInfo = new VolumeInfo("", "", "", "", "",
+					Calendar.getInstance());
 			try {
 				ec2.deleteVolume(volumeInfoP.getVolumeId());
 			} catch (Exception e) {
-				logger.error(e.getMessage());//e.printStackTrace();
+				logger.error(e.getMessage());// e.printStackTrace();
 			}
 
 			boolean found = false;
 			int START_SLEEP_TIME = 10000;
-			long timeout = START_SLEEP_TIME *100;
-			long runDuration=0;
+			long timeout = START_SLEEP_TIME * 100;
+			long runDuration = 0;
 			outer: while (volumeInfo != null) {
-				runDuration = runDuration+START_SLEEP_TIME;
-				if(runDuration > timeout){
+				runDuration = runDuration + START_SLEEP_TIME;
+				if (runDuration > timeout) {
 					logger.info("Tried enough.Am bored, quitting.");
 					break outer;
 				}
@@ -157,11 +227,15 @@ public class VolumeWorker extends Worker {
 					// when the vol gets listed
 					List<String> params = new ArrayList<String>();
 					List<VolumeInfo> volumes = ec2.describeVolumes(params);
-					for (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
-						VolumeInfo volumeInfoLocal = (VolumeInfo) iterator.next();
-						if (volumeInfoLocal.getVolumeId().equals(volumeInfoP.getVolumeId())) {
+					for (Iterator iterator = volumes.iterator(); iterator
+							.hasNext();) {
+						VolumeInfo volumeInfoLocal = (VolumeInfo) iterator
+								.next();
+						if (volumeInfoLocal.getVolumeId().equals(
+								volumeInfoP.getVolumeId())) {
 							found = true;
-							if (volumeInfoLocal.getStatus().equals(Commons.VOLUME_STATUS_DELETED)) {
+							if (volumeInfoLocal.getStatus().equals(
+									Commons.VOLUME_STATUS_DELETED)) {
 								volumeInfo = null;
 								break outer;
 							}
@@ -173,11 +247,14 @@ public class VolumeWorker extends Worker {
 						volumeInfo = null;
 						break outer;
 					}
-					logger.info("Volume  " + volumeInfoP.getVolumeId() + " still being removed; sleeping " + START_SLEEP_TIME + "ms");
+					logger.info("Volume  " + volumeInfoP.getVolumeId()
+							+ " still being removed; sleeping "
+							+ START_SLEEP_TIME + "ms");
 					Thread.sleep(START_SLEEP_TIME);
 				} catch (Exception e) {
 					logger.error(e.getMessage());
-					logger.error(e.getMessage());e.printStackTrace();
+					logger.error(e.getMessage());
+					e.printStackTrace();
 					volumeInfo = null;
 				}
 			}
@@ -185,46 +262,87 @@ public class VolumeWorker extends Worker {
 				volumeInfoP.setStatus(Commons.VOLUME_STATUS_DELETED);
 				volumeInfoP.merge();
 				// volumeInfoP.remove();
-				logger.info("Volume  " + volumeInfoP.getVolumeId() + " deleted.");
-				setAssetEndTime(VolumeInfoP.findVolumeInfoP(volumeInfoP.getId()).getAsset());
+				logger.info("Volume  " + volumeInfoP.getVolumeId()
+						+ " deleted.");
+				setAssetEndTime(VolumeInfoP
+						.findVolumeInfoP(volumeInfoP.getId()).getAsset());
+
+				accountLogService.saveLog(
+						"Complete : "
+								+ this.getClass().getName()
+								+ " : "
+								+ Thread.currentThread().getStackTrace()[1]
+										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+												.getMethodName().indexOf("_")) + " for "
+								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								.name(), Commons.task_status.SUCCESS.ordinal(),
+						userId);
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());e.printStackTrace();
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId() + ", " + e.getMessage(),
+					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
+							.ordinal(), userId);
 		}
 
 	}// end of deleteVolume
 
 	@Async
-	public void attachVolume(final Infra infra, final VolumeInfoP volumeInfoP) {
+	public void attachVolume(final Infra infra, final VolumeInfoP volumeInfoP,
+			final String userId) {
 		try {
+			accountLogService.saveLog(
+					"Started : "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							.name(), Commons.task_status.SUCCESS.ordinal(),
+					userId);
 			Jec2 ec2 = getNewJce2(infra);
-			AttachmentInfo attachmentInfo = ec2.attachVolume(volumeInfoP.getVolumeId(), volumeInfoP.getInstanceId(),
+			AttachmentInfo attachmentInfo = ec2.attachVolume(
+					volumeInfoP.getVolumeId(), volumeInfoP.getInstanceId(),
 					volumeInfoP.getDevice());
 
 			int START_SLEEP_TIME = 10000;
 			VolumeInfo volumeInfo = null;
 
 			String attachedStatus = "";
-			long timeout = START_SLEEP_TIME *100;
-			long runDuration=0;
+			long timeout = START_SLEEP_TIME * 100;
+			long runDuration = 0;
 
-				
 			outer: while (!Commons.VOLUME_STATUS_INUSE.equals(attachedStatus)) {
-				runDuration = runDuration+START_SLEEP_TIME;
-				if(runDuration > timeout){
+				runDuration = runDuration + START_SLEEP_TIME;
+				if (runDuration > timeout) {
 					logger.info("Tried enough.Am bored, quitting.");
 					break outer;
 				}
 				try {
-					logger.info("Volume  " + attachmentInfo.getVolumeId() + " still attaching; sleeping " + START_SLEEP_TIME + "ms");
+					logger.info("Volume  " + attachmentInfo.getVolumeId()
+							+ " still attaching; sleeping " + START_SLEEP_TIME
+							+ "ms");
 					Thread.sleep(START_SLEEP_TIME);
 
 					List<String> params = new ArrayList<String>();
 					List<VolumeInfo> volumes = ec2.describeVolumes(params);
-					for (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
-						VolumeInfo volumeInfoLocal = (VolumeInfo) iterator.next();
-						if (volumeInfoLocal.getVolumeId().equals(volumeInfoP.getVolumeId())) {
-							if (volumeInfoLocal.getStatus().equals(Commons.VOLUME_STATUS_INUSE)) {
+					for (Iterator iterator = volumes.iterator(); iterator
+							.hasNext();) {
+						VolumeInfo volumeInfoLocal = (VolumeInfo) iterator
+								.next();
+						if (volumeInfoLocal.getVolumeId().equals(
+								volumeInfoP.getVolumeId())) {
+							if (volumeInfoLocal.getStatus().equals(
+									Commons.VOLUME_STATUS_INUSE)) {
 								volumeInfo = volumeInfoLocal;
 								attachedStatus = volumeInfoLocal.getStatus();
 								break outer;
@@ -233,26 +351,35 @@ public class VolumeWorker extends Worker {
 					}
 				} catch (Exception e) {
 					logger.error(e.getMessage());
-					logger.error(e.getMessage());e.printStackTrace();
+					logger.error(e.getMessage());
+					e.printStackTrace();
 				}
 			}
 			logger.info("Volume " + attachmentInfo.getVolumeId() + " attached.");
 
 			if (Commons.VOLUME_STATUS_INUSE.equals(attachedStatus)) {
-				VolumeInfoP localVolumeInfoP = VolumeInfoP.findVolumeInfoPsByVolumeIdEquals(volumeInfoP.getVolumeId()).getSingleResult();
+				VolumeInfoP localVolumeInfoP = VolumeInfoP
+						.findVolumeInfoPsByVolumeIdEquals(
+								volumeInfoP.getVolumeId()).getSingleResult();
 				localVolumeInfoP.setStatus(volumeInfo.getStatus());
 				localVolumeInfoP = localVolumeInfoP.merge();
 
-				List<AttachmentInfo> attachments = volumeInfo.getAttachmentInfo();
+				List<AttachmentInfo> attachments = volumeInfo
+						.getAttachmentInfo();
 				Set<AttachmentInfoP> attachments4Store = new HashSet<AttachmentInfoP>();
 
-				for (Iterator iterator2 = attachments.iterator(); iterator2.hasNext();) {
-					AttachmentInfo attachmentInfoLocal = (AttachmentInfo) iterator2.next();
+				for (Iterator iterator2 = attachments.iterator(); iterator2
+						.hasNext();) {
+					AttachmentInfo attachmentInfoLocal = (AttachmentInfo) iterator2
+							.next();
 					AttachmentInfoP attachmentInfoP = new AttachmentInfoP();
-					attachmentInfoP.setAttachTime(attachmentInfoLocal.getAttachTime().getTime());
+					attachmentInfoP.setAttachTime(attachmentInfoLocal
+							.getAttachTime().getTime());
 					attachmentInfoP.setDevice(attachmentInfoLocal.getDevice());
-					attachmentInfoP.setInstanceId(attachmentInfoLocal.getInstanceId());
-					attachmentInfoP.setVolumeId(attachmentInfoLocal.getVolumeId());
+					attachmentInfoP.setInstanceId(attachmentInfoLocal
+							.getInstanceId());
+					attachmentInfoP.setVolumeId(attachmentInfoLocal
+							.getVolumeId());
 					attachmentInfoP.setStatus(attachmentInfoLocal.getStatus());
 					attachmentInfoP.setVolumeInfo(localVolumeInfoP);
 					attachmentInfoP = attachmentInfoP.merge();
@@ -261,24 +388,60 @@ public class VolumeWorker extends Worker {
 				localVolumeInfoP.setAttachmentInfoPs(attachments4Store);
 				localVolumeInfoP = localVolumeInfoP.merge();
 
+				accountLogService.saveLog(
+						"Complete : "
+								+ this.getClass().getName()
+								+ " : "
+								+ Thread.currentThread().getStackTrace()[1]
+										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+												.getMethodName().indexOf("_")) + " for "
+								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								.name(), Commons.task_status.SUCCESS.ordinal(),
+						userId);
+
 			}
-			logger.info("Volume metadata saved in DB for " + attachmentInfo.getVolumeId() + "");
+			logger.info("Volume metadata saved in DB for "
+					+ attachmentInfo.getVolumeId() + "");
 		} catch (Exception e) {
-			logger.error(e.getMessage());e.printStackTrace();
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId() + ", " + e.getMessage(),
+					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
+							.ordinal(), userId);
 		}
 
 	}// end of attachVolume
 
 	@Async
-	public void createVolume(final Infra infra, final VolumeInfoP volumeInfoP) {
+	public void createVolume(final Infra infra, final VolumeInfoP volumeInfoP,
+			final String userId) {
 		try {
+			accountLogService.saveLog(
+					"Started : "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							.name(), Commons.task_status.SUCCESS.ordinal(),
+					userId);
+
 			Jec2 ec2 = getNewJce2(infra);
 			VolumeInfo volumeInfo = null;
 			try {
-				volumeInfo = ec2.createVolume("" + volumeInfoP.getSize(), volumeInfoP.getSnapshotId(), volumeInfoP.getZone());
+				volumeInfo = ec2.createVolume("" + volumeInfoP.getSize(),
+						volumeInfoP.getSnapshotId(), volumeInfoP.getZone());
 
 			} catch (Exception e) {
-				logger.error(e.getMessage());//e.printStackTrace();
+				logger.error(e.getMessage());// e.printStackTrace();
 			}
 
 			volumeInfoP.setVolumeId(volumeInfo.getVolumeId());
@@ -289,51 +452,83 @@ public class VolumeWorker extends Worker {
 			VolumeInfoP volumeInfoPlocal = volumeInfoP.merge();
 
 			int INSTANCE_START_SLEEP_TIME = 10000;
-			long timeout = INSTANCE_START_SLEEP_TIME *100;
-			long runDuration=0;
+			long timeout = INSTANCE_START_SLEEP_TIME * 100;
+			long runDuration = 0;
 			while (!volumeInfo.getStatus().equals("available")) {
-				runDuration = runDuration+INSTANCE_START_SLEEP_TIME;
-				if(runDuration > timeout){
+				runDuration = runDuration + INSTANCE_START_SLEEP_TIME;
+				if (runDuration > timeout) {
 					logger.info("Tried enough.Am bored, quitting.");
 					break;
 				}
 				try {
-					logger.info("Volume  " + volumeInfo.getVolumeId() + " still starting up; sleeping " + INSTANCE_START_SLEEP_TIME + "ms");
+					logger.info("Volume  " + volumeInfo.getVolumeId()
+							+ " still starting up; sleeping "
+							+ INSTANCE_START_SLEEP_TIME + "ms");
 					Thread.sleep(INSTANCE_START_SLEEP_TIME);
-					volumeInfo = ec2.describeVolumes(Collections.singletonList(volumeInfo.getVolumeId())).get(0);
-					logger.info(volumeInfo.getVolumeId() + "   " + volumeInfo.getStatus());
+					volumeInfo = ec2
+							.describeVolumes(
+									Collections.singletonList(volumeInfo
+											.getVolumeId())).get(0);
+					logger.info(volumeInfo.getVolumeId() + "   "
+							+ volumeInfo.getStatus());
 				} catch (Exception e) {
 					logger.error(e.getMessage());
-					logger.error(e.getMessage());//e.printStackTrace();
+					logger.error(e.getMessage());// e.printStackTrace();
 				}
 			}
 
 			if (volumeInfo.getStatus().equals(Commons.VOLUME_STATUS_AVAILABLE)) {
-				logger.info("Volume  " + volumeInfo.getVolumeId() + " now available !");
+				logger.info("Volume  " + volumeInfo.getVolumeId()
+						+ " now available !");
 				logger.info("setting " + volumeInfo.getStatus());
 				volumeInfoPlocal.setStatus(volumeInfo.getStatus());
 				volumeInfoPlocal = volumeInfoPlocal.merge();
 				setAssetStartTime(volumeInfoPlocal.getAsset());
+
+				accountLogService.saveLog(
+						"Complete : "
+								+ this.getClass().getName()
+								+ " : "
+								+ Thread.currentThread().getStackTrace()[1]
+										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+												.getMethodName().indexOf("_")) + " for "
+								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								.name(), Commons.task_status.SUCCESS.ordinal(),
+						userId);
+
 				logger.info("Done creating volume " + volumeInfo.getVolumeId());
 			} else {
 				volumeInfoPlocal.setStatus(Commons.VOLUME_STATUS_FAILED);
 				volumeInfoPlocal = volumeInfoPlocal.merge();
 				setAssetEndTime(volumeInfoPlocal.getAsset());
-				throw new IllegalStateException("Failed to create new Volume " + volumeInfo.getVolumeId());
-				
+				throw new IllegalStateException("Failed to create new Volume "
+						+ volumeInfo.getVolumeId());
+
 			}
 
 		} catch (Exception e) {
 			logger.error(e);
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ volumeInfoP.getId() + ", " + e.getMessage(),
+					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
+							.ordinal(), userId);
+
 			try {
-				VolumeInfoP volumeInfoPlocal = VolumeInfoP.findVolumeInfoP(volumeInfoP.getId());
+				VolumeInfoP volumeInfoPlocal = VolumeInfoP
+						.findVolumeInfoP(volumeInfoP.getId());
 				volumeInfoPlocal.setStatus(Commons.VOLUME_STATUS_FAILED);
 				volumeInfoPlocal = volumeInfoPlocal.merge();
 				setAssetEndTime(volumeInfoPlocal.getAsset());
 			} catch (Exception e2) {
 				logger.error(e);
 			}
-			
+
 			Thread.currentThread().interrupt();
 		}
 

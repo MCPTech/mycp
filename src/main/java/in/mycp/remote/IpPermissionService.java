@@ -77,7 +77,7 @@ public class IpPermissionService {
 	public void workflowApproved(IpPermissionP instance) {
 		try {
 			securityGroupWorker.authorizeSecurityGroupIngress(instance.getGroupDescription().getAsset().getProductCatalog().getInfra(),
-					instance);
+					instance,Commons.getCurrentUser().getEmail());
 		} catch (Exception e) {
 			log.error(e);e.printStackTrace();
 		}
@@ -88,7 +88,7 @@ public class IpPermissionService {
 		try {
 
 			securityGroupWorker.revokeSecurityGroupIngress(IpPermissionP.findIpPermissionP(id).getGroupDescription().getAsset()
-					.getProductCatalog().getInfra(), IpPermissionP.findIpPermissionP(id));
+					.getProductCatalog().getInfra(), IpPermissionP.findIpPermissionP(id),Commons.getCurrentUser().getEmail());
 			IpPermissionP.findIpPermissionP(id).remove();
 			Commons.setSessionMsg("Scheduling Ip permission remove");
 		} catch (Exception e) {

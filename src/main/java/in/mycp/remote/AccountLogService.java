@@ -17,6 +17,7 @@ package in.mycp.remote;
 
 import in.mycp.domain.AccountLog;
 import in.mycp.domain.AccountLogTypeDTO;
+import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 
 import java.util.Date;
@@ -59,12 +60,9 @@ public class AccountLogService {
 	}
 
 	
-	public List<AccountLog> getTodaysLog(){
+	public List<AccountLog> getLast24HoursLog(){
 		if (Commons.getCurrentSession() != null) {
-			DateTime yesterday = new DateTime().minusDays(30);
-			
-			System.out.println(yesterday.toDate());
-			//
+			DateTime yesterday = new DateTime().minusDays(1);
 			List<AccountLog> accountLogs = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(
 					Commons.getCurrentUser(), yesterday.toDate()).getResultList();
 			
@@ -74,12 +72,9 @@ public class AccountLogService {
 
 	}
 	
-	public List<AccountLog> getCurrentWeeksLog(){
+	public List<AccountLog> getLast7DaysLog(){
 		if (Commons.getCurrentSession() != null) {
-			DateTime yesterday = new DateTime().minusDays(2);
-			
-			System.out.println(yesterday.toDate());
-			//
+			DateTime yesterday = new DateTime().minusDays(7);
 			List<AccountLog> accountLogs = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(
 					Commons.getCurrentUser(), yesterday.toDate()).getResultList();
 			
@@ -89,38 +84,23 @@ public class AccountLogService {
 
 	}
 	
-	public List<AccountLog> getCurrentMonthsLog(){
+
+	
+	public List<AccountLog> getLog4Month(String monthName){
 		if (Commons.getCurrentSession() != null) {
-			DateTime yesterday = new DateTime().minusDays(2);
+			DateTime dt = Commons.getDateTimeFromMonthName(monthName);
+			DateTime monthStart = new DateTime(dt.getYear(), dt.getMonthOfYear(), 
+					dt.dayOfMonth().getMinimumValue(), 0, 0, 0, 0);
+			DateTime monthEnd = new DateTime(dt.getYear(), dt.getMonthOfYear(), 
+					dt.dayOfMonth().getMaximumValue(), 0, 0, 0, 0);
 			
-			System.out.println(yesterday.toDate());
-			//
-			List<AccountLog> accountLogs = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(
-					Commons.getCurrentUser(), yesterday.toDate()).getResultList();
-			
-			return accountLogs;
+			return AccountLog.findAccountLogsByUserIdAndTimeOfEntryBetween(
+					Commons.getCurrentUser(), monthStart.toDate(), monthEnd.toDate()).getResultList();
 		}
 		return null;
-
-	}
+	}//end getLog4Month
 	
-	public List<AccountLog> getLog4Month(DateTime d){
-		
-		if (Commons.getCurrentSession() != null) {
-			DateTime yesterday = new DateTime().minusDays(2);
-			
-			System.out.println(yesterday.toDate());
-			//
-			List<AccountLog> accountLogs = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(
-					Commons.getCurrentUser(), yesterday.toDate()).getResultList();
-			
-			return accountLogs;
-		}
-		return null;
-
-	}
-	
-	public void saveLog(String message,String task,Short status){
+	public void saveLog(String message,String task,int status){
 		try{
 			
 			AccountLog acctLog = new AccountLog();
@@ -136,6 +116,23 @@ public class AccountLogService {
 		}
 		
 	}//end saveLog
+	
+	public void saveLog(String message,String task,int status,String emailId){
+		try{
+			
+			AccountLog acctLog = new AccountLog();
+			acctLog.setDetails(message);
+			acctLog.setStatus(status);
+			acctLog.setTask(task);
+			acctLog.setTimeOfEntry(new Date());
+			acctLog.setUserId(User.findUsersByEmailEquals(emailId).getSingleResult());
+			acctLog.merge();
+		}catch(Exception e){
+			e.printStackTrace();
+			log.error(e.getMessage());
+		}
+		
+	}//end saveLogAfterLogout
 	
 	
 		

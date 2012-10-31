@@ -31,7 +31,7 @@ privileged aspect AccountLog_Roo_DbManaged {
     private Date AccountLog.timeOfEntry;
     
     @Column(name = "status")
-    private Short AccountLog.status;
+    private Integer AccountLog.status;
     
     public User AccountLog.getUserId() {
         return userId;
@@ -65,11 +65,11 @@ privileged aspect AccountLog_Roo_DbManaged {
         this.timeOfEntry = timeOfEntry;
     }
     
-    public Short AccountLog.getStatus() {
+    public Integer AccountLog.getStatus() {
         return status;
     }
     
-    public void AccountLog.setStatus(Short status) {
+    public void AccountLog.setStatus(Integer status) {
         this.status = status;
     }
     

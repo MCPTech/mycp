@@ -122,7 +122,7 @@ public class LoginController {
             }
             
             if (exists) {
-            	 req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: red; \"> User " + email + " exists. Choose a different email please.</font>");
+            	 req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: red; \"> User " + email + " exists. Choose a different email Id please.</font>");
             	 return "mycplogin";
             }
             

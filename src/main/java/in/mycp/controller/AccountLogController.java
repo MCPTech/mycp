@@ -59,7 +59,7 @@ public class AccountLogController {
 
 	@RequestMapping(value = "/session", produces = "text/html")
 	public String session(HttpServletRequest req, HttpServletResponse resp) {
-		req.setAttribute("sessionLogList", accountLogService.getTodaysLog());
+		req.setAttribute("sessionLogList", accountLogService.getLast24HoursLog());
 		return "log/sessionLog";
 	}
 

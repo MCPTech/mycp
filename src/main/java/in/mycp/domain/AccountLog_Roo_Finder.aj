@@ -19,6 +19,18 @@ privileged aspect AccountLog_Roo_Finder {
         return q;
     }
     
+    public static TypedQuery<AccountLog> AccountLog.findAccountLogsByUserIdAndTimeOfEntryBetween(User userId, Date minTimeOfEntry, Date maxTimeOfEntry) {
+        if (userId == null) throw new IllegalArgumentException("The userId argument is required");
+        if (minTimeOfEntry == null) throw new IllegalArgumentException("The minTimeOfEntry argument is required");
+        if (maxTimeOfEntry == null) throw new IllegalArgumentException("The maxTimeOfEntry argument is required");
+        EntityManager em = AccountLog.entityManager();
+        TypedQuery<AccountLog> q = em.createQuery("SELECT o FROM AccountLog AS o WHERE o.userId = :userId AND o.timeOfEntry BETWEEN :minTimeOfEntry AND :maxTimeOfEntry", AccountLog.class);
+        q.setParameter("userId", userId);
+        q.setParameter("minTimeOfEntry", minTimeOfEntry);
+        q.setParameter("maxTimeOfEntry", maxTimeOfEntry);
+        return q;
+    }
+    
     public static TypedQuery<AccountLog> AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(User userId, Date timeOfEntry) {
         if (userId == null) throw new IllegalArgumentException("The userId argument is required");
         if (timeOfEntry == null) throw new IllegalArgumentException("The timeOfEntry argument is required");

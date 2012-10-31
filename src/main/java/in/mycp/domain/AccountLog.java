@@ -8,6 +8,6 @@ import org.springframework.roo.addon.tostring.RooToString;
 @RooJavaBean
 @RooToString
 @RooDbManaged(automaticallyDelete = true)
-@RooJpaActiveRecord(versionField = "", table = "account_log", finders = { "findAccountLogsByUserId", "findAccountLogsByUserIdAndTimeOfEntryGreaterThan" })
+@RooJpaActiveRecord(versionField = "", table = "account_log", finders = { "findAccountLogsByUserId", "findAccountLogsByUserIdAndTimeOfEntryGreaterThan", "findAccountLogsByUserIdAndTimeOfEntryBetween" })
 public class AccountLog {
 }

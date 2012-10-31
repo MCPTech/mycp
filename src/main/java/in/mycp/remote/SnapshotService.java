@@ -18,13 +18,9 @@ package in.mycp.remote;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
-import in.mycp.domain.ImageDescriptionP;
-import in.mycp.domain.Infra;
-import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.SnapshotInfoP;
 import in.mycp.domain.User;
-import in.mycp.domain.Workflow;
 import in.mycp.utils.Commons;
 import in.mycp.workers.SnapshotWorker;
 
@@ -56,6 +52,9 @@ public class SnapshotService {
 
 	@Autowired
 	ReportService reportService;
+
+	@Autowired
+	AccountLogService accountLogService;
 
 	@RemoteMethod
 	public void save(SnapshotInfoP instance) {
@@ -127,14 +126,25 @@ public class SnapshotService {
 			AssetType assetTypeSnapshot = AssetType.findAssetTypesByNameEquals(
 					"" + Commons.ASSET_TYPE.VolumeSnapshot).getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
+			long allAssetTotalCosts = reportService.getAllAssetCosts()
+					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment().getCompany();
+			Company company = currentUser.getProject().getDepartment()
+					.getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeSnapshot, currentUser,
 					snapshotInfoP.getProduct(), allAssetTotalCosts, company);
 			snapshotInfoP.setAsset(asset);
 			snapshotInfoP = snapshotInfoP.merge();
 			if (true == assetTypeSnapshot.getWorkflowEnabled()) {
+				accountLogService
+						.saveLog(
+								"Snapshot with ID "
+										+ snapshotInfoP.getId()
+										+ " requested, workflow started, pending approval.",
+								Commons.task_name.SNAPSHOT.name(),
+								Commons.task_status.SUCCESS.ordinal(),
+								currentUser.getEmail());
+
 				Commons.createNewWorkflow(
 						workflowService
 								.createProcessInstance(Commons.PROCESS_DEFN.Snapshot_Request
@@ -145,6 +155,14 @@ public class SnapshotService {
 								+ "");
 				snapshotInfoP = snapshotInfoP.merge();
 			} else {
+				accountLogService
+						.saveLog(
+								"Snapshot with ID "
+										+ snapshotInfoP.getId()
+										+ " requested, workflow approved automatically.",
+								Commons.task_name.SNAPSHOT.name(),
+								Commons.task_status.SUCCESS.ordinal(),
+								currentUser.getEmail());
 				snapshotInfoP.setStatus(Commons.SNAPSHOT_STATUS.pending + "");
 				snapshotInfoP = snapshotInfoP.merge();
 				workflowApproved(snapshotInfoP);
@@ -165,7 +183,8 @@ public class SnapshotService {
 			instance.setStatus(Commons.SNAPSHOT_STATUS.pending + "");
 			instance = instance.merge();
 			snapshotWorker.createSnapshot(instance.getAsset()
-					.getProductCatalog().getInfra(), instance);
+					.getProductCatalog().getInfra(), instance, Commons
+					.getCurrentUser().getEmail());
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
 		}
@@ -178,7 +197,8 @@ public class SnapshotService {
 			SnapshotInfoP snapshotInfoP = SnapshotInfoP.findSnapshotInfoP(id);
 			Commons.setAssetEndTime(snapshotInfoP.getAsset());
 			snapshotWorker.deleteSnapshot(snapshotInfoP.getAsset()
-					.getProductCatalog().getInfra(), snapshotInfoP);
+					.getProductCatalog().getInfra(), snapshotInfoP, Commons
+					.getCurrentUser().getEmail());
 			Commons.setSessionMsg("Scheduling Snapshot remove");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Snapshot remove");

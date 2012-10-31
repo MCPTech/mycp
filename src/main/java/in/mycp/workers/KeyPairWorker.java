@@ -15,16 +15,15 @@
 
 package in.mycp.workers;
 
-import java.util.List;
-
-import in.mycp.domain.Asset;
 import in.mycp.domain.Infra;
 import in.mycp.domain.KeyPairInfoP;
-import in.mycp.domain.SnapshotInfoP;
-import in.mycp.domain.VolumeInfoP;
+import in.mycp.remote.AccountLogService;
 import in.mycp.utils.Commons;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -35,36 +34,53 @@ import com.xerox.amazonws.ec2.KeyPairInfo;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
 
 @Component("keyPairWorker")
 public class KeyPairWorker extends Worker {
 
+	@Autowired
+	AccountLogService accountLogService;
+
 	protected static Logger logger = Logger.getLogger(KeyPairWorker.class);
 
 	@Async
-	public void createKeyPair(final Infra infra, final KeyPairInfoP keypair) {
+	public void createKeyPair(final Infra infra, final KeyPairInfoP keypair,
+			final String userId) {
 		String threadName = Thread.currentThread().getName();
 
 		try {
-			logger.debug("threadName "+threadName+" started.");
+			logger.debug("threadName " + threadName + " started.");
+
+			accountLogService.saveLog(
+					"Started : "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ keypair.getId(),
+					Commons.task_name.KEYPAIR.name(),
+					Commons.task_status.SUCCESS.ordinal(), userId);
+
 			Jec2 ec2 = getNewJce2(infra);
 			KeyPairInfo kpi = null;
 			try {
-				kpi = ec2.createKeyPair(keypair.getKeyName());	
+				kpi = ec2.createKeyPair(keypair.getKeyName());
 			} catch (Exception e) {
-				logger.error(e.getMessage());//e.printStackTrace();
+				logger.error(e.getMessage());// e.printStackTrace();
 			}
-			logger.info("created kpi.getKeyFingerprint() = " + kpi.getKeyFingerprint());
-			
-			boolean found =false;
+			logger.info("created kpi.getKeyFingerprint() = "
+					+ kpi.getKeyFingerprint());
+
+			boolean found = false;
 			int START_SLEEP_TIME = 10000;
-			long timeout = START_SLEEP_TIME *100;
-			long runDuration=0;
-			outer: while(!found ){
-				runDuration = runDuration+START_SLEEP_TIME;
-				if(runDuration > timeout){
+			long timeout = START_SLEEP_TIME * 100;
+			long runDuration = 0;
+			outer: while (!found) {
+				runDuration = runDuration + START_SLEEP_TIME;
+				if (runDuration > timeout) {
 					logger.info("Tried enough.Am bored, quitting.");
 					break outer;
 				}
@@ -72,52 +88,88 @@ public class KeyPairWorker extends Worker {
 				for (KeyPairInfo keypairinfo : info) {
 					logger.info("keypair : " + keypairinfo.getKeyName() + ", "
 							+ keypairinfo.getKeyFingerprint());
-					if(keypairinfo.getKeyName().equals(keypair.getKeyName())){
+					if (keypairinfo.getKeyName().equals(keypair.getKeyName())) {
 						found = true;
 						break outer;
 					}
 				}
-				logger.info("Keypair  " + keypair.getKeyName()+" still getting created; sleeping "+ START_SLEEP_TIME + "ms");
+				logger.info("Keypair  " + keypair.getKeyName()
+						+ " still getting created; sleeping "
+						+ START_SLEEP_TIME + "ms");
 				Thread.sleep(START_SLEEP_TIME);
 			}
 
-			if(found){
-				KeyPairInfoP keyPairInfoP = KeyPairInfoP.findKeyPairInfoP(keypair.getId());
+			if (found) {
+				KeyPairInfoP keyPairInfoP = KeyPairInfoP
+						.findKeyPairInfoP(keypair.getId());
 				keyPairInfoP.setKeyName(kpi.getKeyName());
 				keyPairInfoP.setKeyFingerprint(kpi.getKeyFingerprint());
 				keyPairInfoP.setKeyMaterial(kpi.getKeyMaterial());
-				keyPairInfoP.setStatus(Commons.keypair_STATUS.active+"");
+				keyPairInfoP.setStatus(Commons.keypair_STATUS.active + "");
 				keyPairInfoP = keyPairInfoP.merge();
 				logger.info("Keypair createKeyPair - created");
+				accountLogService.saveLog(
+						this.getClass().getName()
+								+ " : "
+								+ Thread.currentThread().getStackTrace()[1]
+										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+												.getMethodName().indexOf("_")) + " for "
+								+ keypair.getId(), Commons.task_name.KEYPAIR
+								.name(), Commons.task_status.SUCCESS.ordinal(),
+						userId);
+
 				setAssetStartTime(keyPairInfoP.getAsset());
 			}
 		} catch (Exception e) {
-			logger.error(e);//e.printStackTrace();
-			KeyPairInfoP keyPairInfoP = KeyPairInfoP.findKeyPairInfoP(keypair.getId());
-			keyPairInfoP.setStatus(Commons.keypair_STATUS.failed+"");
+			logger.error(e);// e.printStackTrace();
+
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ keypair.getId() + ", " + e.getMessage(),
+					Commons.task_name.KEYPAIR.name(), Commons.task_status.FAIL
+							.ordinal(), userId);
+			KeyPairInfoP keyPairInfoP = KeyPairInfoP.findKeyPairInfoP(keypair
+					.getId());
+			keyPairInfoP.setStatus(Commons.keypair_STATUS.failed + "");
 			keyPairInfoP = keyPairInfoP.merge();
 		}
 	}
-	
-	
+
 	@Async
-	public void deleteKeyPair(final Infra infra, final KeyPairInfoP keypair) {
+	public void deleteKeyPair(final Infra infra, final KeyPairInfoP keypair,
+			final String userId) {
 		try {
-			
+
 			Jec2 ec2 = getNewJce2(infra);
-			
+
+			accountLogService.saveLog(
+					"Started : "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ keypair.getId(),
+					Commons.task_name.KEYPAIR.name(),
+					Commons.task_status.SUCCESS.ordinal(), userId);
+
 			try {
-				ec2.deleteKeyPair(keypair.getKeyName());	
+				ec2.deleteKeyPair(keypair.getKeyName());
 			} catch (Exception e) {
-				logger.error(e.getMessage());//e.printStackTrace();
+				logger.error(e.getMessage());// e.printStackTrace();
 			}
-			boolean found =true;
+			boolean found = true;
 			int START_SLEEP_TIME = 10000;
-			long timeout = START_SLEEP_TIME *100;
-			long runDuration=0;
-			outer: while(found ){
-				runDuration = runDuration+START_SLEEP_TIME;
-				if(runDuration > timeout){
+			long timeout = START_SLEEP_TIME * 100;
+			long runDuration = 0;
+			outer: while (found) {
+				runDuration = runDuration + START_SLEEP_TIME;
+				if (runDuration > timeout) {
 					logger.info("Tried enough.Am bored, quitting.");
 					break outer;
 				}
@@ -126,40 +178,66 @@ public class KeyPairWorker extends Worker {
 				for (KeyPairInfo keypairinfo : info) {
 					logger.info("keypair : " + keypairinfo.getKeyName() + ", "
 							+ keypairinfo.getKeyFingerprint());
-					if(keypairinfo.getKeyName().equals(keypair.getKeyName())){
+					if (keypairinfo.getKeyName().equals(keypair.getKeyName())) {
 						found = true;
 					}
 				}
-				//check if the keypair is deleted
-				if(!found){
+				// check if the keypair is deleted
+				if (!found) {
 					break outer;
 				}
-				logger.info("Keypair  " + keypair.getKeyName()+" still getting deleted; sleeping "+ START_SLEEP_TIME + "ms");
+				logger.info("Keypair  " + keypair.getKeyName()
+						+ " still getting deleted; sleeping "
+						+ START_SLEEP_TIME + "ms");
 				Thread.sleep(START_SLEEP_TIME);
 			}
-			
-			if(!found){
+
+			if (!found) {
 				try {
-					KeyPairInfoP keyPairInfoP = (KeyPairInfoP.findKeyPairInfoPsByKeyNameEquals(keypair.getKeyName()).getSingleResult());
-					keyPairInfoP.setStatus(Commons.keypair_STATUS.inactive+"");
+					KeyPairInfoP keyPairInfoP = (KeyPairInfoP
+							.findKeyPairInfoPsByKeyNameEquals(keypair
+									.getKeyName()).getSingleResult());
+					keyPairInfoP
+							.setStatus(Commons.keypair_STATUS.inactive + "");
 					keyPairInfoP = keyPairInfoP.merge();
-					
-					logger.info("Keypair - "+keypair.getKeyName()+" Removed");
-					
+
+					logger.info("Keypair - " + keypair.getKeyName()
+							+ " Removed");
+
+					accountLogService.saveLog(
+							this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ keypair.getId(),
+							Commons.task_name.KEYPAIR.name(),
+							Commons.task_status.SUCCESS.ordinal(), userId);
+
 					setAssetEndTime(keyPairInfoP.getAsset());
-					
+
 				} catch (Exception e) {
-					logger.error(e.getMessage());//e.printStackTrace();
-					throw new Exception("KeyPair in Infra deleted but not in mycp DB");
+					logger.error(e.getMessage());// e.printStackTrace();
+					throw new Exception(
+							"KeyPair in Infra deleted but not in mycp DB");
 				}
-				
+
 			}
 
-			
-
 		} catch (Exception e) {
-			logger.error(e);//e.printStackTrace();
+
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ keypair.getId() + ", " + e.getMessage(),
+					Commons.task_name.KEYPAIR.name(), Commons.task_status.FAIL
+							.ordinal(), userId);
+			logger.error(e);// e.printStackTrace();
 		}
 	}
-	
+
 }

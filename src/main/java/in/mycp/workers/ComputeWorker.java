@@ -20,15 +20,16 @@ import in.mycp.domain.AssetType;
 import in.mycp.domain.Infra;
 import in.mycp.domain.InstanceP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.remote.AccountLogService;
 import in.mycp.utils.Commons;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -42,22 +43,36 @@ import com.xerox.amazonws.ec2.ReservationDescription.Instance;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
 
 @Component("computeWorker")
 public class ComputeWorker extends Worker {
+	@Autowired
+	AccountLogService accountLogService;
 
 	protected static Logger logger = Logger.getLogger(ComputeWorker.class);
 
 	@Async
-	public void restartCompute(final Infra infra, final int instancePId) {
+	public void restartCompute(final Infra infra, final int instancePId,
+			final String userId) {
 		try {
 
-			logger.info("restartCompute "+infra.getCompany().getName()+" instance : " + instancePId);
+			logger.info("restartCompute " + infra.getCompany().getName()
+					+ " instance : " + instancePId);
+			accountLogService.saveLog(
+					"Started: "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for " + instancePId,
+					Commons.task_name.COMPUTE.name(),
+					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
 			List<String> instanceIds = new ArrayList<String>();
-			instanceIds.add(InstanceP.findInstanceP(instancePId).getInstanceId());
+			instanceIds.add(InstanceP.findInstanceP(instancePId)
+					.getInstanceId());
 
 			ec2.rebootInstances(instanceIds);
 
@@ -66,55 +81,112 @@ public class ComputeWorker extends Worker {
 
 				int SLEEP_TIME = 5000;
 				int preparationSleepTime = 0;
-				ReservationDescription reservationDescription = ec2.describeInstances(Collections.singletonList(instanceId)).get(0);
-				Instance instanceEc2 = reservationDescription.getInstances().get(0);
-				InstanceP instanceP = InstanceP.findInstancePsByInstanceIdEquals(instanceId).getSingleResult();
+				ReservationDescription reservationDescription = ec2
+						.describeInstances(
+								Collections.singletonList(instanceId)).get(0);
+				Instance instanceEc2 = reservationDescription.getInstances()
+						.get(0);
+				InstanceP instanceP = InstanceP
+						.findInstancePsByInstanceIdEquals(instanceId)
+						.getSingleResult();
 
 				while (!instanceEc2.isRunning() && !instanceEc2.isTerminated()) {
 					try {
-						instanceP.setState(Commons.REQUEST_STATUS.RESTARTING + "");
+						instanceP.setState(Commons.REQUEST_STATUS.RESTARTING
+								+ "");
 						instanceP.merge();
-						logger.info("Instance " + instanceEc2.getInstanceId() + " still rebooting; sleeping " + SLEEP_TIME + "ms");
+						logger.info("Instance " + instanceEc2.getInstanceId()
+								+ " still rebooting; sleeping " + SLEEP_TIME
+								+ "ms");
 						Thread.sleep(SLEEP_TIME);
-						reservationDescription = ec2.describeInstances(Collections.singletonList(instanceEc2.getInstanceId())).get(0);
-						instanceEc2 = reservationDescription.getInstances().get(0);
+						reservationDescription = ec2.describeInstances(
+								Collections.singletonList(instanceEc2
+										.getInstanceId())).get(0);
+						instanceEc2 = reservationDescription.getInstances()
+								.get(0);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
 						// e.printStackTrace();
 					}
 				}
-				logger.info("out of while loop, instanceEc2.isRunning() " + instanceEc2.isRunning());
+				logger.info("out of while loop, instanceEc2.isRunning() "
+						+ instanceEc2.isRunning());
 
 				if (instanceEc2.isRunning()) {
 					logger.info("EC2 instance is now running");
 					if (preparationSleepTime > 0) {
-						logger.info("Sleeping " + preparationSleepTime + "ms allowing instance services to start up properly.");
+						logger.info("Sleeping "
+								+ preparationSleepTime
+								+ "ms allowing instance services to start up properly.");
 						Thread.sleep(preparationSleepTime);
 						logger.info("Instance prepared - proceeding");
 					}
 					instanceP.setState(Commons.REQUEST_STATUS.running + "");
 					instanceP.merge();
+					accountLogService.saveLog(
+							"Complete: "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instanceP.getId(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.SUCCESS.ordinal(), userId);
 				} else {
 					instanceP.setState(Commons.REQUEST_STATUS.FAILED + "");
 					setAssetEndTime(instanceP.getAsset());
 					instanceP.merge();
+					accountLogService.saveLog(
+							"Error in "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instanceP.getId(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.FAIL.ordinal(), userId);
 				}
 			}
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());// e.printStackTrace();
+			accountLogService
+					.saveLog(
+							"Error in "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instancePId + ", " + e.getMessage(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.FAIL.ordinal(), userId);
 		}
 
 	}// end rebootInstances
 
 	@Async
-	public void startCompute(final Infra infra, final int instancePId) {
+	public void startCompute(final Infra infra, final int instancePId,
+			final String userId) {
 		InstanceP instanceP = null;
 		try {
-			logger.info("startCompute "+infra.getCompany().getName()+" instance : " + instancePId);
+			logger.info("startCompute " + infra.getCompany().getName()
+					+ " instance : " + instancePId);
+			accountLogService.saveLog(
+					"Started: "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for " + instancePId,
+					Commons.task_name.COMPUTE.name(),
+					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
 			List<String> instanceIds = new ArrayList<String>();
-			instanceIds.add(InstanceP.findInstanceP(instancePId).getInstanceId());
+			instanceIds.add(InstanceP.findInstanceP(instancePId)
+					.getInstanceId());
 
 			ec2.startInstances(instanceIds);
 
@@ -123,54 +195,99 @@ public class ComputeWorker extends Worker {
 
 				int SLEEP_TIME = 5000;
 				int preparationSleepTime = 0;
-				ReservationDescription reservationDescription = ec2.describeInstances(Collections.singletonList(instanceId)).get(0);
-				Instance instanceEc2 = reservationDescription.getInstances().get(0);
-				instanceP = InstanceP.findInstancePsByInstanceIdEquals(instanceId).getSingleResult();
+				ReservationDescription reservationDescription = ec2
+						.describeInstances(
+								Collections.singletonList(instanceId)).get(0);
+				Instance instanceEc2 = reservationDescription.getInstances()
+						.get(0);
+				instanceP = InstanceP.findInstancePsByInstanceIdEquals(
+						instanceId).getSingleResult();
 
 				int INSTANCE_START_SLEEP_TIME = 5000;
-				long timeout = INSTANCE_START_SLEEP_TIME *100;
-				long runDuration=0;
+				long timeout = INSTANCE_START_SLEEP_TIME * 100;
+				long runDuration = 0;
 				while (!instanceEc2.isRunning() && !instanceEc2.isTerminated()) {
-					runDuration = runDuration+INSTANCE_START_SLEEP_TIME;
-					if(runDuration > timeout){
+					runDuration = runDuration + INSTANCE_START_SLEEP_TIME;
+					if (runDuration > timeout) {
 						logger.info("Tried enough.Am bored, quitting.");
 						break;
 					}
-					
+
 					try {
-						instanceP.setState(Commons.REQUEST_STATUS.STARTING + "");
+						instanceP
+								.setState(Commons.REQUEST_STATUS.STARTING + "");
 						instanceP.merge();
-						logger.info("Instance " + instanceEc2.getInstanceId() + " still booting; sleeping " + SLEEP_TIME + "ms");
+						logger.info("Instance " + instanceEc2.getInstanceId()
+								+ " still booting; sleeping " + SLEEP_TIME
+								+ "ms");
 						Thread.sleep(SLEEP_TIME);
-						reservationDescription = ec2.describeInstances(Collections.singletonList(instanceEc2.getInstanceId())).get(0);
-						instanceEc2 = reservationDescription.getInstances().get(0);
+						reservationDescription = ec2.describeInstances(
+								Collections.singletonList(instanceEc2
+										.getInstanceId())).get(0);
+						instanceEc2 = reservationDescription.getInstances()
+								.get(0);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
 						// e.printStackTrace();
 					}
 				}
-				logger.info("out of while loop, instanceEc2.isRunning() " + instanceEc2.isRunning());
+				logger.info("out of while loop, instanceEc2.isRunning() "
+						+ instanceEc2.isRunning());
 
 				if (instanceEc2.isRunning()) {
 					logger.info("EC2 instance is now running");
 					if (preparationSleepTime > 0) {
-						logger.info("Sleeping " + preparationSleepTime + "ms allowing instance services to start up properly.");
+						logger.info("Sleeping "
+								+ preparationSleepTime
+								+ "ms allowing instance services to start up properly.");
 						Thread.sleep(preparationSleepTime);
 						logger.info("Instance prepared - proceeding");
 					}
 					instanceP.setState(Commons.REQUEST_STATUS.running + "");
 					instanceP.merge();
-					
+
+					accountLogService.saveLog(
+							"Complete: "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instanceP.getId(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.SUCCESS.ordinal(), userId);
 
 				} else {
 					instanceP.setState(Commons.REQUEST_STATUS.FAILED + "");
 					setAssetEndTime(instanceP.getAsset());
 					instanceP.merge();
+					accountLogService.saveLog(
+							"Error in "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instancePId, Commons.task_name.COMPUTE
+									.name(),
+							Commons.task_status.FAIL.ordinal(), userId);
 				}
 			}
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());// e.printStackTrace();
+
+			accountLogService
+					.saveLog(
+							"Error in "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instancePId + ", " + e.getMessage(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.FAIL.ordinal(), userId);
 			try {
 				InstanceP instance1 = InstanceP.findInstanceP(instancePId);
 				instance1.setState(Commons.REQUEST_STATUS.FAILED + "");
@@ -186,14 +303,26 @@ public class ComputeWorker extends Worker {
 	}// end startInstances
 
 	@Async
-	public void stopCompute(final Infra infra, final int instancePId) {
+	public void stopCompute(final Infra infra, final int instancePId,
+			final String userId) {
 		InstanceP instanceP = null;
 		try {
 
-			logger.info("stopCompute "+infra.getCompany().getName()+" instance: " + instancePId);
+			logger.info("stopCompute " + infra.getCompany().getName()
+					+ " instance: " + instancePId);
+			accountLogService.saveLog(
+					"Started: "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for " + instancePId,
+					Commons.task_name.COMPUTE.name(),
+					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
 			List<String> instanceIds = new ArrayList<String>();
-			instanceIds.add(InstanceP.findInstanceP(instancePId).getInstanceId());
+			instanceIds.add(InstanceP.findInstanceP(instancePId)
+					.getInstanceId());
 			ec2.stopInstances(instanceIds, true);
 
 			for (Iterator iterator = instanceIds.iterator(); iterator.hasNext();) {
@@ -201,47 +330,82 @@ public class ComputeWorker extends Worker {
 
 				int SLEEP_TIME = 5000;
 				int preparationSleepTime = 0;
-				ReservationDescription reservationDescription = ec2.describeInstances(Collections.singletonList(instanceId)).get(0);
-				Instance instanceEc2 = reservationDescription.getInstances().get(0);
-				instanceP = InstanceP.findInstancePsByInstanceIdEquals(instanceId).getSingleResult();
+				ReservationDescription reservationDescription = ec2
+						.describeInstances(
+								Collections.singletonList(instanceId)).get(0);
+				Instance instanceEc2 = reservationDescription.getInstances()
+						.get(0);
+				instanceP = InstanceP.findInstancePsByInstanceIdEquals(
+						instanceId).getSingleResult();
 				int INSTANCE_START_SLEEP_TIME = 5000;
-				long timeout = INSTANCE_START_SLEEP_TIME *100;
-				long runDuration=0;
-						
+				long timeout = INSTANCE_START_SLEEP_TIME * 100;
+				long runDuration = 0;
+
 				while (instanceEc2.isRunning() || instanceEc2.isShuttingDown()) {
-					runDuration = runDuration+INSTANCE_START_SLEEP_TIME;
-					if(runDuration > timeout){
+					runDuration = runDuration + INSTANCE_START_SLEEP_TIME;
+					if (runDuration > timeout) {
 						logger.info("Tried enough.Am bored, quitting.");
 						break;
 					}
 					try {
-						instanceP.setState(Commons.REQUEST_STATUS.SHUTTING_DOWN + "");
+						instanceP.setState(Commons.REQUEST_STATUS.SHUTTING_DOWN
+								+ "");
 						instanceP.merge();
-						logger.info("Instance " + instanceEc2.getInstanceId() + " still shutting down; sleeping " + SLEEP_TIME + "ms");
+						logger.info("Instance " + instanceEc2.getInstanceId()
+								+ " still shutting down; sleeping "
+								+ SLEEP_TIME + "ms");
 						Thread.sleep(SLEEP_TIME);
-						reservationDescription = ec2.describeInstances(Collections.singletonList(instanceEc2.getInstanceId())).get(0);
-						instanceEc2 = reservationDescription.getInstances().get(0);
+						reservationDescription = ec2.describeInstances(
+								Collections.singletonList(instanceEc2
+										.getInstanceId())).get(0);
+						instanceEc2 = reservationDescription.getInstances()
+								.get(0);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
 						// e.printStackTrace();
 					}
 				}
-				logger.info("out of while loop, instanceEc2.isRunning() " + instanceEc2.isRunning());
+				logger.info("out of while loop, instanceEc2.isRunning() "
+						+ instanceEc2.isRunning());
 
 				if (!instanceEc2.isRunning()) {
 					logger.info("EC2 instance is now running");
 					if (preparationSleepTime > 0) {
-						logger.info("Sleeping " + preparationSleepTime + "ms allowing instance services to start up properly.");
+						logger.info("Sleeping "
+								+ preparationSleepTime
+								+ "ms allowing instance services to start up properly.");
 						Thread.sleep(preparationSleepTime);
 						logger.info("Instance prepared - proceeding");
 					}
 					instanceP.setState(Commons.REQUEST_STATUS.STOPPED + "");
 					instanceP.merge();
+					accountLogService.saveLog(
+							"Complete: "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instanceP.getId(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.SUCCESS.ordinal(), userId);
 				}
 			}
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());// e.printStackTrace();
+
+			accountLogService
+					.saveLog(
+							"Error in "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instancePId + ", " + e.getMessage(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.FAIL.ordinal(), userId);
 			try {
 				InstanceP instance1 = InstanceP.findInstanceP(instancePId);
 				instance1.setState(Commons.REQUEST_STATUS.FAILED + "");
@@ -256,18 +420,30 @@ public class ComputeWorker extends Worker {
 	}// end stopInstances
 
 	@Async
-	public void terminateCompute(final Infra infra, final int instancePId) {
+	public void terminateCompute(final Infra infra, final int instancePId,
+			final String userId) {
 
 		try {
 
-			logger.info("terminateCompute "+infra.getCompany().getName()+" instance : " + instancePId);
+			logger.info("terminateCompute " + infra.getCompany().getName()
+					+ " instance : " + instancePId);
+			accountLogService.saveLog(
+					"Started: "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for " + instancePId,
+					Commons.task_name.COMPUTE.name(),
+					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
 			List<String> instanceIds = new ArrayList<String>();
-			instanceIds.add(InstanceP.findInstanceP(instancePId).getInstanceId());
+			instanceIds.add(InstanceP.findInstanceP(instancePId)
+					.getInstanceId());
 			try {
 				ec2.terminateInstances(instanceIds);
 			} catch (Exception e) {
-				logger.error(e.getMessage());//e.printStackTrace();
+				logger.error(e.getMessage());// e.printStackTrace();
 			}
 
 			for (Iterator iterator = instanceIds.iterator(); iterator.hasNext();) {
@@ -277,43 +453,56 @@ public class ComputeWorker extends Worker {
 				int preparationSleepTime = 0;
 				ReservationDescription reservationDescription = null;
 				try {
-					reservationDescription = ec2.describeInstances(Collections.singletonList(instanceId)).get(0);
-				
-					
+					reservationDescription = ec2.describeInstances(
+							Collections.singletonList(instanceId)).get(0);
+
 				} catch (Exception e) {
-					if(e.getMessage().contains("Index: 0, Size: 0")){
-						throw new Exception("this instance is no more in the backend infra"); 
+					if (e.getMessage().contains("Index: 0, Size: 0")) {
+						throw new Exception(
+								"this instance is no more in the backend infra");
 					}
 				}
-				Instance instanceEc2 = reservationDescription.getInstances().get(0);
-				InstanceP instanceP = InstanceP.findInstancePsByInstanceIdEquals(instanceId).getSingleResult();
+				Instance instanceEc2 = reservationDescription.getInstances()
+						.get(0);
+				InstanceP instanceP = InstanceP
+						.findInstancePsByInstanceIdEquals(instanceId)
+						.getSingleResult();
 				int INSTANCE_START_SLEEP_TIME = 5000;
-				long timeout = INSTANCE_START_SLEEP_TIME *100;
-				long runDuration=0;
+				long timeout = INSTANCE_START_SLEEP_TIME * 100;
+				long runDuration = 0;
 				while (!instanceEc2.isTerminated()) {
-						runDuration = runDuration+INSTANCE_START_SLEEP_TIME;
-						if(runDuration > timeout){
-							logger.info("Tried enough.Am bored, quitting.");
-							break;
-						}
+					runDuration = runDuration + INSTANCE_START_SLEEP_TIME;
+					if (runDuration > timeout) {
+						logger.info("Tried enough.Am bored, quitting.");
+						break;
+					}
 					try {
-						instanceP.setState(Commons.REQUEST_STATUS.TERMINATING + "");
+						instanceP.setState(Commons.REQUEST_STATUS.TERMINATING
+								+ "");
 						instanceP.merge();
-						logger.info("Instance " + instanceEc2.getInstanceId() + " pending termination; sleeping " + SLEEP_TIME + "ms");
+						logger.info("Instance " + instanceEc2.getInstanceId()
+								+ " pending termination; sleeping "
+								+ SLEEP_TIME + "ms");
 						Thread.sleep(SLEEP_TIME);
-						reservationDescription = ec2.describeInstances(Collections.singletonList(instanceEc2.getInstanceId())).get(0);
-						instanceEc2 = reservationDescription.getInstances().get(0);
+						reservationDescription = ec2.describeInstances(
+								Collections.singletonList(instanceEc2
+										.getInstanceId())).get(0);
+						instanceEc2 = reservationDescription.getInstances()
+								.get(0);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
 						// e.printStackTrace();
 					}
 				}
-				logger.info("out of while loop, instanceEc2.isTerminated() " + instanceEc2.isTerminated());
+				logger.info("out of while loop, instanceEc2.isTerminated() "
+						+ instanceEc2.isTerminated());
 
 				if (instanceEc2.isTerminated()) {
 					logger.info("EC2 instance is now Terminated");
 					if (preparationSleepTime > 0) {
-						logger.info("Sleeping " + preparationSleepTime + "ms allowing instance services to start up properly.");
+						logger.info("Sleeping "
+								+ preparationSleepTime
+								+ "ms allowing instance services to start up properly.");
 						Thread.sleep(preparationSleepTime);
 						logger.info("Instance prepared - proceeding");
 					}
@@ -323,7 +512,10 @@ public class ComputeWorker extends Worker {
 					setAssetEndTime(instanceP.getAsset());
 
 					try {
-						AddressInfoP a = AddressInfoP.findAddressInfoPsByInstanceIdEquals(instanceP.getInstanceId()).getSingleResult();
+						AddressInfoP a = AddressInfoP
+								.findAddressInfoPsByInstanceIdEquals(
+										instanceP.getInstanceId())
+								.getSingleResult();
 						setAssetEndTime(a.getAsset());
 						a.remove();
 					} catch (Exception e) {
@@ -331,12 +523,34 @@ public class ComputeWorker extends Worker {
 						logger.error(e);
 					}
 
+					accountLogService.saveLog(
+							"Complete: "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instanceP.getId(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.SUCCESS.ordinal(), userId);
 				}
 			}
 
 		} catch (Exception e) {
-			logger.error(e.getMessage()); //e.printStackTrace();
-			
+			logger.error(e.getMessage()); // e.printStackTrace();
+
+			accountLogService
+					.saveLog(
+							"Error in "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instancePId + ", " + e.getMessage(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.FAIL.ordinal(), userId);
+
 			try {
 				InstanceP instance1 = InstanceP.findInstanceP(instancePId);
 				instance1.setState(Commons.REQUEST_STATUS.FAILED + "");
@@ -346,13 +560,14 @@ public class ComputeWorker extends Worker {
 				logger.error(e2);
 				e2.printStackTrace();
 			}
-			
+
 		}
 
 	}// end terminateInstances
 
 	@Async
-	public void createrCompute(final Infra infra, final InstanceP instance) {
+	public void createCompute(final Infra infra, final InstanceP instance,
+			final String userId) {
 
 		InstanceP instanceLocal = null;
 		try {
@@ -361,18 +576,34 @@ public class ComputeWorker extends Worker {
 			String groupName = instance.getGroupName();
 			String instanceType = instance.getInstanceType();
 
-			logger.info("Launching "+infra.getCompany().getName()+" instance " + instance.getId() + " for image: " + imageName);
+			logger.info("Launching " + infra.getCompany().getName()
+					+ " instance " + instance.getId() + " for image: "
+					+ imageName);
+			accountLogService.saveLog(
+					"Started: "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ instance.getId(), Commons.task_name.COMPUTE
+							.name(), Commons.task_status.SUCCESS.ordinal(),
+					userId);
 
 			Jec2 ec2 = getNewJce2(infra);
 
-			LaunchConfiguration launchConfiguration = new LaunchConfiguration(imageName);
+			LaunchConfiguration launchConfiguration = new LaunchConfiguration(
+					imageName);
 			launchConfiguration.setKeyName(keypairName);
-			launchConfiguration.setSecurityGroup(Collections.singletonList(groupName));
-			launchConfiguration.setInstanceType(InstanceType.getTypeFromString(instanceType));
+			launchConfiguration.setSecurityGroup(Collections
+					.singletonList(groupName));
+			launchConfiguration.setInstanceType(InstanceType
+					.getTypeFromString(instanceType));
 			launchConfiguration.setMinCount(1);
 			launchConfiguration.setMaxCount(1);
 
-			ReservationDescription reservationDescription = ec2.runInstances(launchConfiguration);
+			ReservationDescription reservationDescription = ec2
+					.runInstances(launchConfiguration);
 			instanceLocal = InstanceP.findInstanceP(instance.getId());
 
 			Instance instanceEc2 = reservationDescription.getInstances().get(0);
@@ -388,38 +619,45 @@ public class ComputeWorker extends Worker {
 
 			int INSTANCE_START_SLEEP_TIME = 5000;
 			int preparationSleepTime = 0;
-			long timeout = INSTANCE_START_SLEEP_TIME *400;
-			long runDuration=0;
+			long timeout = INSTANCE_START_SLEEP_TIME * 400;
+			long runDuration = 0;
 			while (!instanceEc2.isRunning() && !instanceEc2.isTerminated()) {
-				runDuration = runDuration+INSTANCE_START_SLEEP_TIME;
-				if(runDuration > timeout){
+				runDuration = runDuration + INSTANCE_START_SLEEP_TIME;
+				if (runDuration > timeout) {
 					logger.info("Tried enough.Am bored, quitting.");
 					break;
 				}
 				try {
-					logger.info("Instance " + instanceEc2.getInstanceId() + " still starting up; sleeping " + INSTANCE_START_SLEEP_TIME
-							+ "ms");
+					logger.info("Instance " + instanceEc2.getInstanceId()
+							+ " still starting up; sleeping "
+							+ INSTANCE_START_SLEEP_TIME + "ms");
 					Thread.sleep(INSTANCE_START_SLEEP_TIME);
-					reservationDescription = ec2.describeInstances(Collections.singletonList(instanceEc2.getInstanceId())).get(0);
+					reservationDescription = ec2.describeInstances(
+							Collections.singletonList(instanceEc2
+									.getInstanceId())).get(0);
 					instanceEc2 = reservationDescription.getInstances().get(0);
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 					// e.printStackTrace();
 				}
 			}
-			logger.info("out of while loop, instanceEc2.isRunning() " + instanceEc2.isRunning());
+			logger.info("out of while loop, instanceEc2.isRunning() "
+					+ instanceEc2.isRunning());
 
 			if (instanceEc2.isRunning()) {
 				logger.info("EC2 instance is now running");
 				if (preparationSleepTime > 0) {
-					logger.info("Sleeping " + preparationSleepTime + "ms allowing instance services to start up properly.");
+					logger.info("Sleeping "
+							+ preparationSleepTime
+							+ "ms allowing instance services to start up properly.");
 					Thread.sleep(preparationSleepTime);
 					logger.info("Instance prepared - proceeding");
 				}
 
 				instanceLocal.setInstanceId(instanceEc2.getInstanceId());
 				instanceLocal.setDnsName(instanceEc2.getDnsName());
-				instanceLocal.setLaunchTime(instanceEc2.getLaunchTime().getTime());
+				instanceLocal.setLaunchTime(instanceEc2.getLaunchTime()
+						.getTime());
 				instanceLocal.setKernelId(instanceEc2.getKernelId());
 				instanceLocal.setRamdiskId(instanceEc2.getRamdiskId());
 				instanceLocal.setPlatform(instanceEc2.getPlatform());
@@ -427,55 +665,85 @@ public class ComputeWorker extends Worker {
 
 				instanceLocal = instanceLocal.merge();
 
-					/*AddressInfoP addressInfoP = new AddressInfoP();
-					addressInfoP.setInstanceId(instanceLocal.getInstanceId());
-					addressInfoP.setName("Ip for " + instanceLocal.getName());
-					addressInfoP.setPublicIp(instanceLocal.getDnsName());
-					addressInfoP.setStatus(Commons.ipaddress_STATUS.associated + "");
-					addressInfoP = addressInfoP.merge();*/
-					
-					// create an addressInfo object for this compute's IP.
-					try {
-						AddressInfoP a = new AddressInfoP();
-						
-						ProductCatalog pc =null;
-						//Set<ProductCatalog> products = ;
-						List products = ProductCatalog.findProductCatalogsByInfra(infra).getResultList();
-						for (Iterator iterator = products.iterator(); iterator.hasNext();) {
-							ProductCatalog productCatalog = (ProductCatalog) iterator.next();
-							if(productCatalog.getProductType().equals(Commons.ProductType.IpAddress.getName())){
-								pc = productCatalog;
-							}
+				/*
+				 * AddressInfoP addressInfoP = new AddressInfoP();
+				 * addressInfoP.setInstanceId(instanceLocal.getInstanceId());
+				 * addressInfoP.setName("Ip for " + instanceLocal.getName());
+				 * addressInfoP.setPublicIp(instanceLocal.getDnsName());
+				 * addressInfoP.setStatus(Commons.ipaddress_STATUS.associated +
+				 * ""); addressInfoP = addressInfoP.merge();
+				 */
+
+				// create an addressInfo object for this compute's IP.
+				try {
+					AddressInfoP a = new AddressInfoP();
+
+					ProductCatalog pc = null;
+					// Set<ProductCatalog> products = ;
+					List products = ProductCatalog.findProductCatalogsByInfra(
+							infra).getResultList();
+					for (Iterator iterator = products.iterator(); iterator
+							.hasNext();) {
+						ProductCatalog productCatalog = (ProductCatalog) iterator
+								.next();
+						if (productCatalog.getProductType().equals(
+								Commons.ProductType.IpAddress.getName())) {
+							pc = productCatalog;
 						}
-						/*ProductCatalog pc = ProductCatalog.findProductCatalogsByInfra(infra)
-								
-								.findProductCatalogsByProductTypeAndCompany(Commons.ProductType.IpAddress.getName(),
-								instanceLocal.getAsset().getUser().getProject().getDepartment().getCompany()).getSingleResult();*/
-
-						a.setAsset(Commons.getNewAsset(AssetType.findAssetTypesByNameEquals(Commons.ProductType.IpAddress + "")
-								.getSingleResult(), instanceLocal.getAsset().getUser(), pc));
-						a.setAssociated(true);
-						a.setInstanceId(instanceLocal.getInstanceId());
-						a.setName("Ip for " + instanceLocal.getName());
-						a.setPublicIp(instanceLocal.getDnsName());
-						a.setStatus(Commons.ipaddress_STATUS.associated + "");
-						a.setReason("Automatic Ip addres assigned");
-						setAssetStartTime(a.getAsset());
-						a.merge();
-					} catch (Exception e) {
-						Commons.setSessionMsg("Error while createrCompute, Instance "+instance.getName()+"<br> Reason: "+e.getMessage());
-						e.printStackTrace();
-						logger.error(e);
 					}
-					
-					setAssetStartTime(instanceLocal.getAsset());
+					/*
+					 * ProductCatalog pc =
+					 * ProductCatalog.findProductCatalogsByInfra(infra)
+					 * 
+					 * .findProductCatalogsByProductTypeAndCompany(Commons.
+					 * ProductType.IpAddress.getName(),
+					 * instanceLocal.getAsset().
+					 * getUser().getProject().getDepartment
+					 * ().getCompany()).getSingleResult();
+					 */
 
-				logger.info("Done creating " + instance.getName() + " and assigning ip " + instanceEc2.getDnsName());
+					a.setAsset(Commons.getNewAsset(
+							AssetType.findAssetTypesByNameEquals(
+									Commons.ProductType.IpAddress + "")
+									.getSingleResult(), instanceLocal
+									.getAsset().getUser(), pc));
+					a.setAssociated(true);
+					a.setInstanceId(instanceLocal.getInstanceId());
+					a.setName("Ip for " + instanceLocal.getName());
+					a.setPublicIp(instanceLocal.getDnsName());
+					a.setStatus(Commons.ipaddress_STATUS.associated + "");
+					a.setReason("Automatic Ip addres assigned");
+					setAssetStartTime(a.getAsset());
+					a.merge();
+				} catch (Exception e) {
+					Commons.setSessionMsg("Error while createrCompute, Instance "
+							+ instance.getName()
+							+ "<br> Reason: "
+							+ e.getMessage());
+					e.printStackTrace();
+					logger.error(e);
+				}
+
+				setAssetStartTime(instanceLocal.getAsset());
+
+				logger.info("Done creating " + instance.getName()
+						+ " and assigning ip " + instanceEc2.getDnsName());
+				accountLogService.saveLog(
+						"Complete: "
+								+ this.getClass().getName()
+								+ " : "
+								+ Thread.currentThread().getStackTrace()[1]
+										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+												.getMethodName().indexOf("_")) + " for "
+								+ instance.getId(), Commons.task_name.COMPUTE
+								.name(), Commons.task_status.SUCCESS.ordinal(),
+						userId);
 			} else {
 
 				instanceLocal.setInstanceId(instanceEc2.getInstanceId());
 				instanceLocal.setDnsName(instanceEc2.getDnsName());
-				instanceLocal.setLaunchTime(instanceEc2.getLaunchTime().getTime());
+				instanceLocal.setLaunchTime(instanceEc2.getLaunchTime()
+						.getTime());
 				instanceLocal.setKernelId(instanceEc2.getKernelId());
 				instanceLocal.setRamdiskId(instanceEc2.getRamdiskId());
 				instanceLocal.setPlatform(instanceEc2.getPlatform());
@@ -485,11 +753,23 @@ public class ComputeWorker extends Worker {
 
 				setAssetEndTime(instanceLocal.getAsset());
 
-				throw new IllegalStateException("Failed to start a new instance");
+				throw new IllegalStateException(
+						"Failed to start a new instance");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.info("Error while creating instance");
+
+			accountLogService.saveLog(
+					"Error in "
+							+ this.getClass().getName()
+							+ " : "
+							+ Thread.currentThread().getStackTrace()[1]
+									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+											.getMethodName().indexOf("_")) + " for "
+							+ instance.getId() + ", " + e.getMessage(),
+					Commons.task_name.COMPUTE.name(), Commons.task_status.FAIL
+							.ordinal(), userId);
 			try {
 				InstanceP instance1 = InstanceP.findInstanceP(instance.getId());
 				instance1.setState(Commons.REQUEST_STATUS.FAILED + "");
