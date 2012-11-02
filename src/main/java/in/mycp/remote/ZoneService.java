@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -40,7 +41,8 @@ import org.directwebremoting.annotations.RemoteProxy;
 		private static final Logger log = Logger.getLogger(ZoneService.class
 				.getName());
 		
-		
+		@Autowired
+		AccountLogService accountLogService;	
 		
 		@RemoteMethod
 		public List<AvailabilityZoneP> findAll() {
@@ -87,9 +89,21 @@ import org.directwebremoting.annotations.RemoteProxy;
 			try {
 				//instance.setCompany(Company.findCompany(instance.getCompany().getId()));
 				instance = instance.merge();
+				
+				accountLogService.saveLog("Zone created " + instance.getName()+", ",
+						Commons.task_name.AVAILABILITYZONE.name(),
+						Commons.task_status.SUCCESS.ordinal(),
+						Commons.getCurrentUser().getEmail());
+				
 				return instance;
 			} catch (Exception e) {
 				log.error(e.getMessage());e.printStackTrace();
+				
+				accountLogService.saveLog("Error in Zone creation " + instance.getName()+", ",
+						Commons.task_name.AVAILABILITYZONE.name(),
+						Commons.task_status.FAIL.ordinal(),
+						Commons.getCurrentUser().getEmail());
+				
 			}
 			return null;
 		}// end of saveOrUpdate(AvailabilityZoneP
@@ -97,10 +111,19 @@ import org.directwebremoting.annotations.RemoteProxy;
 		@RemoteMethod
 		public String remove(int id) {
 			try {
-				AvailabilityZoneP.findAvailabilityZoneP(id).remove();
+				AvailabilityZoneP z = AvailabilityZoneP.findAvailabilityZoneP(id);
+				z.remove();
+				accountLogService.saveLog("Zone removed " + z.getName()+", ",
+						Commons.task_name.AVAILABILITYZONE.name(),
+						Commons.task_status.SUCCESS.ordinal(),
+						Commons.getCurrentUser().getEmail());
 				return "Removed Availability Zone "+id;
 			} catch (Exception e) {
 				log.error(e.getMessage());//e.printStackTrace();
+				accountLogService.saveLog("Error in Zone creation " + AvailabilityZoneP.findAvailabilityZoneP(id).getName()+", ",
+						Commons.task_name.AVAILABILITYZONE.name(),
+						Commons.task_status.FAIL.ordinal(),
+						Commons.getCurrentUser().getEmail());
 			}
 			return "Cannot Remove Availability Zone "+id+". look into logs.";
 		}// end of method remove(int id

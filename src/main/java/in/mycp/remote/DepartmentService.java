@@ -43,7 +43,9 @@ public class DepartmentService {
 
 	private static final Logger log = Logger.getLogger(DepartmentService.class
 			.getName());
-
+	@Autowired
+	AccountLogService accountLogService;
+	
 	
 
 	@RemoteMethod
@@ -53,11 +55,19 @@ public class DepartmentService {
 			instance.setCompany(Company.findCompany(instance.getCompany().getId()));
 			//instance.setManager(Manager.findManager(instance.getManager().getId()));
 			//instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
+			accountLogService.saveLog("Department created " + instance.getName()+", ",
+					Commons.task_name.DEPARTMENT.name(),
+					Commons.task_status.SUCCESS.ordinal(),
+					Commons.getCurrentUser().getEmail());
 			
 			return instance.merge();
 		} catch (Exception e) {
 			//e.printStackTrace();
 			log.error(e.getMessage());
+			accountLogService.saveLog("Error in Department creation " + instance.getName()+", ",
+					Commons.task_name.DEPARTMENT.name(),
+					Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
 		}
 		return null;
 	}// end of saveOrUpdate(Department
@@ -65,11 +75,20 @@ public class DepartmentService {
 	@RemoteMethod
 	public String remove(int id) {
 		try {
-			Department.findDepartment(id).remove();
+			Department d = Department.findDepartment(id);
+			d.remove();
+			accountLogService.saveLog("Department removed " + d.getName()+", ",
+					Commons.task_name.DEPARTMENT.name(),
+					Commons.task_status.SUCCESS.ordinal(),
+					Commons.getCurrentUser().getEmail());
 			return "Department removed "+id;
 		} catch (Exception e) {
 			//e.printStackTrace();
 			log.error(e.getMessage());
+			accountLogService.saveLog("Error in Department removal " + Department.findDepartment(id).getName()+", ",
+					Commons.task_name.DEPARTMENT.name(),
+					Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
 		}
 		return "Error removing Department "+id+". Look into logs.";
 	}// end of method remove(int id

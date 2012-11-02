@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -40,6 +41,9 @@ public class ProductService {
 
 	private static final Logger log = Logger.getLogger(ProductService.class.getName());
 
+	@Autowired
+	AccountLogService accountLogService;
+	
 	@RemoteMethod
 	public ProductCatalog saveOrUpdate(ProductCatalog instance) {
 		try {
@@ -48,9 +52,19 @@ public class ProductService {
 			// instance.setMeterMetric(mm);
 			instance.setInfra(Infra.findInfra(instance.getInfra().getId()));
 
+			accountLogService.saveLog("Product created " + instance.getName()+", ",
+					Commons.task_name.PRODUCT.name(),
+					Commons.task_status.SUCCESS.ordinal(),
+					Commons.getCurrentUser().getEmail());
+			
 			return instance.merge();
 		} catch (Exception e) {
 			log.error(e.getMessage());//e.printStackTrace();
+			accountLogService.saveLog("Error in Product creation " + instance.getName()+", ",
+					Commons.task_name.PRODUCT.name(),
+					Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
+			
 		}
 		return null;
 	}// end of saveOrUpdate(
@@ -58,10 +72,20 @@ public class ProductService {
 	@RemoteMethod
 	public String remove(int id) {
 		try {
-			ProductCatalog.findProductCatalog(id).remove();
+			ProductCatalog p = ProductCatalog.findProductCatalog(id);
+					p.remove();
+			accountLogService.saveLog("Product removed " + p.getName()+", ",
+					Commons.task_name.DEPARTMENT.name(),
+					Commons.task_status.SUCCESS.ordinal(),
+					Commons.getCurrentUser().getEmail());
+			
 			return "Removed Product "+id;
 		} catch (Exception e) {
 			log.error(e.getMessage());//e.printStackTrace();
+			accountLogService.saveLog("Error in Product creation " + ProductCatalog.findProductCatalog(id).getName()+", ",
+					Commons.task_name.PRODUCT.name(),
+					Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
 			return "Error while removing Product "+id+". Check logs.";
 		}
 	}// end of method remove(int id

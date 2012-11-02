@@ -71,7 +71,9 @@ public class WorkflowService {
 	VolumeService volumeService;
 	@Autowired
 	SnapshotService snapshotService;
-
+	@Autowired
+	AccountLogService accountLogService;
+	
 	@RemoteMethod
 	public void save(Workflow instance) {
 		try {
@@ -286,6 +288,7 @@ public class WorkflowService {
 		log.info("In moveProcessInstance..." + processInstanceId + " " + transition);
 		try {
 			ProcessInstance pi = workflowImpl4Jbpm.moveProcessInstance(processInstanceId, transition);
+			String stateName = pi.getState();
 			// find out if the process instance is ended .
 			// if so , find out for which asset and continue processing it.
 			if (pi.isEnded()) {
@@ -294,11 +297,33 @@ public class WorkflowService {
 					log.info("Moving workflow of type "+Commons.ASSET_TYPE.ComputeImage);
 					ImageDescriptionP imageDescriptionP = ImageDescriptionP.findImageDescriptionP(workflow.getAssetId());
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
-						imageService.workflowApproved(imageDescriptionP);	
+						imageService.workflowApproved(imageDescriptionP);
+						
+						accountLogService.saveLog(
+								"Image Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Image Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}else{
 						imageDescriptionP.setStatus(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(imageDescriptionP.getAsset());
 						imageDescriptionP.merge();
+						
+						accountLogService.saveLog(
+								"Image Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Image Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}
 					
 				} else if (workflow.getAssetType().equals("" + Commons.ASSET_TYPE.ComputeInstance)) {
@@ -307,11 +332,32 @@ public class WorkflowService {
 					Set instances = new HashSet<InstanceP>();
 					instances.add(instance);
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
-						instancePService.workflowApproved(new HashSet<InstanceP>(instances));	
+						instancePService.workflowApproved(new HashSet<InstanceP>(instances));
+						
+						accountLogService.saveLog(
+								"Compute Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Compute Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}else{
 						instance.setState(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(instance.getAsset());
 						instance.merge();
+						
+						accountLogService.saveLog(
+								"Compute Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Compute Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
 					}
 
 				}/*
@@ -330,10 +376,32 @@ public class WorkflowService {
 					 AddressInfoP address = AddressInfoP.findAddressInfoP(workflow.getAssetId());
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
 						 addressInfoPService.workflowApproved(address);
+						 
+						 accountLogService.saveLog(
+									"IpAddress Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+									Commons.task_name.WORKFLOW.name(),
+									Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+							
+							accountLogService.saveLog(
+									"IpAddress Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+									Commons.task_name.WORKFLOW.name(),
+									Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+							
 					}else{
 						address.setStatus(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(address.getAsset());
 						address.merge();
+						
+						 accountLogService.saveLog(
+									"IpAddress Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+									Commons.task_name.WORKFLOW.name(),
+									Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+							
+							accountLogService.saveLog(
+									"IpAddress Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+									Commons.task_name.WORKFLOW.name(),
+									Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+							
 					}
 				} else if (workflow.getAssetType().equals("" + Commons.ASSET_TYPE.IpPermission)) {
 					// nothig here
@@ -343,20 +411,64 @@ public class WorkflowService {
 					KeyPairInfoP k = KeyPairInfoP.findKeyPairInfoP(workflow.getAssetId());
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
 						keyPairService.workflowApproved(k);
+						
+						accountLogService.saveLog(
+								"KeyPair Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"KeyPair Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}else{
 						k.setStatus(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(k.getAsset());
 						k.merge();
+						
+						accountLogService.saveLog(
+								"KeyPair Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"KeyPair Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}
 				} else if (workflow.getAssetType().equals("" + Commons.ASSET_TYPE.SecurityGroup)) {
 					log.info("Moving workflow of type "+Commons.ASSET_TYPE.SecurityGroup);
 					GroupDescriptionP g = GroupDescriptionP.findGroupDescriptionP(workflow.getAssetId());
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
 						securityGroupService.workflowApproved(g);
+						
+						accountLogService.saveLog(
+								"SecurityGroup Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"SecurityGroup Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}else{
 						g.setStatus(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(g.getAsset());
 						g.merge();
+						
+						accountLogService.saveLog(
+								"SecurityGroup Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"SecurityGroup Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}
 					
 				} else if (workflow.getAssetType().equals("" + Commons.ASSET_TYPE.Volume)) {
@@ -364,10 +476,31 @@ public class WorkflowService {
 					log.info("Moving workflow of type "+Commons.ASSET_TYPE.Volume);
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
 						volumeService.workflowApproved(volume);
+						
+						accountLogService.saveLog(
+								"Volume Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Volume Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}else{
 						volume.setStatus(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(volume.getAsset());
 						volume.merge();
+						accountLogService.saveLog(
+								"Volume Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Volume Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}
 					
 				} else if (workflow.getAssetType().equals("" + Commons.ASSET_TYPE.VolumeSnapshot)) {
@@ -375,20 +508,62 @@ public class WorkflowService {
 					log.info("Moving workflow of type "+Commons.ASSET_TYPE.VolumeSnapshot);
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
 						snapshotService.workflowApproved(snapshot);
+						
+						accountLogService.saveLog(
+								"Snapshot Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Snapshot Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
 					}else{
 						snapshot.setStatus(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(snapshot.getAsset());
 						snapshot.merge();
+						
+						accountLogService.saveLog(
+								"Snapshot Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"Snapshot Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}
 				} else if (workflow.getAssetType().equals("" + Commons.ASSET_TYPE.addressInfo)) {
 					AddressInfoP address = AddressInfoP.findAddressInfoP(workflow.getAssetId());
 					log.info("Moving workflow of type "+Commons.ASSET_TYPE.addressInfo);
 					if((Commons.WORKFLOW_TRANSITION.Approve+"").equals(transition)){
 						addressInfoPService.workflowApproved(address);
+						
+						accountLogService.saveLog(
+								"AddressInfo Workflow state "+stateName +" Approved by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"AddressInfo Workflow state "+stateName +" Approved for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
 					}else{
 						address.setStatus(Commons.WORKFLOW_STATUS.APPROVAL_REJECTED+"");
 						Commons.setAssetEndTime(address.getAsset());
 						address.merge();
+						
+						accountLogService.saveLog(
+								"AddressInfo Workflow state "+stateName +" Rejected by "+Commons.getCurrentUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), workflow.getUser().getEmail());
+						
+						accountLogService.saveLog(
+								"AddressInfo Workflow state "+stateName +" Rejected for "+ workflow.getUser().getEmail(),
+								Commons.task_name.WORKFLOW.name(),
+								Commons.task_status.SUCCESS.ordinal(), Commons.getCurrentUser().getEmail());
+						
 					}
 
 				} else {

@@ -16,9 +16,7 @@
 package in.mycp.remote;
 
 import in.mycp.domain.Company;
-import in.mycp.domain.Manager;
 import in.mycp.domain.Project;
-import in.mycp.domain.Quota;
 import in.mycp.domain.Role;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
@@ -38,41 +36,39 @@ import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
-
 
 @RemoteProxy(name = "RealmService")
 public class RealmService {
 
-	private static final Logger log = Logger.getLogger(RealmService.class.getName());
+	private static final Logger log = Logger.getLogger(RealmService.class
+			.getName());
 
 	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-
-	
+	@Autowired
+	AccountLogService accountLogService;
 
 	@Autowired
 	ShaPasswordEncoder passwordEncoder;
 
-	
 	@RemoteMethod
 	public boolean emailExists(String email) {
 		try {
 			User user = User.findUsersByEmailEquals(email).getSingleResult();
-			
-			if(user !=null){
+
+			if (user != null) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}
-			
+
 		} catch (Exception e) {
-			log.error(e.getMessage());//e.printStackTrace();
+			log.error(e.getMessage());// e.printStackTrace();
 			return false;
 		}
 	}
-	
-	
+
 	@RemoteMethod
 	public User saveOrUpdate(User instance) {
 		try {
@@ -95,9 +91,18 @@ public class RealmService {
 				}
 			}
 
+			accountLogService.saveLog("User created " + instance.getEmail()+", ",
+					Commons.task_name.USER.name(),
+					Commons.task_status.SUCCESS.ordinal(),
+					Commons.getCurrentUser().getEmail());
+			
 			return instance.merge();
 		} catch (Exception e) {
 			log.error(e.getMessage());//e.printStackTrace();
+			accountLogService.saveLog("Error in User creation " + instance.getEmail()+", "+e.getMessage(),
+					Commons.task_name.USER.name(),
+					Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
 		}
 		return null;
 	}// end of saveOrUpdate(User
@@ -105,9 +110,19 @@ public class RealmService {
 	@RemoteMethod
 	public void remove(int id) {
 		try {
-			User.findUser(id).remove();
+			User u = User.findUser(id);
+			u.remove();
+			
+			accountLogService.saveLog("User removed " + u.getEmail()+", ",
+					Commons.task_name.USER.name(),
+					Commons.task_status.SUCCESS.ordinal(),
+					Commons.getCurrentUser().getEmail());
 		} catch (Exception e) {
 			log.error(e.getMessage());//e.printStackTrace();
+			accountLogService.saveLog("Error in User removal " + User.findUser(id).getEmail()+", "+e.getMessage(),
+					Commons.task_name.USER.name(),
+					Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
 		}
 	}// end of method remove(int id
 
@@ -116,7 +131,7 @@ public class RealmService {
 		try {
 			return User.findUser(id);
 		} catch (Exception e) {
-			log.error(e.getMessage());//e.printStackTrace();
+			log.error(e.getMessage());// e.printStackTrace();
 		}
 		return null;
 	}// end of method findById(int id
@@ -124,14 +139,17 @@ public class RealmService {
 	@RemoteMethod
 	public List<User> findAll() {
 		try {
-			
-			if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
+
+			if (Commons.getCurrentUser().getRole().getName()
+					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				return User.findAllUsers();
-			}else{
-				return User.findUsersByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId())).getResultList();
+			} else {
+				return User.findUsersByCompany(
+						Company.findCompany(Commons.getCurrentSession()
+								.getCompanyId())).getResultList();
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());//e.printStackTrace();
+			log.error(e.getMessage());// e.printStackTrace();
 		}
 		return null;
 	}// end of method findAll
@@ -142,7 +160,7 @@ public class RealmService {
 			// System.out.println(" = "+Role.findAllRoles().size());
 			return Role.findAllRoles();
 		} catch (Exception e) {
-			log.error(e.getMessage());//e.printStackTrace();
+			log.error(e.getMessage());// e.printStackTrace();
 		}
 		return null;
 	}// end of method findAll
