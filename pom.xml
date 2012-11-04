@@ -67,6 +67,11 @@
         </pluginRepository>
     </pluginRepositories>
     <dependencies>
+    	<dependency>
+		      <groupId>de.odysseus.el</groupId>
+		      <artifactId>juel</artifactId>
+		      <version>2.1.0</version>
+		</dependency>
         <!-- General dependencies for standard applications -->
         <dependency>
             <groupId>junit</groupId>
