@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<jbpm-configuration>
+
+  <process-engine-context>
+ 
+ <!-- Regular Mail Template - for the mail which has nothing specific -->
+    <mail-template name="RegularMailTemplate">
+      <to addresses="${mailDetailsDTO.to}" />
+      <subject>${mailDetailsDTO.subject}</subject>
+      <text>
+      	<![CDATA[ ${mailDetailsDTO.bodyText} ]]>
+      </text>
+    </mail-template>
+    
+<!-- SignupMailTemplate -->
+    <mail-template name="SignupMailTemplate">
+      <to addresses="${mailDetailsDTO.to}" />
+      <subject>Activation of MyCP test drive</subject>
+      <text>
+      	<![CDATA[ 
+Dear ${mailDetailsDTO.toName},
+	Thank you for your interest in My Cloud Portal, the open source self service portal for the cloud. 
+	You can now configure your Eucalyptus private cloud access details at http://www.mycloudportal.in/config/infra  
+	and start the sync process to import your data from eucalyptus cloud into my cloud portal. 
+	After you configure your account, you can 
+		1. Go to Setup, edit the currency, create your users, projects and departments. 
+	 	2. Go to Resources, start requesting and consuming infrastructure services. 
+	 	3. Usage reports menu will give you the metering data of your comsumption. 
+	MyCP is open source and free to download and use as a standalone installation too. Its a simple standards compliant  
+	java web application backed by MySQL. 
+	If you are a developer, please think about participating in the project at http://code.google.com/p/mycloudportal 
+Regards 
+MyCP Team 
+www.mycloudportal.in 
+      	]]>
+      </text>
+    </mail-template>
+
+<!-- Resource Approval Template -->
+<mail-template name="ResourceApprovalTemplate">
+  <to addresses="${assetRequestWorkflowDTO.to}" />
+  <subject>Request for '${assetRequestWorkflowDTO.resourceTypeName}' with name '${assetRequestWorkflowDTO.resourceName}' approved</subject>
+  <text>
+  	<![CDATA[ 
+Dear ${assetRequestWorkflowDTO.toName},
+
+workflow approved by '${assetRequestWorkflowDTO.approverEmail}' for '${assetRequestWorkflowDTO.resourceTypeName}' request with name '${assetRequestWorkflowDTO.resourceName}'.
+	 
+Regards 
+MyCP Team 
+www.mycloudportal.in 
+	]]>
+  </text>
+</mail-template>
+
+<!--  Resource Reject Template -->
+<mail-template name="ResourceRejectTemplate">
+  <to addresses="${assetRequestWorkflowDTO.to}" />
+  <subject>Request for '${assetRequestWorkflowDTO.resourceTypeName}' with name '${assetRequestWorkflowDTO.resourceName}' rejected</subject>
+  <text>
+  	<![CDATA[ 
+Dear ${assetRequestWorkflowDTO.toName},
+
+workflow rejected by '${assetRequestWorkflowDTO.approverEmail}' for '${assetRequestWorkflowDTO.resourceTypeName}' request with name '${assetRequestWorkflowDTO.resourceName}'.
+	 
+Regards 
+MyCP Team 
+www.mycloudportal.in 
+  	]]>
+  </text>
+</mail-template>
+
+<!-- Resource Created Template - Once Approval is DONE-->
+<mail-template name="ResourceCreatedTemplate">
+  <to addresses="${assetRequestWorkflowDTO.to}" />
+  <subject>Asset '${assetRequestWorkflowDTO.resourceTypeName}' created with name '${assetRequestWorkflowDTO.resourceName}'.</subject>
+  <text>
+  	<![CDATA[ 
+Dear ${assetRequestWorkflowDTO.toName},
+
+Asset '${assetRequestWorkflowDTO.resourceTypeName}' created with name '${assetRequestWorkflowDTO.resourceName}'.
+	 
+Regards 
+MyCP Team 
+www.mycloudportal.in 
+	]]>
+  </text>
+</mail-template>
+
+  </process-engine-context>
+
+</jbpm-configuration>

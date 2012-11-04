@@ -22,34 +22,28 @@ import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
 import in.mycp.domain.Role;
 import in.mycp.domain.User;
+import in.mycp.service.WorkflowImpl4Jbpm;
 import in.mycp.utils.Commons;
+import in.mycp.web.MailDetailsDTO;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.NonUniqueResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.jbpm.api.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.mail.MailSender;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -65,6 +59,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class LoginController {
 	protected static Logger logger = Logger.getLogger(LoginController.class);
 
+	 @Autowired
+	 WorkflowImpl4Jbpm workflowImpl4Jbpm;
 
 	 @Autowired
 	 	ShaPasswordEncoder passwordEncoder;
@@ -160,30 +156,15 @@ public class LoginController {
 	            infra.setZone("");
 	            infra = infra.merge();
             createAllProducts(infra);
-            try {
-            	final String username = user.getFirstName();
-            	final String useremail = user.getEmail();
-            	new Thread(new Runnable() {
-            		  public void run() {
-                        	/*sendMessage("mycloudportal@gmail.com", "Activation of MyCP test drive",useremail , "\n\nDear "+username+", \n" +
-                        			" Thank you for your interest in My Cloud Portal, the open source self service portal for the cloud.\n" +
-                        			" You can now configure your Eucalyptus private cloud access details at http://www.mycloudportal.in/config/infra \n" +
-                        			" and start the sync process to import your data from eucalyptus cloud into my cloud portal." +
-                        			" After you configure your account, you can\n" +
-                        			" \t 1. Go to Setup, edit the currency, create your users, projects and departments.\n" +
-                        			" \t 2. Go to Resources, start requesting and consuming infrastructure services.\n" +
-                        			" \t 3. Usage reports menu will give you the metering data of your comsumption.\n" +
-                        			"\n MyCP is open source and free to download and use as a standalone installation too. Its a simple standards compliant \n" +
-                        			" java web application backed by MySQL.\n" +
-                        			" If you are a developer, please think about participating in the project at http://code.google.com/p/mycloudportal\n" +
-                        			"\n\nRegards\n" +
-                        			"MyCP Team\n" +
-                        			"www.mycloudportal.in\n");*/
-            		  }
-            		}).start();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+            //send signup notification to the user
+            MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
+			mailDetailsDTO.setTemplateName("SignupMailTemplate");
+        	mailDetailsDTO.setTo(user.getEmail());
+        	mailDetailsDTO.setToName(user.getFirstName());
+        	Map<String, Object> variables = new HashMap<String, Object>(); 
+		    variables.put("mailDetailsDTO", mailDetailsDTO);
+		    workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
+		    
             req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: green;\"> User " + user.getEmail() + " created.Please Sign In now.</font>");
             if(authenticate(email,password)){
             	if(user.getRole().getName().equals(Commons.ROLE.ROLE_USER+"")){
@@ -195,8 +176,6 @@ public class LoginController {
     			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
     				return "cloud-portal/superadmindash";
     			}
-            	
-            		
             }
         } catch (Exception e) {
         	e.printStackTrace();
@@ -313,6 +292,14 @@ public class LoginController {
 		logger.info("cloud-portal/dash");
 		try {
 			User user = Commons.getCurrentUser();
+			/*MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
+			mailDetailsDTO.setTemplateName("SignupMailTemplate");
+        	mailDetailsDTO.setTo(user.getEmail());
+        	mailDetailsDTO.setToName(user.getFirstName());
+        	Map<String, Object> variables = new HashMap<String, Object>(); 
+		    variables.put("mailDetailsDTO", mailDetailsDTO);
+		    ProcessInstance instance =  workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Reports", variables);*/
+		    
 			if(user.getRole().getName().equals(Commons.ROLE.ROLE_USER+"")){
 				return "cloud-portal/userdash";
 			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
@@ -323,7 +310,7 @@ public class LoginController {
 				return "cloud-portal/superadmindash";
 			}
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			logger.info(e.getMessage());
 		}
 		

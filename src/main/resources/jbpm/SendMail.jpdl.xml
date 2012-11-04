@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process xmlns="http://jbpm.org/4.4/jpdl" name="Mail4Users">
+   <start name="start1">
+      <transition name="to sendMail" to="sendMail"/>
+   </start>
+   <decision name="sendMail" expr="#{mailDetailsDTO.templateName}" >
+    <transition name="SignupMailTemplate" to="end1">
+    	<mail template="SignupMailTemplate"></mail>
+    </transition>
+    <transition name="RegularMailTemplate" to="end1">
+    	<mail template="RegularMailTemplate"></mail>
+    </transition>
+  </decision>
+   <end name="end1"/>
+</process>
