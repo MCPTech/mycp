@@ -147,29 +147,39 @@ public class WorkflowImpl4Jbpm  {
 	
 	
     public ProcessInstance createProcessInstance(String processDefnKey) {
-    	
         try {
         	ProcessInstance pi = executionService.startProcessInstanceByKey(processDefnKey);
         	return pi;
         }catch(Exception e){log.error(e.getMessage());//e.printStackTrace();
         
         }
-        
         return null;
 	}
-	
-	
+    
+    public ProcessInstance createProcessInstance(String processDefnKey, Map<String, Object> variables) {
+        try {
+        	ProcessInstance pi = executionService.startProcessInstanceByKey(processDefnKey, variables);
+        	return pi;
+        }catch(Exception e){log.error(e.getMessage());//e.printStackTrace();
+        }
+        return null;
+	}
 	
     public ProcessInstance moveProcessInstance(String processInstanceId,String transition) {
-    	
-        try {
-        	return executionService.signalExecutionById(processInstanceId, transition);
-        	}catch(Exception e){log.error(e.getMessage());//e.printStackTrace();
-        	}
-        	
+	    try {
+	    	return executionService.signalExecutionById(processInstanceId, transition);
+		}catch(Exception e){log.error(e.getMessage());//e.printStackTrace();
+		}
         return null;
 	}
-	
+    
+    public ProcessInstance moveProcessInstance(String processInstanceId,String transition, Map<String, Object> variables) {
+        try {
+        	return executionService.signalExecutionById(processInstanceId, transition, variables);
+    	}catch(Exception e){log.error(e.getMessage());//e.printStackTrace();
+    	}
+        return null;
+	}
 	
     public void cleanupAllProcessDefinitions() {
     	
@@ -185,7 +195,6 @@ public class WorkflowImpl4Jbpm  {
         }
 	}
 
-	
     public void testProcessDefinitions() {
 		/*ProcessInstance pi = createProcessInstance("Image_Request");
 		System.out.println("pi.getId() = " + pi.getId());
