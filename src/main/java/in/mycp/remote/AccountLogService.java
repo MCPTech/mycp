@@ -99,27 +99,17 @@ public class AccountLogService {
 		}
 		return null;
 	}//end getLog4Month
-	
-	public void saveLog(String message,String task,int status){
-		try{
-			
-			AccountLog acctLog = new AccountLog();
-			acctLog.setDetails(message);
-			acctLog.setStatus(status);
-			acctLog.setTask(task);
-			acctLog.setTimeOfEntry(new Date());
-			acctLog.setUserId(Commons.getCurrentUser());
-			acctLog.merge();
-		}catch(Exception e){
-			e.printStackTrace();
-			log.error(e.getMessage());
-		}
 		
-	}//end saveLog
+	/*
+	 * COMPUTE, IPADDRESS, VOLUME, SECURITYGROUP, KEYPAIR,IMAGE, SNAPSHOT - mail notification has to be sent
+	 * TODO mail send logic Gangadhar
+	 */
+	public void saveLogAndSendMail(String message,String task,int status,String emailId){
+		saveLog(message, task, status, emailId);
+	}//end saveLogAfterLogout
 	
 	public void saveLog(String message,String task,int status,String emailId){
 		try{
-			
 			AccountLog acctLog = new AccountLog();
 			acctLog.setDetails(message);
 			acctLog.setStatus(status);
@@ -131,10 +121,7 @@ public class AccountLogService {
 			e.printStackTrace();
 			log.error(e.getMessage());
 		}
-		
 	}//end saveLogAfterLogout
-	
-	
 		
 }// end of class AccountLogService
 

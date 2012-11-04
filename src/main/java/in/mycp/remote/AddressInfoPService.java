@@ -85,8 +85,8 @@ public class AddressInfoPService {
 
 			if (true == assetType.getWorkflowEnabled()) {
 				accountLogService
-						.saveLog(
-								"Ip Address with ID "
+						.saveLogAndSendMail(
+								"Ip Address '"+instance.getName()+"' with ID "
 										+ instance.getId()
 										+ " requested, workflow started, pending approval.",
 								Commons.task_name.IPADDRESS.name(),
@@ -103,8 +103,8 @@ public class AddressInfoPService {
 				instance = instance.merge();
 			} else {
 				accountLogService
-						.saveLog(
-								"Ip Address with ID "
+						.saveLogAndSendMail(
+								"Ip Address '"+instance.getName()+"' with ID "
 										+ instance.getId()
 										+ " requested, workflow approved automatically.",
 								Commons.task_name.IPADDRESS.name(),

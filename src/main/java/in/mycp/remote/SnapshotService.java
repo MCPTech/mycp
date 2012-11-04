@@ -21,6 +21,7 @@ import in.mycp.domain.Company;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.SnapshotInfoP;
 import in.mycp.domain.User;
+import in.mycp.domain.VolumeInfoP;
 import in.mycp.utils.Commons;
 import in.mycp.workers.SnapshotWorker;
 
@@ -55,6 +56,9 @@ public class SnapshotService {
 
 	@Autowired
 	AccountLogService accountLogService;
+	
+	@Autowired
+	VolumeService volumeService;
 
 	@RemoteMethod
 	public void save(SnapshotInfoP instance) {
@@ -135,10 +139,11 @@ public class SnapshotService {
 					snapshotInfoP.getProduct(), allAssetTotalCosts, company);
 			snapshotInfoP.setAsset(asset);
 			snapshotInfoP = snapshotInfoP.merge();
+			VolumeInfoP volumeInfoP = volumeService.findById( Integer.parseInt(snapshotInfoP.getVolumeId()) );
 			if (true == assetTypeSnapshot.getWorkflowEnabled()) {
 				accountLogService
-						.saveLog(
-								"Snapshot with ID "
+						.saveLogAndSendMail(
+								"Snapshot for volume '"+volumeInfoP.getName()+"("+volumeInfoP.getId()+")' with ID "
 										+ snapshotInfoP.getId()
 										+ " requested, workflow started, pending approval.",
 								Commons.task_name.SNAPSHOT.name(),
@@ -156,8 +161,8 @@ public class SnapshotService {
 				snapshotInfoP = snapshotInfoP.merge();
 			} else {
 				accountLogService
-						.saveLog(
-								"Snapshot with ID "
+						.saveLogAndSendMail(
+								"Snapshot for volume '"+volumeInfoP.getName()+"("+volumeInfoP.getId()+")' with ID "
 										+ snapshotInfoP.getId()
 										+ " requested, workflow approved automatically.",
 								Commons.task_name.SNAPSHOT.name(),

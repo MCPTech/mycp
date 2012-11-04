@@ -27,11 +27,14 @@ import in.mycp.domain.VolumeInfoP;
 import in.mycp.domain.Workflow;
 import in.mycp.service.WorkflowImpl4Jbpm;
 import in.mycp.utils.Commons;
+import in.mycp.web.AssetRequestWorkflowDTO;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -282,17 +285,41 @@ public class WorkflowService {
 		}
 		return null;
 	}
+	
+	public ProcessInstance createProcessInstance(String processDefnKey, Map<String, Object> variables) {
+		log.info("In createProcessInstance for "+processDefnKey);
+		try {
+			ProcessInstance pi = workflowImpl4Jbpm.createProcessInstance(processDefnKey, variables);
+			return pi;
+		} catch (Exception e) {
+			log.error(e);e.printStackTrace();
+		}
+		return null;
+	}
 
 	@RemoteMethod
 	public ProcessInstance moveProcessInstance(String processInstanceId, String transition) {
 		log.info("In moveProcessInstance..." + processInstanceId + " " + transition);
 		try {
-			ProcessInstance pi = workflowImpl4Jbpm.moveProcessInstance(processInstanceId, transition);
+			User loggedInUser = Commons.getCurrentUser();
+			Workflow workflow = Workflow.findWorkflowsByProcessIdEquals(processInstanceId).getSingleResult();
+			User taskOwner = workflow.getUser();
+			InstanceP instanceP = instancePService.findById(workflow.getAssetId());
+			AssetRequestWorkflowDTO assetRequestWorkflowDTO = new AssetRequestWorkflowDTO();
+			assetRequestWorkflowDTO.setApproverEmail(loggedInUser.getEmail());
+			assetRequestWorkflowDTO.setResourceName(instanceP.getName());
+			assetRequestWorkflowDTO.setResourceTypeName(workflow.getAssetType());
+			assetRequestWorkflowDTO.setTo(taskOwner.getEmail());
+			assetRequestWorkflowDTO.setToName(taskOwner.getFirstName());
+			Map<String, Object> variables = new HashMap<String, Object>(); 
+		    variables.put("assetRequestWorkflowDTO", assetRequestWorkflowDTO);
+		    
+			ProcessInstance pi = workflowImpl4Jbpm.moveProcessInstance(processInstanceId, transition, variables);
 			String stateName = pi.getState();
 			// find out if the process instance is ended .
 			// if so , find out for which asset and continue processing it.
 			if (pi.isEnded()) {
-				Workflow workflow = Workflow.findWorkflowsByProcessIdEquals(processInstanceId).getSingleResult();
+				workflow = Workflow.findWorkflowsByProcessIdEquals(processInstanceId).getSingleResult();
 				if (workflow.getAssetType().equals("" + Commons.ASSET_TYPE.ComputeImage)) {
 					log.info("Moving workflow of type "+Commons.ASSET_TYPE.ComputeImage);
 					ImageDescriptionP imageDescriptionP = ImageDescriptionP.findImageDescriptionP(workflow.getAssetId());

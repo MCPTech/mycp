@@ -117,8 +117,8 @@ public class KeyPairService {
 				if (true == assetTypeKeyPair.getWorkflowEnabled()) {
 
 					accountLogService
-							.saveLog(
-									"KeyPair with ID "
+							.saveLogAndSendMail(
+									"KeyPair '"+instance.getKeyName()+"' with ID "
 											+ instance.getId()
 											+ " requested, workflow started, pending approval.",
 									Commons.task_name.KEYPAIR.name(),
@@ -136,8 +136,8 @@ public class KeyPairService {
 				} else {
 
 					accountLogService
-							.saveLog(
-									"KeyPair with ID "
+							.saveLogAndSendMail(
+									"KeyPair '"+instance.getKeyName()+"' with ID "
 											+ instance.getId()
 											+ " requested, workflow approved automatically.",
 									Commons.task_name.KEYPAIR.name(),

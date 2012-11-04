@@ -86,14 +86,14 @@ public class VolumeService {
 				volume.setStatus(Commons.WORKFLOW_STATUS.PENDING_APPROVAL + "");
 				volume = volume.merge();
 
-				accountLogService.saveLog("Volume with ID " + volume.getId()
+				accountLogService.saveLogAndSendMail("Volume '"+volume.getName()+"' with ID " + volume.getId()
 						+ " requested, workflow started, pending approval.",
 						Commons.task_name.VOLUME.name(),
 						Commons.task_status.SUCCESS.ordinal(),
 						currentUser.getEmail());
 
 			} else {
-				accountLogService.saveLog("Volume with ID " + volume.getId()
+				accountLogService.saveLogAndSendMail("Volume '"+volume.getName()+"' with ID " + volume.getId()
 						+ " requested, workflow approved automatically.",
 						Commons.task_name.VOLUME.name(),
 						Commons.task_status.SUCCESS.ordinal(),
