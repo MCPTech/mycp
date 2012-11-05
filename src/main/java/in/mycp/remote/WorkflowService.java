@@ -27,7 +27,6 @@ import in.mycp.domain.VolumeInfoP;
 import in.mycp.domain.Workflow;
 import in.mycp.service.WorkflowImpl4Jbpm;
 import in.mycp.utils.Commons;
-import in.mycp.web.AssetRequestWorkflowDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -301,6 +300,7 @@ public class WorkflowService {
 	public ProcessInstance moveProcessInstance(String processInstanceId, String transition) {
 		log.info("In moveProcessInstance..." + processInstanceId + " " + transition);
 		try {
+
 			User loggedInUser = Commons.getCurrentUser();
 			Workflow workflow = Workflow.findWorkflowsByProcessIdEquals(processInstanceId).getSingleResult();
 			User taskOwner = workflow.getUser();
@@ -315,6 +315,10 @@ public class WorkflowService {
 		    variables.put("assetRequestWorkflowDTO", assetRequestWorkflowDTO);
 		    
 			ProcessInstance pi = workflowImpl4Jbpm.moveProcessInstance(processInstanceId, transition, variables);
+/*=======
+			//workflowImpl4Jbpm.findProcessInstance(processInstanceId).
+			ProcessInstance pi = workflowImpl4Jbpm.moveProcessInstance(processInstanceId, transition);
+>>>>>>> Stashed changes*/
 			String stateName = pi.getState();
 			// find out if the process instance is ended .
 			// if so , find out for which asset and continue processing it.

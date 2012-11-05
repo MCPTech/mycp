@@ -62,9 +62,20 @@ public class InfraService {
 		Infra instance = Infra.findInfra(new Integer(instanceId));
 		try {
 
+			accountLogService.saveLog(
+					"Start : Synchronizing "+instance.getName()
+							, Commons.task_name.SYNC
+							.name(), Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
+			
 			if (instance.getSyncInProgress() != null
 					&& instance.getSyncInProgress()) {
-				log.error("Sync is in progress, Cannot start another one now. Wait till the current one gets over.");
+				log.error("Synchronizing is in progress, Cannot start another one now. Wait till the current one gets done.");
+				accountLogService.saveLog(
+						"Synchronizing is in progress, Cannot start another one now. Wait till the current one gets done. "
+								, Commons.task_name.SYNC
+								.name(), Commons.task_status.FAIL.ordinal(),
+						Commons.getCurrentUser().getEmail());
 				return null;
 			}
 			instance.setSyncDate(new Date());
@@ -76,12 +87,22 @@ public class InfraService {
 			instance.setSyncInProgress(false);
 			instance.setSyncstatus(Commons.sync_status.success.ordinal());
 			instance.merge();
-
+			
+			accountLogService.saveLog(
+					"Synchronizing complete for "+instance.getName()
+							, Commons.task_name.SYNC
+							.name(), Commons.task_status.SUCCESS.ordinal(),
+					Commons.getCurrentUser().getEmail());
 			return instance;
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.error("Sync failed.Error follows.");
+			log.error("Synchronizing failed.Error follows.");
 			log.error(e);
+			accountLogService.saveLog(
+					"Synchronizing failed for "+Infra.findInfra(new Integer(instanceId)).getName()+". Error : "+e.getMessage()
+							, Commons.task_name.SYNC
+							.name(), Commons.task_status.FAIL.ordinal(),
+					Commons.getCurrentUser().getEmail());
 			try {
 				instance.setSyncDate(new Date());
 				instance.setSyncInProgress(false);

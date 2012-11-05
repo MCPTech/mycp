@@ -51,7 +51,10 @@ $(document).ready(function() {
 							<table align="center" width="100%"  id="sessionLog" >
 							<thead>
 								<tr style="background-color: black;color: white;">
-									<td width="90%">Message</td>
+									<td width="10%">User</td>
+									<td width="10%">Task</td>
+									<td width="60%">Message</td>
+									<td width="10%">Date</td>
 									<td width="10%">Status</td>
 								</tr>
 							</thead>
@@ -75,11 +78,25 @@ SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh.mm");
 <%
 		}//end of else
 %>
-			<td width="90%">
-				User <%=accountLog.getUserId().getEmail() %> 
-				executed task <%=accountLog.getTask() %> 
-				on  <%=formatter.format(accountLog.getTimeOfEntry()) %> 
-				with details:  <%=accountLog.getDetails() %>.
+			<td width="10%">
+				<%=accountLog.getUserId().getEmail() %> 
+				
+			</td>
+			
+			<td width="10%">
+				
+				<%=accountLog.getTask() %> 
+				
+			</td>
+			
+			<td width="60%">
+				 
+				 
+				<%=accountLog.getDetails() %>.
+			</td>
+			<td width="10%">
+				<%=formatter.format(accountLog.getTimeOfEntry()) %> 
+				
 			</td>
 			<td width="10%">
 				<% 

@@ -57,10 +57,10 @@ public class AccountLogController {
 	@Autowired
 	AccountLogService accountLogService;
 
-	@RequestMapping(value = "/session", produces = "text/html")
+	@RequestMapping(value = "/account", produces = "text/html")
 	public String session(HttpServletRequest req, HttpServletResponse resp) {
 		req.setAttribute("sessionLogList", accountLogService.getLast24HoursLog());
-		return "log/sessionLog";
+		return "log/accountLog";
 	}
 
 }//end of class
