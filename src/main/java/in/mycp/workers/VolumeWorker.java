@@ -67,7 +67,7 @@ public class VolumeWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							+ volumeInfoP.getName(), Commons.task_name.VOLUME
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 			Jec2 ec2 = getNewJce2(infra);
@@ -154,14 +154,14 @@ public class VolumeWorker extends Worker {
 				volumeInfoPLocal = volumeInfoPLocal.merge();
 				logger.info("Volume  " + attachmentInfo.getVolumeId()
 						+ " detached.");
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						"Complete : "
 								+ this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								+ volumeInfoP.getName(), Commons.task_name.VOLUME
 								.name(), Commons.task_status.SUCCESS.ordinal(),
 						userId);
 
@@ -169,14 +169,14 @@ public class VolumeWorker extends Worker {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
-			accountLogService.saveLog(
-					"Error in "
+			accountLogService.saveLogAndSendMail(
+					"Error in: "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId() + ", " + e.getMessage(),
+							+ volumeInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}
@@ -193,7 +193,7 @@ public class VolumeWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							+ volumeInfoP.getName(), Commons.task_name.VOLUME
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 
@@ -267,28 +267,28 @@ public class VolumeWorker extends Worker {
 				setAssetEndTime(VolumeInfoP
 						.findVolumeInfoP(volumeInfoP.getId()).getAsset());
 
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						"Complete : "
 								+ this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								+ volumeInfoP.getName(), Commons.task_name.VOLUME
 								.name(), Commons.task_status.SUCCESS.ordinal(),
 						userId);
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
-			accountLogService.saveLog(
-					"Error in "
+			accountLogService.saveLogAndSendMail(
+					"Error in: "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId() + ", " + e.getMessage(),
+							+ volumeInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}
@@ -306,7 +306,7 @@ public class VolumeWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							+ volumeInfoP.getName(), Commons.task_name.VOLUME
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 			Jec2 ec2 = getNewJce2(infra);
@@ -388,14 +388,14 @@ public class VolumeWorker extends Worker {
 				localVolumeInfoP.setAttachmentInfoPs(attachments4Store);
 				localVolumeInfoP = localVolumeInfoP.merge();
 
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						"Complete : "
 								+ this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								+ volumeInfoP.getName(), Commons.task_name.VOLUME
 								.name(), Commons.task_status.SUCCESS.ordinal(),
 						userId);
 
@@ -405,14 +405,14 @@ public class VolumeWorker extends Worker {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
-			accountLogService.saveLog(
-					"Error in "
+			accountLogService.saveLogAndSendMail(
+					"Error in: "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId() + ", " + e.getMessage(),
+							+ volumeInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}
@@ -430,7 +430,7 @@ public class VolumeWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId(), Commons.task_name.VOLUME
+							+ volumeInfoP.getName(), Commons.task_name.VOLUME
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 
@@ -485,14 +485,14 @@ public class VolumeWorker extends Worker {
 				volumeInfoPlocal = volumeInfoPlocal.merge();
 				setAssetStartTime(volumeInfoPlocal.getAsset());
 
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						"Complete : "
 								+ this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ volumeInfoP.getId(), Commons.task_name.VOLUME
+								+ volumeInfoP.getName(), Commons.task_name.VOLUME
 								.name(), Commons.task_status.SUCCESS.ordinal(),
 						userId);
 
@@ -508,14 +508,14 @@ public class VolumeWorker extends Worker {
 
 		} catch (Exception e) {
 			logger.error(e);
-			accountLogService.saveLog(
-					"Error in "
+			accountLogService.saveLogAndSendMail(
+					"Error in : "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ volumeInfoP.getId() + ", " + e.getMessage(),
+							+ volumeInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.VOLUME.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 

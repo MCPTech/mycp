@@ -66,7 +66,7 @@ public class IpAddressWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId(), Commons.task_name.IPADDRESS
+							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 			try {
@@ -139,13 +139,13 @@ public class IpAddressWorker extends Worker {
 
 				setAssetStartTime(addressInfoPLocal.getAsset());
 
-				accountLogService.saveLog("Completed : "+
+				accountLogService.saveLogAndSendMail("Completed : "+
 						this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getId(),
+								+ addressInfoP.getName(),
 						Commons.task_name.IPADDRESS.name(),
 						Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -153,14 +153,14 @@ public class IpAddressWorker extends Worker {
 
 		} catch (Exception e) {
 			logger.error(e);// e.printStackTrace();
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId() + ", " + e.getMessage(),
+							+ addressInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.IPADDRESS.name(),
 					Commons.task_status.FAIL.ordinal(), userId);
 			try {
@@ -189,7 +189,7 @@ public class IpAddressWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId(), Commons.task_name.IPADDRESS
+							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 
@@ -268,13 +268,13 @@ public class IpAddressWorker extends Worker {
 
 				setAssetEndTime(addressInfoPLocal.getAsset());
 
-				accountLogService.saveLog("Completed : "+
+				accountLogService.saveLogAndSendMail("Completed : "+
 						this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getId(),
+								+ addressInfoP.getName(),
 						Commons.task_name.IPADDRESS.name(),
 						Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -283,14 +283,14 @@ public class IpAddressWorker extends Worker {
 
 		} catch (Exception e) {
 			logger.error(e);// e.printStackTrace();
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId() + ", " + e.getMessage(),
+							+ addressInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.IPADDRESS.name(),
 					Commons.task_status.FAIL.ordinal(), userId);
 			try {
@@ -317,7 +317,7 @@ public class IpAddressWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId(), Commons.task_name.IPADDRESS
+							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 
@@ -447,27 +447,27 @@ public class IpAddressWorker extends Worker {
 					logger.error(e);// e.printStackTrace();
 				}
 
-				accountLogService.saveLog("Completed : "+
+				accountLogService.saveLogAndSendMail("Completed : "+
 						this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getId(),
+								+ addressInfoP.getName(),
 						Commons.task_name.IPADDRESS.name(),
 						Commons.task_status.SUCCESS.ordinal(), userId);
 			}
 
 		} catch (Exception e) {
 			logger.error(e);// e.printStackTrace();
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId() + ", " + e.getMessage(),
+							+ addressInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.IPADDRESS.name(),
 					Commons.task_status.FAIL.ordinal(), userId);
 			try {
@@ -496,7 +496,7 @@ public class IpAddressWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId(), Commons.task_name.IPADDRESS
+							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 
@@ -624,27 +624,27 @@ public class IpAddressWorker extends Worker {
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
 				}
-				accountLogService.saveLog("Completed : "+
+				accountLogService.saveLogAndSendMail("Completed : "+
 						this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getId(),
+								+ addressInfoP.getName(),
 						Commons.task_name.IPADDRESS.name(),
 						Commons.task_status.SUCCESS.ordinal(), userId);
 			}
 
 		} catch (Exception e) {
 			logger.error(e);// e.printStackTrace();
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getId() + ", " + e.getMessage(),
+							+ addressInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.IPADDRESS.name(),
 					Commons.task_status.FAIL.ordinal(), userId);
 			try {

@@ -58,8 +58,8 @@ public class SnapshotWorker extends Worker {
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ snapshot.getId(), Commons.task_name.SNAPSHOT
+											.getMethodName().indexOf("_")) + " for volume "
+							+ snapshot.getVolumeId(), Commons.task_name.SNAPSHOT
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 			
@@ -131,14 +131,14 @@ public class SnapshotWorker extends Worker {
 
 				logger.info("SnapShot  " + snapshotInfo.getSnapshotId()
 						+ " created");
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						"Complete : "
 								+ this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ snapshot_local.getId(),
+								+ snapshot_local.getVolumeId(),
 						Commons.task_name.SNAPSHOT.name(),
 						Commons.task_status.SUCCESS.ordinal(), userId);
 			}
@@ -148,14 +148,14 @@ public class SnapshotWorker extends Worker {
 			s.merge();
 			logger.error(e);// e.printStackTrace();
 
-			accountLogService.saveLog(
-					"Error in "
+			accountLogService.saveLogAndSendMail(
+					"Error in: "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ snapshot.getId() + ", " + e.getMessage(),
+							+ snapshot.getVolumeId() + ", " + e.getMessage(),
 					Commons.task_name.SNAPSHOT.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}
@@ -173,7 +173,7 @@ public class SnapshotWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ snapshot.getId(), Commons.task_name.SNAPSHOT
+							+ snapshot.getVolumeId(), Commons.task_name.SNAPSHOT
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 			Jec2 ec2 = getNewJce2(infra);
@@ -231,14 +231,14 @@ public class SnapshotWorker extends Worker {
 				snapshot_local = snapshot_local.merge();
 
 				setAssetEndTime(snapshot_local.getAsset());
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						"Complete : "
 								+ this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ snapshot.getId(), Commons.task_name.SNAPSHOT
+								+ snapshot.getVolumeId(), Commons.task_name.SNAPSHOT
 								.name(), Commons.task_status.SUCCESS.ordinal(),
 						userId);
 
@@ -247,14 +247,14 @@ public class SnapshotWorker extends Worker {
 		} catch (Exception e) {
 			logger.error(e);// e.printStackTrace();
 
-			accountLogService.saveLog(
-					"Error in "
+			accountLogService.saveLogAndSendMail(
+					"Error in: "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ snapshot.getId() + ", " + e.getMessage(),
+							+ snapshot.getVolumeId() + ", " + e.getMessage(),
 					Commons.task_name.SNAPSHOT.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}

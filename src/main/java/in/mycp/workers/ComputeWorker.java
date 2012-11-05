@@ -66,7 +66,7 @@ public class ComputeWorker extends Worker {
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for " + instancePId,
+											.getMethodName().indexOf("_")) + " for " + InstanceP.findInstanceP(instancePId).getName(),
 					Commons.task_name.COMPUTE.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
@@ -123,28 +123,28 @@ public class ComputeWorker extends Worker {
 					}
 					instanceP.setState(Commons.REQUEST_STATUS.running + "");
 					instanceP.merge();
-					accountLogService.saveLog(
+					accountLogService.saveLogAndSendMail(
 							"Complete: "
 									+ this.getClass().getName()
 									+ " : "
 									+ Thread.currentThread().getStackTrace()[1]
 											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 													.getMethodName().indexOf("_")) + " for "
-									+ instanceP.getId(),
+									+ instanceP.getName(),
 							Commons.task_name.COMPUTE.name(),
 							Commons.task_status.SUCCESS.ordinal(), userId);
 				} else {
 					instanceP.setState(Commons.REQUEST_STATUS.FAILED + "");
 					setAssetEndTime(instanceP.getAsset());
 					instanceP.merge();
-					accountLogService.saveLog(
-							"Error in "
+					accountLogService.saveLogAndSendMail(
+							"Error in: "
 									+ this.getClass().getName()
 									+ " : "
 									+ Thread.currentThread().getStackTrace()[1]
 											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 													.getMethodName().indexOf("_")) + " for "
-									+ instanceP.getId(),
+									+ instanceP.getName(),
 							Commons.task_name.COMPUTE.name(),
 							Commons.task_status.FAIL.ordinal(), userId);
 				}
@@ -180,7 +180,7 @@ public class ComputeWorker extends Worker {
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for " + instancePId,
+											.getMethodName().indexOf("_")) + " for " + InstanceP.findInstanceP(instancePId).getName(),
 					Commons.task_name.COMPUTE.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
@@ -246,14 +246,14 @@ public class ComputeWorker extends Worker {
 					instanceP.setState(Commons.REQUEST_STATUS.running + "");
 					instanceP.merge();
 
-					accountLogService.saveLog(
+					accountLogService.saveLogAndSendMail(
 							"Complete: "
 									+ this.getClass().getName()
 									+ " : "
 									+ Thread.currentThread().getStackTrace()[1]
 											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 													.getMethodName().indexOf("_")) + " for "
-									+ instanceP.getId(),
+									+ instanceP.getName(),
 							Commons.task_name.COMPUTE.name(),
 							Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -261,14 +261,14 @@ public class ComputeWorker extends Worker {
 					instanceP.setState(Commons.REQUEST_STATUS.FAILED + "");
 					setAssetEndTime(instanceP.getAsset());
 					instanceP.merge();
-					accountLogService.saveLog(
+					accountLogService.saveLogAndSendMail(
 							"Error in "
 									+ this.getClass().getName()
 									+ " : "
 									+ Thread.currentThread().getStackTrace()[1]
 											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 													.getMethodName().indexOf("_")) + " for "
-									+ instancePId, Commons.task_name.COMPUTE
+									+ InstanceP.findInstanceP(instancePId).getName(), Commons.task_name.COMPUTE
 									.name(),
 							Commons.task_status.FAIL.ordinal(), userId);
 				}
@@ -316,7 +316,7 @@ public class ComputeWorker extends Worker {
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for " + instancePId,
+											.getMethodName().indexOf("_")) + " for " + InstanceP.findInstanceP(instancePId).getName(),
 					Commons.task_name.COMPUTE.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
@@ -379,14 +379,14 @@ public class ComputeWorker extends Worker {
 					}
 					instanceP.setState(Commons.REQUEST_STATUS.STOPPED + "");
 					instanceP.merge();
-					accountLogService.saveLog(
+					accountLogService.saveLogAndSendMail(
 							"Complete: "
 									+ this.getClass().getName()
 									+ " : "
 									+ Thread.currentThread().getStackTrace()[1]
 											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 													.getMethodName().indexOf("_")) + " for "
-									+ instanceP.getId(),
+									+ instanceP.getName(),
 							Commons.task_name.COMPUTE.name(),
 							Commons.task_status.SUCCESS.ordinal(), userId);
 				}
@@ -433,7 +433,7 @@ public class ComputeWorker extends Worker {
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for " + instancePId,
+											.getMethodName().indexOf("_")) + " for " + InstanceP.findInstanceP(instancePId).getName(),
 					Commons.task_name.COMPUTE.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 			Jec2 ec2 = getNewJce2(infra);
@@ -523,14 +523,14 @@ public class ComputeWorker extends Worker {
 						logger.error(e);
 					}
 
-					accountLogService.saveLog(
+					accountLogService.saveLogAndSendMail(
 							"Complete: "
 									+ this.getClass().getName()
 									+ " : "
 									+ Thread.currentThread().getStackTrace()[1]
 											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 													.getMethodName().indexOf("_")) + " for "
-									+ instanceP.getId(),
+									+ instanceP.getName(),
 							Commons.task_name.COMPUTE.name(),
 							Commons.task_status.SUCCESS.ordinal(), userId);
 				}
@@ -586,7 +586,7 @@ public class ComputeWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ instance.getId(), Commons.task_name.COMPUTE
+							+ instance.getName(), Commons.task_name.COMPUTE
 							.name(), Commons.task_status.SUCCESS.ordinal(),
 					userId);
 
@@ -728,14 +728,14 @@ public class ComputeWorker extends Worker {
 
 				logger.info("Done creating " + instance.getName()
 						+ " and assigning ip " + instanceEc2.getDnsName());
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						"Complete: "
 								+ this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ instance.getId(), Commons.task_name.COMPUTE
+								+ instance.getName(), Commons.task_name.COMPUTE
 								.name(), Commons.task_status.SUCCESS.ordinal(),
 						userId);
 			} else {
@@ -760,14 +760,14 @@ public class ComputeWorker extends Worker {
 			e.printStackTrace();
 			logger.info("Error while creating instance");
 
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ instance.getId() + ", " + e.getMessage(),
+							+ instance.getName() + ", " + e.getMessage(),
 					Commons.task_name.COMPUTE.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 			try {

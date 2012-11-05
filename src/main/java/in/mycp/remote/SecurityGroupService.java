@@ -133,7 +133,7 @@ public class SecurityGroupService {
 							+ "");
 					instance = instance.merge();
 					
-					accountLogService.saveLogAndSendMail("Security Group '"+instance.getName()+"' with ID "+instance.getId()+" requested, workflow started, pending approval.", Commons.task_name.SECURITYGROUP.name(), 
+					accountLogService.saveLog("Security Group '"+instance.getName()+"' with ID "+instance.getName()+" requested, workflow started, pending approval.", Commons.task_name.SECURITYGROUP.name(), 
 							Commons.task_status.SUCCESS.ordinal(),currentUser.getEmail());
 					
 					Commons.createNewWorkflow(
@@ -144,7 +144,7 @@ public class SecurityGroupService {
 
 				} else {
 					
-					accountLogService.saveLogAndSendMail("Security Group '"+instance.getName()+"' with ID "+instance.getId()+" requested, workflow approved automatically.", Commons.task_name.SECURITYGROUP.name(), 
+					accountLogService.saveLog("Security Group '"+instance.getName()+"' with ID "+instance.getName()+" requested, workflow approved automatically.", Commons.task_name.SECURITYGROUP.name(), 
 							Commons.task_status.SUCCESS.ordinal(),currentUser.getEmail());
 					
 					instance.setStatus(Commons.secgroup_STATUS.starting + "");

@@ -171,7 +171,7 @@ public class ImageService {
 			instance = instance.merge();
 			if (true == assetTypeImageDescription.getWorkflowEnabled()) {
 
-				accountLogService.saveLogAndSendMail("Image '"+instance.getName()+"' with ID " + instance.getId()
+				accountLogService.saveLog("Image '"+instance.getName()+"' with ID " + instance.getId()
 						+ " requested, workflow started, pending approval.",
 						Commons.task_name.IMAGE.name(),
 						Commons.task_status.SUCCESS.ordinal(),
@@ -185,7 +185,7 @@ public class ImageService {
 										.getAssetType().getName());
 			} else {
 
-				accountLogService.saveLogAndSendMail("Image '"+instance.getName()+"' with ID " + instance.getId()
+				accountLogService.saveLog("Image '"+instance.getName()+"' with ID " + instance.getId()
 						+ " requested, workflow approved automatically.",
 						Commons.task_name.IMAGE.name(),
 						Commons.task_status.SUCCESS.ordinal(),

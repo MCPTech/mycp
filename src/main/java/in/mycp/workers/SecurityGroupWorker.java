@@ -61,7 +61,7 @@ public class SecurityGroupWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ securityGroup.getId(),
+							+ securityGroup.getName(),
 					Commons.task_name.SECURITYGROUP.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -131,13 +131,14 @@ public class SecurityGroupWorker extends Worker {
 					}
 				}
 
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
+						"Complete : "+
 						this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ securityGroup.getId(),
+								+ securityGroup.getName(),
 						Commons.task_name.SECURITYGROUP.name(),
 						Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -147,14 +148,14 @@ public class SecurityGroupWorker extends Worker {
 			logger.error(e.getMessage());
 			e.printStackTrace();
 
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ securityGroup.getId() + ", " + e.getMessage(),
+							+ securityGroup.getName() + ", " + e.getMessage(),
 					Commons.task_name.SECURITYGROUP.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}
@@ -172,7 +173,7 @@ public class SecurityGroupWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ ipPermissionP.getId(),
+							+ ipPermissionP.getProtocol()+" "+ipPermissionP.getFromPort()+" "+ipPermissionP.getToPort(),
 					Commons.task_name.SECURITYGROUP.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -183,11 +184,13 @@ public class SecurityGroupWorker extends Worker {
 					.getProtocol(), ipPermissionP.getFromPort(), ipPermissionP
 					.getToPort(), ipPermissionP.getCidrIps());
 
-			accountLogService.saveLog(this.getClass().getName() + " : "
+			accountLogService.saveLogAndSendMail(
+					"Complete : "+
+					this.getClass().getName() + " : "
 					+ Thread.currentThread().getStackTrace()[1]
 							.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 									.getMethodName().indexOf("_"))
-					+ " for " + ipPermissionP.getId(),
+					+ " for " + ipPermissionP.getProtocol()+" "+ipPermissionP.getFromPort()+" "+ipPermissionP.getToPort(),
 					Commons.task_name.SECURITYGROUP.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -195,14 +198,14 @@ public class SecurityGroupWorker extends Worker {
 			logger.error(e.getMessage());
 			e.printStackTrace();
 
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ ipPermissionP.getId() + ", " + e.getMessage(),
+							+ ipPermissionP.getProtocol()+" "+ipPermissionP.getFromPort()+" "+ipPermissionP.getToPort()+ ", " + e.getMessage(),
 					Commons.task_name.SECURITYGROUP.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}
@@ -220,7 +223,7 @@ public class SecurityGroupWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ ipPermissionP.getId(),
+							+ ipPermissionP.getProtocol()+" "+ipPermissionP.getFromPort()+" "+ipPermissionP.getToPort(),
 					Commons.task_name.SECURITYGROUP.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -231,13 +234,14 @@ public class SecurityGroupWorker extends Worker {
 						.getProtocol(), ipPermissionP.getFromPort(),
 						ipPermissionP.getToPort(), ipPermissionP.getCidrIps());
 
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
+						"Complete : "+
 						this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ ipPermissionP.getId(),
+								+ ipPermissionP.getProtocol()+" "+ipPermissionP.getFromPort()+" "+ipPermissionP.getToPort(),
 						Commons.task_name.SECURITYGROUP.name(),
 						Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -261,14 +265,14 @@ public class SecurityGroupWorker extends Worker {
 		} catch (Exception e) {
 			logger.error(e.getMessage());// e.printStackTrace();
 
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ ipPermissionP.getId() + ", " + e.getMessage(),
+							+ ipPermissionP.getProtocol()+" "+ipPermissionP.getFromPort()+" "+ipPermissionP.getToPort() + ", " + e.getMessage(),
 					Commons.task_name.IMAGE.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}
@@ -286,18 +290,18 @@ public class SecurityGroupWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ securityGroup.getId(),
+							+ securityGroup.getName(),
 					Commons.task_name.SECURITYGROUP.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
 			Jec2 ec2 = getNewJce2(infra);
 			ec2.deleteSecurityGroup(securityGroup.getName());
 
-			accountLogService.saveLog(this.getClass().getName() + " : "
+			accountLogService.saveLogAndSendMail(this.getClass().getName() + " : "
 					+ Thread.currentThread().getStackTrace()[1]
 							.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 									.getMethodName().indexOf("_"))
-					+ " for " + securityGroup.getId(),
+					+ " for " + securityGroup.getName(),
 					Commons.task_name.SECURITYGROUP.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -306,14 +310,14 @@ public class SecurityGroupWorker extends Worker {
 		} catch (Exception e) {
 			logger.error(e.getMessage());// e.printStackTrace();
 
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ securityGroup.getId() + ", " + e.getMessage(),
+							+ securityGroup.getName() + ", " + e.getMessage(),
 					Commons.task_name.SECURITYGROUP.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 		}

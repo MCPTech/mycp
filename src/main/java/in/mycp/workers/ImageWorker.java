@@ -57,7 +57,7 @@ public class ImageWorker extends Worker {
 					+ Thread.currentThread().getStackTrace()[1]
 							.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 									.getMethodName().indexOf("_"))
-					+ " for " + image.getId(), Commons.task_name.IMAGE.name(),
+					+ " for " + image.getName(), Commons.task_name.IMAGE.name(),
 					Commons.task_status.SUCCESS.ordinal(),userId);
 
 			Jec2 ec2 = getNewJce2(infra);
@@ -119,23 +119,23 @@ public class ImageWorker extends Worker {
 				image.merge();
 			}
 
-			accountLogService.saveLog(this.getClass().getName() + " : "
+			accountLogService.saveLogAndSendMail("Complete : "+this.getClass().getName() + " : "
 					+ Thread.currentThread().getStackTrace()[1]
 							.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 									.getMethodName().indexOf("_"))
-					+ " for " + imageId, Commons.task_name.IMAGE.name(),
+					+ " for " + image.getName(), Commons.task_name.IMAGE.name(),
 					Commons.task_status.SUCCESS.ordinal(),userId);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());// e.printStackTrace();
 
-			accountLogService.saveLog(
-					"Error in "
+			accountLogService.saveLogAndSendMail(
+					"Error in: "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for " + image.getId()
+											.getMethodName().indexOf("_")) + " for " + image.getName()
 							+ ", " + e.getMessage(), Commons.task_name.IMAGE
 							.name(), Commons.task_status.FAIL.ordinal(),userId);
 		}

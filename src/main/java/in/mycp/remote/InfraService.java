@@ -88,7 +88,7 @@ public class InfraService {
 			instance.setSyncstatus(Commons.sync_status.success.ordinal());
 			instance.merge();
 			
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Synchronizing complete for "+instance.getName()
 							, Commons.task_name.SYNC
 							.name(), Commons.task_status.SUCCESS.ordinal(),
@@ -98,7 +98,7 @@ public class InfraService {
 			e.printStackTrace();
 			log.error("Synchronizing failed.Error follows.");
 			log.error(e);
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Synchronizing failed for "+Infra.findInfra(new Integer(instanceId)).getName()+". Error : "+e.getMessage()
 							, Commons.task_name.SYNC
 							.name(), Commons.task_status.FAIL.ordinal(),

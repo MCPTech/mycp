@@ -60,7 +60,7 @@ public class KeyPairWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ keypair.getId(),
+							+ keypair.getKeyName(),
 					Commons.task_name.KEYPAIR.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -108,13 +108,13 @@ public class KeyPairWorker extends Worker {
 				keyPairInfoP.setStatus(Commons.keypair_STATUS.active + "");
 				keyPairInfoP = keyPairInfoP.merge();
 				logger.info("Keypair createKeyPair - created");
-				accountLogService.saveLog(
+				accountLogService.saveLogAndSendMail(
 						this.getClass().getName()
 								+ " : "
 								+ Thread.currentThread().getStackTrace()[1]
 										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 												.getMethodName().indexOf("_")) + " for "
-								+ keypair.getId(), Commons.task_name.KEYPAIR
+								+ keypair.getKeyName(), Commons.task_name.KEYPAIR
 								.name(), Commons.task_status.SUCCESS.ordinal(),
 						userId);
 
@@ -123,14 +123,14 @@ public class KeyPairWorker extends Worker {
 		} catch (Exception e) {
 			logger.error(e);// e.printStackTrace();
 
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ keypair.getId() + ", " + e.getMessage(),
+							+ keypair.getKeyName() + ", " + e.getMessage(),
 					Commons.task_name.KEYPAIR.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 			KeyPairInfoP keyPairInfoP = KeyPairInfoP.findKeyPairInfoP(keypair
@@ -154,7 +154,7 @@ public class KeyPairWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ keypair.getId(),
+							+ keypair.getKeyName(),
 					Commons.task_name.KEYPAIR.name(),
 					Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -204,13 +204,13 @@ public class KeyPairWorker extends Worker {
 					logger.info("Keypair - " + keypair.getKeyName()
 							+ " Removed");
 
-					accountLogService.saveLog(
+					accountLogService.saveLogAndSendMail(
 							this.getClass().getName()
 									+ " : "
 									+ Thread.currentThread().getStackTrace()[1]
 											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 													.getMethodName().indexOf("_")) + " for "
-									+ keypair.getId(),
+									+ keypair.getKeyName(),
 							Commons.task_name.KEYPAIR.name(),
 							Commons.task_status.SUCCESS.ordinal(), userId);
 
@@ -226,14 +226,14 @@ public class KeyPairWorker extends Worker {
 
 		} catch (Exception e) {
 
-			accountLogService.saveLog(
+			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ keypair.getId() + ", " + e.getMessage(),
+							+ keypair.getKeyName() + ", " + e.getMessage(),
 					Commons.task_name.KEYPAIR.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 			logger.error(e);// e.printStackTrace();
