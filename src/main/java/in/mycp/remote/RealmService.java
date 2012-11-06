@@ -91,7 +91,7 @@ public class RealmService {
 				}
 			}
 
-			accountLogService.saveLog("User created " + instance.getEmail()+", ",
+			accountLogService.saveLog("User " + instance.getEmail()+" created, ",
 					Commons.task_name.USER.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
@@ -99,7 +99,7 @@ public class RealmService {
 			return instance.merge();
 		} catch (Exception e) {
 			log.error(e.getMessage());//e.printStackTrace();
-			accountLogService.saveLog("Error in User creation " + instance.getEmail()+", "+e.getMessage(),
+			accountLogService.saveLog("Error in User " + instance.getEmail()+" creation, "+e.getMessage(),
 					Commons.task_name.USER.name(),
 					Commons.task_status.FAIL.ordinal(),
 					Commons.getCurrentUser().getEmail());
@@ -113,13 +113,13 @@ public class RealmService {
 			User u = User.findUser(id);
 			u.remove();
 			
-			accountLogService.saveLog("User removed " + u.getEmail()+", ",
+			accountLogService.saveLog("User " + u.getEmail()+" removed, ",
 					Commons.task_name.USER.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
 		} catch (Exception e) {
 			log.error(e.getMessage());//e.printStackTrace();
-			accountLogService.saveLog("Error in User removal " + User.findUser(id).getEmail()+", "+e.getMessage(),
+			accountLogService.saveLog("Error in User " + User.findUser(id).getEmail()+" removal, "+e.getMessage(),
 					Commons.task_name.USER.name(),
 					Commons.task_status.FAIL.ordinal(),
 					Commons.getCurrentUser().getEmail());

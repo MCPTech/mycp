@@ -134,6 +134,13 @@ public class Commons {
 	}
 	
 	public static String QUOTA_EXCEED_MSG = "Quota Exceeded.";
+	
+	public static int OS_EDITION_ENABLED=1;
+	public static int HOSTED_EDITION_ENABLED=2;
+	public static int SP_EDITION_ENABLED=3;
+	
+	public static int EDITION_ENABLED=HOSTED_EDITION_ENABLED;
+	
 
 	public static List getAllJbpmProcDefNames() {
 		// public static final String JBPM_PROC_DEF_NAME_FVC_BILL = "fvc bill";

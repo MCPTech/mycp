@@ -61,7 +61,7 @@ public class ProjectService {
 			// instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
 
 			accountLogService.saveLog(
-					"Project created " + instance.getName() + ", ",
+					"Project " + instance.getName() + " created, ",
 					Commons.task_name.PROJECT.name(),
 					Commons.task_status.SUCCESS.ordinal(), Commons
 							.getCurrentUser().getEmail());
@@ -69,7 +69,7 @@ public class ProjectService {
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
 			accountLogService.saveLog(
-					"Error in Project creation " + instance.getName() + ", ",
+					"Error in Project " + instance.getName() + " creation, ",
 					Commons.task_name.PROJECT.name(),
 					Commons.task_status.FAIL.ordinal(), Commons
 							.getCurrentUser().getEmail());
@@ -84,7 +84,7 @@ public class ProjectService {
 			p.remove();
 
 			accountLogService.saveLog(
-					"Project removed " + p.getName() + ", ",
+					"Project " + p.getName() + " removed, ",
 					Commons.task_name.PROJECT.name(),
 					Commons.task_status.SUCCESS.ordinal(), Commons
 							.getCurrentUser().getEmail());
@@ -92,7 +92,7 @@ public class ProjectService {
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
 			accountLogService.saveLog(
-					"Error in Project removal " + Project.findProject(id).getName() + ", ",
+					"Error in Project " + Project.findProject(id).getName() + " removal, ",
 					Commons.task_name.PROJECT.name(),
 					Commons.task_status.FAIL.ordinal(), Commons
 							.getCurrentUser().getEmail());

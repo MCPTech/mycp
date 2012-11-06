@@ -88,6 +88,35 @@ public class AddressInfoP {
         q.setParameter("company", company);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByCompany(Company company) {
+        if (company == null) throw new IllegalArgumentException("The company argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<AddressInfoP> q = null;
+        q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset.user.project.department.company = :company", AddressInfoP.class);
+        q.setParameter("company", company);
+        return q;
+    }
+    
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsBy(Infra infra, Company company) {
+        if (company == null) throw new IllegalArgumentException("The company argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<AddressInfoP> q = null;
+        q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset.user.project.department.company = :company " +
+        		" and o.asset.productCatalog.infra = :infra", AddressInfoP.class);
+        q.setParameter("company", company);
+        q.setParameter("infra", infra);
+        return q;
+    }
+    
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByInfra(Infra infra) {
+        if (infra == null) throw new IllegalArgumentException("The infra argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<AddressInfoP> q = null;
+        q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset.productCatalog.infra = :infra", AddressInfoP.class);
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public static Number findAddressInfoCountByCompany(Company company) {
         String queryStr = "SELECT COUNT(i.id) FROM AddressInfoP i  ";
@@ -107,6 +136,18 @@ public class AddressInfoP {
         TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.publicIp = :publicIp " + " and o.asset.user.project.department.company = :company", AddressInfoP.class);
         q.setParameter("publicIp", publicIp);
         q.setParameter("company", company);
+        return q;
+    }
+    
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsBy(Infra infra, String publicIp, Company company) {
+        if (publicIp == null || publicIp.length() == 0) throw new IllegalArgumentException("The publicIp argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.publicIp = :publicIp " + 
+        		" and o.asset.user.project.department.company = :company " +
+        		" and o.asset.productCatalog.infra = :infra", AddressInfoP.class);
+        q.setParameter("publicIp", publicIp);
+        q.setParameter("company", company);
+        q.setParameter("infra", infra);
         return q;
     }
 

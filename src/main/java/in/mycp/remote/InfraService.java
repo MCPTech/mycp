@@ -65,7 +65,7 @@ public class InfraService {
 			accountLogService.saveLog(
 					"Start : Synchronizing "+instance.getName()
 							, Commons.task_name.SYNC
-							.name(), Commons.task_status.FAIL.ordinal(),
+							.name(), Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
 			
 			if (instance.getSyncInProgress() != null
@@ -147,8 +147,8 @@ public class InfraService {
 
 			}
 			instance = instance.merge();
-			accountLogService.saveLog("Cloud created " + instance.getName()
-					+ ", ", Commons.task_name.CLOUD.name(),
+			accountLogService.saveLog("Cloud " + instance.getName()
+					+ " created, ", Commons.task_name.CLOUD.name(),
 					Commons.task_status.SUCCESS.ordinal(), Commons
 							.getCurrentUser().getEmail());
 			// now create all products supported by this infra
@@ -259,10 +259,10 @@ public class InfraService {
 			}
 
 			i.remove();
-			accountLogService.saveLog("Cloud removed " + i.getName() + ", ",
+			accountLogService.saveLog("Cloud " + i.getName() + " removed, ",
 					Commons.task_name.CLOUD.name(), Commons.task_status.SUCCESS
 							.ordinal(), Commons.getCurrentUser().getEmail());
-			return "Removed Infra " + id;
+			return "Removed Infra " + Infra.findInfra(id).getName();
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
 			accountLogService.saveLog("Error in Cloud removal "
@@ -270,7 +270,7 @@ public class InfraService {
 					Commons.task_name.CLOUD.name(), Commons.task_status.FAIL
 							.ordinal(), Commons.getCurrentUser().getEmail());
 		}
-		return "Cannot Remove Infra " + id + ". look into logs.";
+		return "Cannot Remove Infra " + Infra.findInfra(id).getName() + ". look into logs.";
 	}// end of method remove(int id
 
 	@RemoteMethod

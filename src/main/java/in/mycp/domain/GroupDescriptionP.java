@@ -147,6 +147,35 @@ public class GroupDescriptionP {
         q.setParameter("company", company);
         return q;
     }
+    
+   public static TypedQuery<in.mycp.domain.GroupDescriptionP> findActiveGroupDescriptionPsByCompany(Company company) {
+        if (company == null) throw new IllegalArgumentException("The company argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<GroupDescriptionP> q = null;
+        q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.project.department.company = :company", GroupDescriptionP.class);
+        q.setParameter("company", company);
+        return q;
+    }
+   
+   public static TypedQuery<in.mycp.domain.GroupDescriptionP> findActiveGroupDescriptionPsBy(Infra infra, Company company) {
+       if (company == null) throw new IllegalArgumentException("The company argument is required");
+       EntityManager em = entityManager();
+       TypedQuery<GroupDescriptionP> q = null;
+       q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.project.department.company = :company" +
+       		" and o.asset.productCatalog.infra = :infra", GroupDescriptionP.class);
+       q.setParameter("company", company);
+       q.setParameter("infra", infra);
+       return q;
+   }
+    
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findActiveGroupDescriptionPsByInfra(Infra infra) {
+        if (infra == null) throw new IllegalArgumentException("The infra argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<GroupDescriptionP> q = null;
+        q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.productCatalog.infra = :infra", GroupDescriptionP.class);
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public static Number findGroupDescriptionCountByCompany(Company company, String status) {
         String queryStr = "SELECT COUNT(i.id) FROM GroupDescriptionP i where i.status = :status ";
@@ -167,6 +196,17 @@ public class GroupDescriptionP {
         TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name " + " and o.asset.user.project.department.company = :company", GroupDescriptionP.class);
         q.setParameter("name", name);
         q.setParameter("company", company);
+        return q;
+    }
+    
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsBy(Infra infra, String name, Company company) {
+        if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name " + " and o.asset.user.project.department.company = :company" +
+        		" and o.asset.productCatalog.infra = :infra ", GroupDescriptionP.class);
+        q.setParameter("name", name);
+        q.setParameter("company", company);
+        q.setParameter("infra", infra);
         return q;
     }
 

@@ -55,7 +55,7 @@ public class DepartmentService {
 			instance.setCompany(Company.findCompany(instance.getCompany().getId()));
 			//instance.setManager(Manager.findManager(instance.getManager().getId()));
 			//instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
-			accountLogService.saveLog("Department created " + instance.getName()+", ",
+			accountLogService.saveLog("Department " + instance.getName()+" created, ",
 					Commons.task_name.DEPARTMENT.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
@@ -64,7 +64,7 @@ public class DepartmentService {
 		} catch (Exception e) {
 			//e.printStackTrace();
 			log.error(e.getMessage());
-			accountLogService.saveLog("Error in Department creation " + instance.getName()+", ",
+			accountLogService.saveLog("Error in Department " + instance.getName()+" creation, ",
 					Commons.task_name.DEPARTMENT.name(),
 					Commons.task_status.FAIL.ordinal(),
 					Commons.getCurrentUser().getEmail());
@@ -77,7 +77,7 @@ public class DepartmentService {
 		try {
 			Department d = Department.findDepartment(id);
 			d.remove();
-			accountLogService.saveLog("Department removed " + d.getName()+", ",
+			accountLogService.saveLog("Department " + d.getName()+" removed, ",
 					Commons.task_name.DEPARTMENT.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
@@ -85,7 +85,7 @@ public class DepartmentService {
 		} catch (Exception e) {
 			//e.printStackTrace();
 			log.error(e.getMessage());
-			accountLogService.saveLog("Error in Department removal " + Department.findDepartment(id).getName()+", ",
+			accountLogService.saveLog("Error in Department " + Department.findDepartment(id).getName()+" removal, ",
 					Commons.task_name.DEPARTMENT.name(),
 					Commons.task_status.FAIL.ordinal(),
 					Commons.getCurrentUser().getEmail());
