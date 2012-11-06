@@ -1,4 +1,3 @@
-
 ------------------------------------------------------------------------------
 README	
 ------------------------------------------------------------------------------
@@ -21,7 +20,7 @@ Dilip - mddilip@gmail.com
 INSTALL	
 ------------------------------------------------------------------------------
 for installation, follow the instructions at http://code.google.com/p/mycloudportal/
-for dev environment setup, follow http://mycpdocs.s3-website-us-east-1.amazonaws.com/
+for dev environment setup, follow http://docs.mycloudportal.in/
 
 ------------------------------------------------------------------------------
 COPYING / LICENSE
