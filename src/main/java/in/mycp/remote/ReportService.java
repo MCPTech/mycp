@@ -70,7 +70,7 @@ public class ReportService {
 		if (currentRole.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			return Asset.findAssets4Report4User(0, assetType, billable, active).getResultList();
 			// if not , get owner asset report only
-		} else if (currentRole.equals(Commons.ROLE.ROLE_ADMIN + "") || currentRole.equals(Commons.ROLE.ROLE_MANAGER + "")) {
+		} else if (currentRole.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 			return Asset.findAssets4Report4Company(Commons.getCurrentSession().getCompanyId(), assetType, billable, active).getResultList();
 		} else {
 			return Asset.findAssets4Report4User(currentUser.getId(), assetType, billable, active).getResultList();

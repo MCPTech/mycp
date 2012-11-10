@@ -231,9 +231,7 @@ public class KeyPairService {
 				return KeyPairInfoP.findKeyPairInfoPsByUser(user, start, max,
 						search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				return KeyPairInfoP.findKeyPairInfoPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)

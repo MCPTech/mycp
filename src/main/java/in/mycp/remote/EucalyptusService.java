@@ -621,7 +621,7 @@ public class EucalyptusService {
 		if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			logger.info("SP Edition Enabled and Current user is Super Admin, synching everything cloud<-->mycp");
 		} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || currentUser.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + ""))) {
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + ""))) {
 			logger.info("OS/Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
 		} else {
 			throw new Exception("You cannot sync if\n" + "1. you are not Super Admin and running a SP edition of mycloudportal.\n"

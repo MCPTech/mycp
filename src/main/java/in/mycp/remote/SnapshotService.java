@@ -108,9 +108,7 @@ public class SnapshotService {
 				return SnapshotInfoP.findSnapshotInfoPsByUser(user, start, max,
 						search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				return SnapshotInfoP.findSnapshotInfoPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)

@@ -142,8 +142,7 @@ public class ReportsController {
 			Company c = Company.findCompany(Commons.getCurrentSession().getCompanyId());
 			req.setAttribute("currency", c.getCurrency());
 			if (Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")
-					|| Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") 
-					|| Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					|| Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") ) {
 				
 				
 				users = User.findUsersByCompany(c).getResultList();

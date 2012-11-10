@@ -283,9 +283,7 @@ public class SecurityGroupService {
 				gds = GroupDescriptionP.findActiveGroupDescriptionPsByUser(
 						user, start, max, search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 
 				gds = GroupDescriptionP.findActiveGroupDescriptionPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
@@ -333,9 +331,7 @@ public class SecurityGroupService {
 				gds = GroupDescriptionP.findAllGroupDescriptionPsByUser(user,
 						start, max, search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				gds = GroupDescriptionP.findAllGroupDescriptionPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)

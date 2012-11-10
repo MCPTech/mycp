@@ -250,9 +250,7 @@ public class VolumeService {
 				return VolumeInfoP.findVolumeInfoPsByUser(user, start, max,
 						search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				return VolumeInfoP.findVolumeInfoPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)
@@ -275,9 +273,7 @@ public class VolumeService {
 				volumes = VolumeInfoP.findVolumeInfoPsByUser(user, start, max,
 						search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				volumes = VolumeInfoP.findVolumeInfoPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)

@@ -197,8 +197,7 @@ public class InstancePService {
 			//if role is MANAGER , show all VMs
 			//if role is MYCP_ADMIN , show all VMs including System VMs
 			//for everybody else, just show their own VMs
-			if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")
-					|| user.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN+"")){
+			if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
 				return InstanceP.findInstancePsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId()),start, max,search).getResultList();
 			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
 				return InstanceP.findAllInstancePs(start, max,search);

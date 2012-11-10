@@ -122,7 +122,7 @@ public class Commons {
 	public static int ROLE_SUPERADMIN_INTVAL = 9;
 
 	static public enum ROLE {
-		ROLE_USER, ROLE_ADMIN, ROLE_MANAGER, ROLE_SUPERADMIN
+		ROLE_USER, ROLE_MANAGER, ROLE_SUPERADMIN
 	}
 
 	static public enum WORKFLOW_STATUS {
