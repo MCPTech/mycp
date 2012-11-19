@@ -70,7 +70,7 @@ public class InstancePService {
 
 			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment().getCompany();
+			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser,instance.getProduct(), allAssetTotalCosts,company);
 			instance.setAsset(asset);
 			instance = instance.merge();

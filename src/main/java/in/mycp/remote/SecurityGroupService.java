@@ -93,8 +93,7 @@ public class SecurityGroupService {
 				if (GroupDescriptionP
 						.findGroupDescriptionPsByNameEqualsAndCompanyEquals(
 								instance.getName(),
-								Commons.getCurrentUser().getProject()
-										.getDepartment().getCompany())
+								Commons.getCurrentUser().getDepartment().getCompany())
 						.getSingleResult().getId() > 0) {
 					throw new Exception(
 							"Security group with this name already exists for this account, Choose another name.");
@@ -121,8 +120,7 @@ public class SecurityGroupService {
 				long allAssetTotalCosts = reportService.getAllAssetCosts()
 						.getTotalCost();
 				currentUser = User.findUser(currentUser.getId());
-				Company company = currentUser.getProject().getDepartment()
-						.getCompany();
+				Company company = currentUser.getDepartment().getCompany();
 				Asset asset = Commons.getNewAsset(assetTypeSecurityGroup,
 						currentUser, instance.getProduct(), allAssetTotalCosts,
 						company);

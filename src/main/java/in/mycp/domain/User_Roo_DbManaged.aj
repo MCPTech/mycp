@@ -5,6 +5,7 @@ package in.mycp.domain;
 
 import in.mycp.domain.AccountLog;
 import in.mycp.domain.Asset;
+import in.mycp.domain.Department;
 import in.mycp.domain.Project;
 import in.mycp.domain.Role;
 import in.mycp.domain.User;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
@@ -21,6 +23,9 @@ import javax.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 privileged aspect User_Roo_DbManaged {
+    
+    @ManyToMany(mappedBy = "users")
+    private Set<Project> User.projects;
     
     @OneToMany(mappedBy = "userId")
     private Set<AccountLog> User.accountLogs;
@@ -32,12 +37,12 @@ privileged aspect User_Roo_DbManaged {
     private Set<Workflow> User.workflows;
     
     @ManyToOne
-    @JoinColumn(name = "role", referencedColumnName = "id")
-    private Role User.role;
+    @JoinColumn(name = "department", referencedColumnName = "id")
+    private Department User.department;
     
     @ManyToOne
-    @JoinColumn(name = "project", referencedColumnName = "id")
-    private Project User.project;
+    @JoinColumn(name = "role", referencedColumnName = "id")
+    private Role User.role;
     
     @Column(name = "email", length = 45, unique = true)
     @NotNull
@@ -71,6 +76,14 @@ privileged aspect User_Roo_DbManaged {
     @Column(name = "designation", length = 90)
     private String User.designation;
     
+    public Set<Project> User.getProjects() {
+        return projects;
+    }
+    
+    public void User.setProjects(Set<Project> projects) {
+        this.projects = projects;
+    }
+    
     public Set<AccountLog> User.getAccountLogs() {
         return accountLogs;
     }
@@ -95,20 +108,20 @@ privileged aspect User_Roo_DbManaged {
         this.workflows = workflows;
     }
     
+    public Department User.getDepartment() {
+        return department;
+    }
+    
+    public void User.setDepartment(Department department) {
+        this.department = department;
+    }
+    
     public Role User.getRole() {
         return role;
     }
     
     public void User.setRole(Role role) {
         this.role = role;
-    }
-    
-    public Project User.getProject() {
-        return project;
-    }
-    
-    public void User.setProject(Project project) {
-        this.project = project;
     }
     
     public String User.getEmail() {

@@ -131,8 +131,7 @@ public class SnapshotService {
 			long allAssetTotalCosts = reportService.getAllAssetCosts()
 					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment()
-					.getCompany();
+			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeSnapshot, currentUser,
 					snapshotInfoP.getProduct(), allAssetTotalCosts, company);
 			snapshotInfoP.setAsset(asset);

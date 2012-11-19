@@ -7,7 +7,7 @@
 <script type='text/javascript' src='/dwr/interface/ImageDescriptionP.js'></script>
 <script type='text/javascript' src='/dwr/interface/GroupDescriptionP.js'></script>
 <script type='text/javascript' src='/dwr/interface/ProductService.js'></script>
-  
+<script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
 
 <script type="text/javascript">
 /***************************/
@@ -96,6 +96,7 @@
 	        "aoColumns": [
 	            { "sTitle": "#" },
 	            { "sTitle": "Name" },
+	            { "sTitle": "Project" },
 	            { "sTitle": "Id" },
 	            { "sTitle": "Image" },
 	            { "sTitle": "DNS" },
@@ -162,7 +163,7 @@
 			}
                 
 			//alert(state);
-			oTable.fnAddData( [start+i+1,p[i].name, p[i].instanceId, p[i].imageId, p[i].dnsName,
+			oTable.fnAddData( [start+i+1,p[i].name, p[i].project, p[i].instanceId, p[i].imageId, p[i].dnsName,
 			                   p[i].keyName,p[i].groupName, p[i].platform, state,
 			                   p[i].instanceType,p[i].asset.productCatalog.infra.name,
 			                   actions ] );
@@ -210,6 +211,16 @@ $(function(){
 			InstanceP.findAll(start,max,text2Search,findAll_compute);
 			
 		} );
+		
+		ProjectService.findAll(function(p){
+			dwr.util.removeAllOptions('project');
+			//dwr.util.addOptions('project', p, 'id', 'name');
+			dwr.util.addOptions('project', p, 'id', function(p) {
+				return p.name+' @ '+p.department.name;
+			});
+			//dwr.util.setValue(id, sel);
+			
+		});
 		
 		});
 		
@@ -300,8 +311,9 @@ $(function(){
 		
 function submitForm_compute(f){
 	
-	var instancep = {  id:viewed_compute,name:null, reason:null, imageId:null, instanceType:null, keyName:null,groupName:null,product:null };
+	var instancep = {  id:viewed_compute,name:null, reason:null, imageId:null, instanceType:null, keyName:null,groupName:null,product:null, project:{} };
 	  dwr.util.getValues(instancep);
+	  instancep.project.id=dwr.util.getValue("project");
 	  var imageStr = dwr.util.getValue("imageId");
 	  if(imageStr.indexOf(',')>0){
 		  instancep.imageId=imageStr.substring(0,imageStr.indexOf(','));  
@@ -520,7 +532,13 @@ function afterSave_compute(){
 							    	</select>
 							    	</td>
 								  </tr>
-								  
+								  <tr>
+								    <td style="width: 20%;">project : </td>
+								    <td style="width: 80%;">
+								    <select id="project" name="project" style="width: 385px;" class="required">
+							    	</select>
+							    	</td>
+								  </tr>
 								  
 								  
 								  <tr>

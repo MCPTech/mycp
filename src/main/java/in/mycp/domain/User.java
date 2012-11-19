@@ -18,7 +18,7 @@ public class User {
     public static TypedQuery<in.mycp.domain.User> findUsersByCompany(Company company) {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
-        TypedQuery<User> q = em.createQuery("SELECT o FROM User AS o WHERE o.project.department.company = :company", User.class);
+        TypedQuery<User> q = em.createQuery("SELECT o FROM User AS o WHERE o.department.company = :company", User.class);
         q.setParameter("company", company);
         return q;
     }
@@ -26,7 +26,7 @@ public class User {
     public static TypedQuery<in.mycp.domain.User> findUsersByDepartment(Department department) {
         if (department == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
-        TypedQuery<User> q = em.createQuery("SELECT o FROM User AS o WHERE o.project.department = :department", User.class);
+        TypedQuery<User> q = em.createQuery("SELECT o FROM User AS o WHERE o.department = :department", User.class);
         q.setParameter("department", department);
         return q;
     }

@@ -27,17 +27,16 @@ public class AvailabilityZoneP {
         q.setParameter("company", company);
         return q.getResultList();
     }
-    
+
     public static List<in.mycp.domain.AvailabilityZoneP> findAllAvailabilityZonePsBy(Infra infra, Company company) {
         if (company == null) throw new IllegalArgumentException("The Company argument is required");
         EntityManager em = entityManager();
-        TypedQuery<in.mycp.domain.AvailabilityZoneP> q = em.createQuery("SELECT o FROM AvailabilityZoneP o" + " where o.infraId.company = :company " +
-        		" and o.infraId = :infra ", in.mycp.domain.AvailabilityZoneP.class);
+        TypedQuery<in.mycp.domain.AvailabilityZoneP> q = em.createQuery("SELECT o FROM AvailabilityZoneP o" + " where o.infraId.company = :company " + " and o.infraId = :infra ", in.mycp.domain.AvailabilityZoneP.class);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q.getResultList();
     }
-    
+
     public static List<in.mycp.domain.AvailabilityZoneP> findAllAvailabilityZonePsByInfra(Infra infra) {
         if (infra == null) throw new IllegalArgumentException("The infra argument is required");
         EntityManager em = entityManager();
@@ -45,17 +44,15 @@ public class AvailabilityZoneP {
         q.setParameter("infra", infra);
         return q.getResultList();
     }
-    
-    public static TypedQuery<AvailabilityZoneP> findAvailabilityZonePsBy(Infra infra,String name) {
+
+    public static TypedQuery<in.mycp.domain.AvailabilityZoneP> findAvailabilityZonePsBy(Infra infra, String name) {
         if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
         EntityManager em = entityManager();
-        TypedQuery<AvailabilityZoneP> q = em.createQuery("SELECT o FROM AvailabilityZoneP AS o WHERE o.name = :name " +
-        		" and o.infraId = :infra", AvailabilityZoneP.class);
+        TypedQuery<AvailabilityZoneP> q = em.createQuery("SELECT o FROM AvailabilityZoneP AS o WHERE o.name = :name " + " and o.infraId = :infra", AvailabilityZoneP.class);
         q.setParameter("name", name);
         q.setParameter("infra", infra);
         return q;
     }
-    
 
     public static List<in.mycp.domain.AvailabilityZoneP> findAllAvailabilityZonePs() {
         return entityManager().createQuery("SELECT o FROM AvailabilityZoneP o", AvailabilityZoneP.class).getResultList();

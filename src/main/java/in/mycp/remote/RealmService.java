@@ -72,7 +72,9 @@ public class RealmService {
 	@RemoteMethod
 	public User saveOrUpdate(User instance) {
 		try {
-			instance.setProject(Project.findProject(instance.getProject().getId()));
+			System.out.println(instance.getDepartment().getId());
+			System.out.println(instance.getProjects());
+			//instance.setProject(Project.findProject(instance.getProject().getId()));
 			//instance.setManager(Manager.findManager(instance.getManager().getId()));
 			//instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
 			// ShaPasswordEncoder passEncoder = new ShaPasswordEncoder(256);
@@ -98,7 +100,7 @@ public class RealmService {
 			
 			return instance.merge();
 		} catch (Exception e) {
-			log.error(e.getMessage());//e.printStackTrace();
+			log.error(e.getMessage());e.printStackTrace();
 			accountLogService.saveLog("Error in User " + instance.getEmail()+" creation, "+e.getMessage(),
 					Commons.task_name.USER.name(),
 					Commons.task_status.FAIL.ordinal(),
@@ -129,7 +131,8 @@ public class RealmService {
 	@RemoteMethod
 	public User findById(int id) {
 		try {
-			return User.findUser(id);
+			User user = User.findUser(id);
+			return user;
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
 		}

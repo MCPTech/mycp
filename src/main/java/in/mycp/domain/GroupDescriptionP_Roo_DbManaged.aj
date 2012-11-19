@@ -6,6 +6,7 @@ package in.mycp.domain;
 import in.mycp.domain.Asset;
 import in.mycp.domain.GroupDescriptionP;
 import in.mycp.domain.IpPermissionP;
+import in.mycp.domain.Project;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
@@ -16,6 +17,10 @@ privileged aspect GroupDescriptionP_Roo_DbManaged {
     
     @OneToMany(mappedBy = "groupDescription")
     private Set<IpPermissionP> GroupDescriptionP.ipPermissionPs;
+    
+    @ManyToOne
+    @JoinColumn(name = "project", referencedColumnName = "id")
+    private Project GroupDescriptionP.project;
     
     @ManyToOne
     @JoinColumn(name = "asset", referencedColumnName = "id")
@@ -39,6 +44,14 @@ privileged aspect GroupDescriptionP_Roo_DbManaged {
     
     public void GroupDescriptionP.setIpPermissionPs(Set<IpPermissionP> ipPermissionPs) {
         this.ipPermissionPs = ipPermissionPs;
+    }
+    
+    public Project GroupDescriptionP.getProject() {
+        return project;
+    }
+    
+    public void GroupDescriptionP.setProject(Project project) {
+        this.project = project;
     }
     
     public Asset GroupDescriptionP.getAsset() {

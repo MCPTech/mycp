@@ -141,7 +141,7 @@ public class LoginController {
 	            p.setDepartment(d);
 	            p.setName("Proj @ " + d.getName());
 	            p = p.merge();
-            user.setProject(p);
+            user.getProjects().add(p);
             user = user.merge();
             Infra infra = new Infra();
 	            infra.setName(c.getName() + " Euca Setup");

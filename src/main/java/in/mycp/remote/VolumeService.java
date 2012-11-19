@@ -71,8 +71,7 @@ public class VolumeService {
 			long allAssetTotalCosts = reportService.getAllAssetCosts()
 					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment()
-					.getCompany();
+			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser,
 					volume.getProduct(), allAssetTotalCosts, company);
 			volume.setAsset(asset);

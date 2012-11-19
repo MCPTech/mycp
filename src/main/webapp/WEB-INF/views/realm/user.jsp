@@ -5,6 +5,7 @@
 <!-- <script type='text/javascript' src='/dwr/interface/ManagerService.js'></script>
 <script type='text/javascript' src='/dwr/interface/QuotaService.js'></script> -->
 <script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
+<script type='text/javascript' src='/dwr/interface/DepartmentService.js'></script>
 
 <script type="text/javascript">
 /***************************/
@@ -180,10 +181,20 @@ $(function(){
 	  			}); */
 			
 	  			ProjectService.findAll(function(p){
-					dwr.util.removeAllOptions('project');
+					dwr.util.removeAllOptions('projects');
 					//dwr.util.addOptions('project', p, 'id', 'name');
-					dwr.util.addOptions('project', p, 'id', function(p) {
+					dwr.util.addOptions('projects', p, 'id', function(p) {
 						return p.name+' @ '+p.department.name;
+					});
+					//dwr.util.setValue(id, sel);
+					
+				});
+	  			
+	  			DepartmentService.findAll(function(p){
+					dwr.util.removeAllOptions('department');
+					//dwr.util.addOptions('department', p, 'id', 'name');
+					dwr.util.addOptions('department', p, 'id', function(p) {
+						return p.name;
 					});
 					//dwr.util.setValue(id, sel);
 					
@@ -213,10 +224,12 @@ $(function(){
 		
 	function submitForm_user(f){
 		//alert(f);
-		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, project:{}};
+		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, projects:{}, department:{}};
 		  dwr.util.getValues(user);
 		  user.role.id= dwr.util.getValue("role");
-		  user.project.id=dwr.util.getValue("project");
+		  //user.projects=dwr.util.getValue("projects");
+		  //user.projects[1].id=dwr.util.getValue("project")[1];
+		  user.department.id=dwr.util.getValue("department");
 		 // alert(user.role.id);
 		  /* try{
 			if('Please select ...' == dwr.util.getValue("manager")){
@@ -239,7 +252,7 @@ $(function(){
 	}
 	function cancelForm_user(f){
 	
-		var user = {  id:null,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, project:{}};
+		var user = {  id:null,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, projects:{}, department:{}};
 		  dwr.util.setValues(user);
 		  viewed_user = -1;
 		  disablePopup_user();
@@ -254,7 +267,8 @@ $(function(){
 		//alert(user.role.id);
 		$('#email').attr("readonly", true); 
 		dwr.util.setValue('role',user.role.id);
-		if(user.project !=null){
+		dwr.util.setValue('department',user.department.id);
+		if(user.projects !=null){
 			dwr.util.setValue('project',user.project.id);
 		}
 		/* try{dwr.util.setValue('manager',user.manager.id);}catch(e){}
@@ -351,7 +365,13 @@ $(function(){
 								  <tr>
 								    <td style="width: 50%;">Project : </td>
 								    <td style="width: 50%;"> 
-								    <select id="project" name="project" style="width: 205px;" class="required">
+								    <select id="projects" name="projects" style="width: 205px;" class="required" multiple>
+							    	</select></td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;">Department : </td>
+								    <td style="width: 50%;"> 
+								    <select id="department" name="department" style="width: 205px;" class="required">
 							    	</select></td>
 								  </tr>
 								  <!--  <tr>

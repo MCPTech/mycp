@@ -103,7 +103,7 @@ public class SignupService {
 	            p.setDepartment(d);
 	            p.setName("Proj @ " + d.getName());
 	            p = p.merge();
-            user.setProject(p);
+            user.getProjects().add(p);
             user = user.merge();
             Infra infra = new Infra();
 	            infra.setName(c.getName() + " Euca Setup");
@@ -225,7 +225,7 @@ public class SignupService {
     
     @RemoteMethod
     public void cleanupUser(int userId) {
-        User u = User.findUser(userId);
+        /*User u = User.findUser(userId);
         int projId = u.getProject().getId();
         u.remove();
         Project p = Project.findProject(projId);
@@ -245,6 +245,6 @@ public class SignupService {
             Infra infra = (Infra) iterator.next();
             infra.remove();
         }
-        c.remove();
+        c.remove();*/
     }
 }

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -854,7 +855,8 @@ public class ReportService {
 	public List<Asset> findAssets4AllUsers(int projectId) {
 		List<Asset> assets = new ArrayList<Asset>();
 			try {
-				List<User> users = User.findUsersByProject(Project.findProject(projectId)).getResultList();
+				//List<User> users = User.findUsersByProject(Project.findProject(projectId)).getResultList();
+				Set<User> users = Project.findProject(projectId).getUsers();
 				for (Iterator iterator = users.iterator(); iterator.hasNext();) {
 					try {
 						User user = (User) iterator.next();

@@ -64,7 +64,7 @@ public class Workflow {
     public static TypedQuery<in.mycp.domain.Workflow> findWorkflowsByCompany(Company company) {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = Workflow.entityManager();
-        TypedQuery<Workflow> q = em.createQuery("SELECT o FROM Workflow AS o WHERE o.user.project.department.company = :company", Workflow.class);
+        TypedQuery<Workflow> q = em.createQuery("SELECT o FROM Workflow AS o WHERE o.user.department.company = :company", Workflow.class);
         q.setParameter("company", company);
         return q;
     }

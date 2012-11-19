@@ -3,6 +3,7 @@
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
 <script type='text/javascript' src='/dwr/interface/GroupDescriptionP.js'></script>
 <script type='text/javascript' src='/dwr/interface/IpPermissionP.js'></script>
+<script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
 <script type="text/javascript">
 	function clearTable(tableID) {
 		$(document.getElementById(tableID)).find("tr:gt(0)").remove();	
@@ -124,6 +125,7 @@
 	        "aoColumns": [
 	            { "sTitle": "#" },
 	            { "sTitle": "Name" },
+	            { "sTitle": "Project" },
 	            { "sTitle": "Description" },
 	            { "sTitle": "Owner" },
 	            { "sTitle": "Status" },
@@ -156,7 +158,7 @@
 				status = '<img title="unknown" alt="unknown" src=../images/unknown.png >';
 			}
 			
-			oTable.fnAddData( [i+1,p[i].name, p[i].descripton, p[i].owner,status,
+			oTable.fnAddData( [i+1,p[i].name, p[i].project, p[i].descripton, p[i].owner,status,
 			                   '', '', '',
 			                   '',p[i].asset.productCatalog.infra.name,
 			                   '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_secgroup('+p[i].id+')>&nbsp;&nbsp;&nbsp;'+
@@ -221,6 +223,15 @@ $(function(){
 				
 			} );
 	
+			ProjectService.findAll(function(p){
+				dwr.util.removeAllOptions('project');
+				//dwr.util.addOptions('project', p, 'id', 'name');
+				dwr.util.addOptions('project', p, 'id', function(p) {
+					return p.name+' @ '+p.department.name;
+				});
+				//dwr.util.setValue(id, sel);
+				
+			});
 		});
 
 		$("#popupContactClose_secgroup").click(function(){
@@ -257,8 +268,9 @@ $(function(){
 		
 	function submitForm_secgroup(f){
 		CommonService.getSessionMsg(function(p){   $.sticky(p);  });
-		var groupDescriptionp = {  id:viewed_secgroup,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null };
+		var groupDescriptionp = {  id:viewed_secgroup,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null, project:{} };
 	     dwr.util.getValues(groupDescriptionp); 
+	     groupDescriptionp.project.id=dwr.util.getValue("project");
 		  if(viewed_secgroup == -1){
 			  groupDescriptionp.id  = null; 
 		  }
@@ -292,8 +304,9 @@ $(function(){
 	}
 	function cancelForm_secgroup(f){
 	
-		var groupDescriptionp = {  id:null,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null };
+		var groupDescriptionp = {  id:null,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null, project:{} };
 		  dwr.util.setValues(groupDescriptionp);
+		  groupDescriptionp.project.id=dwr.util.getValue("project");
 		  viewed_secgroup = -1;
 		  disablePopup_secgroup();
 	}
@@ -400,6 +413,7 @@ $(function(){
 								    <td style="width: 20%;">Description : </td>
 								    <td style="width: 20%;">Owner : </td>
 								    <td style="width: 20%;">Product : </td>
+								    <td style="width: 20%;">Project : </td>
 								    <td style="width: 20%;"></td>
 								</tr>
 								 
@@ -409,6 +423,10 @@ $(function(){
 								    <td style="width: 20%;"><input type="text" name="owner" id="owner" size="20" class="required"> </td>
 								    <td style="width: 20%;"><select id="product" name="product" style="width: 205px;" class="required"></select>
 								    </td>
+								    <td style="width: 20%;">
+									    <select id="project" name="project" style="width: 205px;" class="required">
+								    	</select>
+							    	</td>
 								    <td style="width: 20%;"></td>
 								</tr>
 								
@@ -424,11 +442,10 @@ $(function(){
 												  	<div class="demo" ><button onclick="addRow('secTable');return false;">Add New Rule</button></div>
 												  </td>
 											  </tr>
-											  
-											  
 										  </table>
 									  </td>
 								</tr>
+								
 								  
 								<tr>
 								  	<td style="width: 20%;"></td>

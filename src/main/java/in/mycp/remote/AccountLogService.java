@@ -112,7 +112,7 @@ public class AccountLogService {
 		try{
 			AccountLog acctLog = new AccountLog();
 			acctLog.setDetails(message);
-			acctLog.setStatus(status);
+			acctLog.setStatus((short)status);
 			acctLog.setTask(task);
 			acctLog.setTimeOfEntry(new Date());
 			acctLog.setUserId(User.findUsersByEmailEquals(emailId).getSingleResult());

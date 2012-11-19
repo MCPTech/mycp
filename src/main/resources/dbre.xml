@@ -10,7 +10,7 @@
         <column name="task" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="details" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="time_of_entry" primaryKey="false" required="false" scale="0" size="19" type="93,DATETIME"/>
-        <column name="status" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <column name="status" primaryKey="false" required="false" scale="0" size="5" type="5,SMALLINT"/>
         <column name="user_id" primaryKey="false" required="true" scale="0" size="10" type="4,INT"/>
         <foreign-key foreignTable="user" name="fk_account_log_user1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
@@ -32,6 +32,11 @@
         <column name="reason" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="associated" primaryKey="false" required="false" scale="0" size="0" type="-7,BIT"/>
         <column name="status" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="fk_addressinfop_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
+        </foreign-key>
         <foreign-key foreignTable="asset" name="fk_Address_Info_P_Asset1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="asset"/>
@@ -41,6 +46,9 @@
         </unique>
         <index name="ix_Address_Info_P_Asset1">
             <index-column name="asset"/>
+        </index>
+        <index name="fk_project_idx">
+            <index-column name="project"/>
         </index>
     </table>
     <table name="asset">
@@ -220,6 +228,10 @@
             <option key="exported" value="true"/>
             <reference foreign="department" local="id"/>
         </foreign-key>
+        <foreign-key foreignTable="user" name="fk_department" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="department" local="id"/>
+        </foreign-key>
         <unique name="PRIMARY">
             <unique-column name="id"/>
         </unique>
@@ -234,6 +246,11 @@
         <column name="owner" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="asset" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="status" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="fk_groupdescriptionp_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
+        </foreign-key>
         <foreign-key foreignTable="asset" name="fk_Group_Description_Asset1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="asset"/>
@@ -247,6 +264,9 @@
         </unique>
         <index name="ix_Group_Description_Asset1">
             <index-column name="asset"/>
+        </index>
+        <index name="fk_project_idx">
+            <index-column name="project"/>
         </index>
     </table>
     <table name="image_description_p">
@@ -382,6 +402,11 @@
         <column name="name" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="groupName" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="asset" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="fk_instancep_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
+        </foreign-key>
         <foreign-key foreignTable="asset" name="fk_asset_instancep" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="asset"/>
@@ -398,6 +423,9 @@
         </index>
         <index name="fk_asset_instancep">
             <index-column name="asset"/>
+        </index>
+        <index name="fk_projectx">
+            <index-column name="project"/>
         </index>
     </table>
     <table name="ip_address_p">
@@ -447,6 +475,11 @@
         <column name="keyMaterial" primaryKey="false" required="false" scale="0" size="2048" type="12,VARCHAR"/>
         <column name="asset" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="status" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="fk_keypairinfop_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
+        </foreign-key>
         <foreign-key foreignTable="asset" name="fk_KeyPairInfo_Asset1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="asset"/>
@@ -456,6 +489,9 @@
         </unique>
         <index name="ix_KeyPairInfo_Asset1">
             <index-column name="asset"/>
+        </index>
+        <index name="fk_project_idx">
+            <index-column name="project"/>
         </index>
     </table>
     <table name="manager">
@@ -522,11 +558,35 @@
             <option key="exported" value="false"/>
             <reference foreign="id" local="department"/>
         </foreign-key>
+        <foreign-key foreignTable="address_info_p" name="fk_addressinfop_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="project" local="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="group_description_p" name="fk_groupdescriptionp_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="project" local="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="instance_p" name="fk_instancep_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="project" local="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="key_pair_info_p" name="fk_keypairinfop_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="project" local="id"/>
+        </foreign-key>
         <foreign-key foreignTable="manager" name="fk_Manager_Project1" onDelete="none" onUpdate="none">
             <option key="exported" value="true"/>
             <reference foreign="project" local="id"/>
         </foreign-key>
-        <foreign-key foreignTable="user" name="fk_user_project" onDelete="none" onUpdate="none">
+        <foreign-key foreignTable="snapshot_info_p" name="fk_snapshotinfop_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="project" local="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="user_project" name="FK_PROJECT_ID" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="project_id" local="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="volume_info_p" name="fk_volumeinfop_project" onDelete="none" onUpdate="none">
             <option key="exported" value="true"/>
             <reference foreign="project" local="id"/>
         </foreign-key>
@@ -600,6 +660,11 @@
         <column name="ownerAlias" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="tagSet" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="asset" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="fk_snapshotinfop_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
+        </foreign-key>
         <foreign-key foreignTable="asset" name="fk_SnapshotInfo_Asset1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="asset"/>
@@ -609,6 +674,9 @@
         </unique>
         <index name="ix_SnapshotInfo_Asset1">
             <index-column name="asset"/>
+        </index>
+        <index name="fk_project_idx">
+            <index-column name="project"/>
         </index>
     </table>
     <table name="user">
@@ -623,14 +691,14 @@
         <column name="lastName" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="phone" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="designation" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
-        <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <column name="department" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="department" name="fk_department" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="department"/>
+        </foreign-key>
         <foreign-key foreignTable="role" name="fk_role" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="role"/>
-        </foreign-key>
-        <foreign-key foreignTable="project" name="fk_user_project" onDelete="none" onUpdate="none">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="project"/>
         </foreign-key>
         <foreign-key foreignTable="account_log" name="fk_account_log_user1" onDelete="none" onUpdate="none">
             <option key="exported" value="true"/>
@@ -639,6 +707,10 @@
         <foreign-key foreignTable="asset" name="fk_Asset_User1" onDelete="none" onUpdate="none">
             <option key="exported" value="true"/>
             <reference foreign="user" local="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="user_project" name="FK_USER_ID" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="user_id" local="id"/>
         </foreign-key>
         <foreign-key foreignTable="workflow" name="fk_workflow_user" onDelete="none" onUpdate="none">
             <option key="exported" value="true"/>
@@ -653,8 +725,27 @@
         <index name="fk_role">
             <index-column name="role"/>
         </index>
-        <index name="fk_user_project">
-            <index-column name="project"/>
+        <index name="fk_department_idx">
+            <index-column name="department"/>
+        </index>
+    </table>
+    <table name="user_project">
+        <column name="user_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
+        <column name="project_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="FK_PROJECT_ID" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="user_id"/>
+        </foreign-key>
+        <unique name="PRIMARY">
+            <unique-column name="user_id"/>
+            <unique-column name="project_id"/>
+        </unique>
+        <index name="FK_PROJECT_ID">
+            <index-column name="project_id"/>
         </index>
     </table>
     <table name="volume_info_p">
@@ -669,6 +760,11 @@
         <column name="instanceId" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="device" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="name" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
+        <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="fk_volumeinfop_project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
+        </foreign-key>
         <foreign-key foreignTable="asset" name="fk_Volume_Info_Asset1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="asset"/>
@@ -682,6 +778,9 @@
         </unique>
         <index name="ix_Volume_Info_Asset1">
             <index-column name="asset"/>
+        </index>
+        <index name="fk_project_idx">
+            <index-column name="project"/>
         </index>
     </table>
     <table name="workflow">

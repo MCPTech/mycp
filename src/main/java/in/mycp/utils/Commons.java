@@ -254,8 +254,8 @@ public class Commons {
 			mysession.setFirstName("");
 			mysession.setLastName("");
 			try {
-				mysession.setCompany(user.getProject().getDepartment().getCompany().getName());
-				mysession.setCompanyId(user.getProject().getDepartment().getCompany().getId());
+				mysession.setCompany(user.getDepartment().getCompany().getName());
+				mysession.setCompanyId(user.getDepartment().getCompany().getId());
 			} catch (Exception e) {
 				// e.printStackTrace();
 			}

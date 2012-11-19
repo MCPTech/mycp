@@ -82,8 +82,7 @@ public class KeyPairService {
 				if (KeyPairInfoP
 						.findKeyPairInfoPsByKeyNameEqualsAndCompanyEquals(
 								instance.getKeyName(),
-								Commons.getCurrentUser().getProject()
-										.getDepartment().getCompany())
+								Commons.getCurrentUser().getDepartment().getCompany())
 						.getSingleResult().getId() > 0) {
 					throw new Exception(
 							"Key with this name already exists for this account, Choose another name.");
@@ -107,8 +106,7 @@ public class KeyPairService {
 				currentUser = User.findUser(currentUser.getId());
 				long allAssetTotalCosts = reportService.getAllAssetCosts()
 						.getTotalCost();
-				Company company = currentUser.getProject().getDepartment()
-						.getCompany();
+				Company company = currentUser.getDepartment().getCompany();
 				Asset asset = Commons.getNewAsset(assetTypeKeyPair,
 						currentUser, instance.getProduct(), allAssetTotalCosts,
 						company);

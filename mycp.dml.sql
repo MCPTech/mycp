@@ -115,3 +115,40 @@ update jbpm4_lob set blob_value_='<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n
 where dbid_=81043;
 commit;
 --end jbpm mail changes Gangu
+
+ALTER TABLE `user` DROP FOREIGN KEY `fk_user_project` ;
+ALTER TABLE `user` ADD COLUMN `department` INT(11) NULL  AFTER `project` , 
+
+  ADD CONSTRAINT `fk_department`
+
+  FOREIGN KEY (`department` )
+
+  REFERENCES `department` (`id` )
+
+  ON DELETE NO ACTION
+
+  ON UPDATE NO ACTION
+
+, ADD INDEX `fk_department_idx` (`department` ASC) ;
+
+
+insert into user_project(user_id, project_id)  (select id, project from user where email <> 'superadmin@mycloudportal.in');
+
+update user t1, (select  project.department, user.id from project join user on project.id=user.project) t2
+set t1.department = t2.department
+where t1.id=t2.id;
+commit;
+
+ALTER TABLE `instance_p` ADD COLUMN `project` INT(11) NULL;
+ALTER TABLE `volume_info_p` ADD COLUMN `project` INT(11) NULL;
+ALTER TABLE `address_info_p` ADD COLUMN `project` INT(11) NULL;
+ALTER TABLE `group_description_p` ADD COLUMN `project` INT(11) NULL;
+ALTER TABLE `key_pair_info_p` ADD COLUMN `project` INT(11) NULL;
+ALTER TABLE `snapshot_info_p` ADD COLUMN `project` INT(11) NULL;
+
+ALTER TABLE `instance_p` ADD CONSTRAINT `fk_instancep_project`  FOREIGN KEY (`project` ) REFERENCES `project` (`id` ) ON DELETE NO ACTION ON UPDATE NO ACTION , ADD INDEX `fk_projectx` (`project` ASC) ;
+ALTER TABLE `volume_info_p` ADD CONSTRAINT `fk_volumeinfop_project`  FOREIGN KEY (`project` ) REFERENCES `project` (`id` ) ON DELETE NO ACTION ON UPDATE NO ACTION , ADD INDEX `fk_project_idx` (`project` ASC) ;
+ALTER TABLE `address_info_p` ADD CONSTRAINT `fk_addressinfop_project`  FOREIGN KEY (`project` ) REFERENCES `project` (`id` ) ON DELETE NO ACTION ON UPDATE NO ACTION , ADD INDEX `fk_project_idx` (`project` ASC) ;
+ALTER TABLE `group_description_p` ADD CONSTRAINT `fk_groupdescriptionp_project`  FOREIGN KEY (`project` ) REFERENCES `project` (`id` ) ON DELETE NO ACTION ON UPDATE NO ACTION , ADD INDEX `fk_project_idx` (`project` ASC) ;
+ALTER TABLE `key_pair_info_p` ADD CONSTRAINT `fk_keypairinfop_project`  FOREIGN KEY (`project` ) REFERENCES `project` (`id` ) ON DELETE NO ACTION ON UPDATE NO ACTION , ADD INDEX `fk_project_idx` (`project` ASC) ;
+ALTER TABLE `snapshot_info_p` ADD CONSTRAINT `fk_snapshotinfop_project`  FOREIGN KEY (`project` ) REFERENCES `project` (`id` ) ON DELETE NO ACTION ON UPDATE NO ACTION , ADD INDEX `fk_project_idx` (`project` ASC) ;
