@@ -163,7 +163,7 @@
 			}
                 
 			//alert(state);
-			oTable.fnAddData( [start+i+1,p[i].name, p[i].project, p[i].instanceId, p[i].imageId, p[i].dnsName,
+			oTable.fnAddData( [start+i+1,p[i].name, p[i].asset.project.name, p[i].instanceId, p[i].imageId, p[i].dnsName,
 			                   p[i].keyName,p[i].groupName, p[i].platform, state,
 			                   p[i].instanceType,p[i].asset.productCatalog.infra.name,
 			                   actions ] );
@@ -213,9 +213,9 @@ $(function(){
 		} );
 		
 		ProjectService.findAll(function(p){
-			dwr.util.removeAllOptions('project');
+			dwr.util.removeAllOptions('projectId');
 			//dwr.util.addOptions('project', p, 'id', 'name');
-			dwr.util.addOptions('project', p, 'id', function(p) {
+			dwr.util.addOptions('projectId', p, 'id', function(p) {
 				return p.name+' @ '+p.department.name;
 			});
 			//dwr.util.setValue(id, sel);
@@ -311,9 +311,8 @@ $(function(){
 		
 function submitForm_compute(f){
 	
-	var instancep = {  id:viewed_compute,name:null, reason:null, imageId:null, instanceType:null, keyName:null,groupName:null,product:null, project:{} };
+	var instancep = {  id:viewed_compute,name:null, reason:null, imageId:null, instanceType:null, keyName:null,groupName:null,product:null, projectId:null };
 	  dwr.util.getValues(instancep);
-	  instancep.project.id=dwr.util.getValue("project");
 	  var imageStr = dwr.util.getValue("imageId");
 	  if(imageStr.indexOf(',')>0){
 		  instancep.imageId=imageStr.substring(0,imageStr.indexOf(','));  
@@ -535,7 +534,7 @@ function afterSave_compute(){
 								  <tr>
 								    <td style="width: 20%;">project : </td>
 								    <td style="width: 80%;">
-								    <select id="project" name="project" style="width: 385px;" class="required">
+								    <select id="projectId" name="projectId" style="width: 385px;" class="required">
 							    	</select>
 							    	</td>
 								  </tr>

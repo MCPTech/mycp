@@ -22,6 +22,7 @@ import in.mycp.domain.AssetType;
 import in.mycp.domain.AttachmentInfoP;
 import in.mycp.domain.Company;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.domain.VolumeInfoP;
 import in.mycp.utils.Commons;
@@ -74,6 +75,7 @@ public class VolumeService {
 			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser,
 					volume.getProduct(), allAssetTotalCosts, company);
+			asset.setProject(Project.findProject(volume.getProjectId()));
 			volume.setAsset(asset);
 			volume = volume.merge();
 			if (true == assetTypeVolume.getWorkflowEnabled()) {

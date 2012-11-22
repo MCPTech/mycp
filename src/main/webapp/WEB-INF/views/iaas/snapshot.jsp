@@ -103,7 +103,7 @@
                 	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_backup('+p[i].id+')>';
         	}
 			
-			oTable.fnAddData( [start+i+1,p[i].snapshotId, p[i].project, p[i].volumeId, 
+			oTable.fnAddData( [start+i+1,p[i].snapshotId, p[i].asset.project.name, p[i].volumeId, 
 			                   dateFormat(p[i].startTime,"mmm dd yyyy HH:MM:ss"), p[i].status,p[i].progress, p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}
@@ -151,9 +151,9 @@ $(function(){
 		} );
 	
 		ProjectService.findAll(function(p){
-			dwr.util.removeAllOptions('project');
+			dwr.util.removeAllOptions('projectId');
 			//dwr.util.addOptions('project', p, 'id', 'name');
-			dwr.util.addOptions('project', p, 'id', function(p) {
+			dwr.util.addOptions('projectId', p, 'id', function(p) {
 				return p.name+' @ '+p.department.name;
 			});
 			//dwr.util.setValue(id, sel);
@@ -205,14 +205,13 @@ $(function(){
 		});
 		
 	function submitForm_backup(f){
-		var snapshotInfop = {  id:viewed_backup,description:null, volumeId:null,product:null, project:{} };
+		var snapshotInfop = {  id:viewed_backup,description:null, volumeId:null,product:null, projectId:null };
 		  dwr.util.getValues(snapshotInfop);
-		  snapshotInfop.project.id=dwr.util.getValue("project");
 		  if(viewed_backup == -1){
 			  snapshotInfop.id  = null; 
 		  }
 		  dwr.engine.beginBatch();
-		  SnapshotInfoP.saveOrUpdate(snapshotInfop,afterSave_backup);
+		  SnapshotInfoP.requestSnapshot(snapshotInfop,afterSave_backup);
 		  dwr.engine.endBatch();
 		  disablePopup_backup();
 		  viewed_backup=-1;
@@ -220,9 +219,8 @@ $(function(){
 	}
 	function cancelForm_backup(f){
 	
-		var snapshotInfop = {  id:null,description:null, volumeId:null,product:null, project:{} };
+		var snapshotInfop = {  id:null,description:null, volumeId:null,product:null, projectId:null };
 		  dwr.util.setValues(snapshotInfop);
-		  snapshotInfop.project.id=dwr.util.getValue("project");
 		  viewed_backup = -1;
 		  disablePopup_backup();
 	}
@@ -336,7 +334,7 @@ $(function(){
 								  <tr>
 								    <td style="width: 50%;">project : </td>
 								    <td style="width: 50%;">
-								    <select id="project" name="project" style="width: 205px;" class="required">
+								    <select id="projectId" name="projectId" style="width: 205px;" class="required">
 							    	</select>
 							    	</td>
 								  </tr>

@@ -20,6 +20,7 @@ import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.IpAddressWorker;
@@ -68,6 +69,7 @@ public class AddressInfoPService {
 				return instance_local.merge();
 			}
 			String productId = instance.getProduct();
+			int projectId = instance.getProjectId();
 			instance = instance.merge();
 			AssetType assetType = AssetType.findAssetTypesByNameEquals(
 					"" + Commons.ASSET_TYPE.IpAddress).getSingleResult();
@@ -78,6 +80,7 @@ public class AddressInfoPService {
 			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetType, currentUser,
 					productId, allAssetTotalCosts, company);
+			asset.setProject(Project.findProject(projectId));
 			asset.setActive(false);
 			instance.setAsset(asset);
 			instance = instance.merge();

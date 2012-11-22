@@ -3,16 +3,11 @@
 
 package in.mycp.domain;
 
-import in.mycp.domain.AddressInfoP;
+import in.mycp.domain.Asset;
 import in.mycp.domain.Department;
-import in.mycp.domain.GroupDescriptionP;
-import in.mycp.domain.InstanceP;
-import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.Manager;
 import in.mycp.domain.Project;
-import in.mycp.domain.SnapshotInfoP;
 import in.mycp.domain.User;
-import in.mycp.domain.VolumeInfoP;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
@@ -28,25 +23,10 @@ privileged aspect Project_Roo_DbManaged {
     private Set<User> Project.users;
     
     @OneToMany(mappedBy = "project")
-    private Set<AddressInfoP> Project.addressInfoPs;
-    
-    @OneToMany(mappedBy = "project")
-    private Set<GroupDescriptionP> Project.groupDescriptionPs;
-    
-    @OneToMany(mappedBy = "project")
-    private Set<InstanceP> Project.instancePs;
-    
-    @OneToMany(mappedBy = "project")
-    private Set<KeyPairInfoP> Project.keyPairInfoPs;
+    private Set<Asset> Project.assets;
     
     @OneToMany(mappedBy = "project")
     private Set<Manager> Project.managers;
-    
-    @OneToMany(mappedBy = "project")
-    private Set<SnapshotInfoP> Project.snapshotInfoPs;
-    
-    @OneToMany(mappedBy = "project")
-    private Set<VolumeInfoP> Project.volumeInfoPs;
     
     @ManyToOne
     @JoinColumn(name = "department", referencedColumnName = "id")
@@ -58,6 +38,9 @@ privileged aspect Project_Roo_DbManaged {
     @Column(name = "details", length = 255)
     private String Project.details;
     
+    @Column(name = "quota")
+    private Integer Project.quota;
+    
     public Set<User> Project.getUsers() {
         return users;
     }
@@ -66,36 +49,12 @@ privileged aspect Project_Roo_DbManaged {
         this.users = users;
     }
     
-    public Set<AddressInfoP> Project.getAddressInfoPs() {
-        return addressInfoPs;
+    public Set<Asset> Project.getAssets() {
+        return assets;
     }
     
-    public void Project.setAddressInfoPs(Set<AddressInfoP> addressInfoPs) {
-        this.addressInfoPs = addressInfoPs;
-    }
-    
-    public Set<GroupDescriptionP> Project.getGroupDescriptionPs() {
-        return groupDescriptionPs;
-    }
-    
-    public void Project.setGroupDescriptionPs(Set<GroupDescriptionP> groupDescriptionPs) {
-        this.groupDescriptionPs = groupDescriptionPs;
-    }
-    
-    public Set<InstanceP> Project.getInstancePs() {
-        return instancePs;
-    }
-    
-    public void Project.setInstancePs(Set<InstanceP> instancePs) {
-        this.instancePs = instancePs;
-    }
-    
-    public Set<KeyPairInfoP> Project.getKeyPairInfoPs() {
-        return keyPairInfoPs;
-    }
-    
-    public void Project.setKeyPairInfoPs(Set<KeyPairInfoP> keyPairInfoPs) {
-        this.keyPairInfoPs = keyPairInfoPs;
+    public void Project.setAssets(Set<Asset> assets) {
+        this.assets = assets;
     }
     
     public Set<Manager> Project.getManagers() {
@@ -104,22 +63,6 @@ privileged aspect Project_Roo_DbManaged {
     
     public void Project.setManagers(Set<Manager> managers) {
         this.managers = managers;
-    }
-    
-    public Set<SnapshotInfoP> Project.getSnapshotInfoPs() {
-        return snapshotInfoPs;
-    }
-    
-    public void Project.setSnapshotInfoPs(Set<SnapshotInfoP> snapshotInfoPs) {
-        this.snapshotInfoPs = snapshotInfoPs;
-    }
-    
-    public Set<VolumeInfoP> Project.getVolumeInfoPs() {
-        return volumeInfoPs;
-    }
-    
-    public void Project.setVolumeInfoPs(Set<VolumeInfoP> volumeInfoPs) {
-        this.volumeInfoPs = volumeInfoPs;
     }
     
     public Department Project.getDepartment() {
@@ -144,6 +87,14 @@ privileged aspect Project_Roo_DbManaged {
     
     public void Project.setDetails(String details) {
         this.details = details;
+    }
+    
+    public Integer Project.getQuota() {
+        return quota;
+    }
+    
+    public void Project.setQuota(Integer quota) {
+        this.quota = quota;
     }
     
 }

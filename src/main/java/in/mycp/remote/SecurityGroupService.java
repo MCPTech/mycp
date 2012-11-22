@@ -21,6 +21,7 @@ import in.mycp.domain.Company;
 import in.mycp.domain.GroupDescriptionP;
 import in.mycp.domain.IpPermissionP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.SecurityGroupWorker;
@@ -124,6 +125,7 @@ public class SecurityGroupService {
 				Asset asset = Commons.getNewAsset(assetTypeSecurityGroup,
 						currentUser, instance.getProduct(), allAssetTotalCosts,
 						company);
+				asset.setProject(Project.findProject(instance.getProjectId()));
 				instance.setAsset(asset);
 
 				if (true == assetTypeSecurityGroup.getWorkflowEnabled()) {

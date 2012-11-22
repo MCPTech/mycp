@@ -28,6 +28,9 @@ privileged aspect Department_Roo_DbManaged {
     @Column(name = "name", length = 45)
     private String Department.name;
     
+    @Column(name = "quota")
+    private Integer Department.quota;
+    
     public Set<Project> Department.getProjects() {
         return projects;
     }
@@ -58,6 +61,14 @@ privileged aspect Department_Roo_DbManaged {
     
     public void Department.setName(String name) {
         this.name = name;
+    }
+    
+    public Integer Department.getQuota() {
+        return quota;
+    }
+    
+    public void Department.setQuota(Integer quota) {
+        this.quota = quota;
     }
     
 }

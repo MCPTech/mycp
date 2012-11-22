@@ -135,7 +135,7 @@ function centerPopup_ipaddress(popup,backgroundPopup){
 				actions='<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_ipaddress('+p[i].id+')>&nbsp;';
 			}
  */
-			oTable.fnAddData( [start+i+1,p[i].name,p[i].project,p[i].instanceId, p[i].publicIp,p[i].status,p[i].reason,p[i].asset.productCatalog.infra.name,
+			oTable.fnAddData( [start+i+1,p[i].name,p[i].asset.project.name,p[i].instanceId, p[i].publicIp,p[i].status,p[i].reason,p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}
 		
@@ -249,9 +249,9 @@ $(function(){
   			});
 			
 			ProjectService.findAll(function(p){
-				dwr.util.removeAllOptions('project');
+				dwr.util.removeAllOptions('projectId');
 				//dwr.util.addOptions('project', p, 'id', 'name');
-				dwr.util.addOptions('project', p, 'id', function(p) {
+				dwr.util.addOptions('projectId', p, 'id', function(p) {
 					return p.name+' @ '+p.department.name;
 				});
 				//dwr.util.setValue(id, sel);
@@ -260,9 +260,8 @@ $(function(){
 		});
 		
 		function submitForm_ipaddress(f){
-			var addressInfop = {  id:viewed_ipaddress,name:null, reason:null,product:null, project:{} };
+			var addressInfop = {  id:viewed_ipaddress,name:null, reason:null,product:null, projectId:null };
 			  dwr.util.getValues(addressInfop);
-			  addressInfop.project.id=dwr.util.getValue("project");
 			  //alert(dwr.util.getValue("product"));
 			  //addressInfop.product = dwr.util.getValue("product");
 			  if(viewed_ipaddress == -1){
@@ -280,9 +279,8 @@ $(function(){
 		}
 		
 		function submitForm_ipaddress_associate(f){
-			var addressInfop = {  id:viewed_ipaddress,name:null, instanceId:null,publicIp:null, project:{} };
+			var addressInfop = {  id:viewed_ipaddress,name:null, instanceId:null,publicIp:null, projectId:null };
 			  dwr.util.getValues(addressInfop);
-			  addressInfop.project.id=dwr.util.getValue("project");
 			  //alert(addressInfop.instanceId);
 			  //alert(addressInfop.publicIp);
 			  if(viewed_ipaddress == -1){
@@ -460,7 +458,7 @@ function afterSave_ipaddress(){
 								  <tr>
 								    <td style="width: 20%;">project : </td>
 								    <td style="width: 80%;">
-								    <select id="project" name="project" style="width: 205px;" class="required">
+								    <select id="projectId" name="projectId" style="width: 205px;" class="required">
 							    	</select>
 							    	</td>
 								  </tr>

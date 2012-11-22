@@ -6,7 +6,6 @@ package in.mycp.domain;
 import in.mycp.domain.Asset;
 import in.mycp.domain.InstanceBlockDeviceMappingP;
 import in.mycp.domain.InstanceP;
-import in.mycp.domain.Project;
 import java.util.Date;
 import java.util.Set;
 import javax.persistence.Column;
@@ -21,10 +20,6 @@ privileged aspect InstanceP_Roo_DbManaged {
     
     @OneToMany(mappedBy = "instance")
     private Set<InstanceBlockDeviceMappingP> InstanceP.instanceBlockDeviceMappingPs;
-    
-    @ManyToOne
-    @JoinColumn(name = "project", referencedColumnName = "id")
-    private Project InstanceP.project;
     
     @ManyToOne
     @JoinColumn(name = "asset", referencedColumnName = "id")
@@ -137,14 +132,6 @@ privileged aspect InstanceP_Roo_DbManaged {
     
     public void InstanceP.setInstanceBlockDeviceMappingPs(Set<InstanceBlockDeviceMappingP> instanceBlockDeviceMappingPs) {
         this.instanceBlockDeviceMappingPs = instanceBlockDeviceMappingPs;
-    }
-    
-    public Project InstanceP.getProject() {
-        return project;
-    }
-    
-    public void InstanceP.setProject(Project project) {
-        this.project = project;
     }
     
     public Asset InstanceP.getAsset() {

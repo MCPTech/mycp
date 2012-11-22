@@ -224,7 +224,7 @@ $(function(){
 		
 	function submitForm_user(f){
 		//alert(f);
-		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, projects:{}, department:{}};
+		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, department:{}, quota:0};
 		  dwr.util.getValues(user);
 		  user.role.id= dwr.util.getValue("role");
 		  //user.projects=dwr.util.getValue("projects");
@@ -252,7 +252,7 @@ $(function(){
 	}
 	function cancelForm_user(f){
 	
-		var user = {  id:null,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, projects:{}, department:{}};
+		var user = {  id:null,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, projects:{}, department:{}, quota:null};
 		  dwr.util.setValues(user);
 		  viewed_user = -1;
 		  disablePopup_user();
@@ -268,9 +268,6 @@ $(function(){
 		$('#email').attr("readonly", true); 
 		dwr.util.setValue('role',user.role.id);
 		dwr.util.setValue('department',user.department.id);
-		if(user.projects !=null){
-			dwr.util.setValue('project',user.project.id);
-		}
 		/* try{dwr.util.setValue('manager',user.manager.id);}catch(e){}
 		try{dwr.util.setValue('quota',user.quota.id);}catch(e){} */
 	}
@@ -319,7 +316,7 @@ $(function(){
 				</div>
 				
 	<div id="popupContactParent_user" >
-		<div id="popupContact_user" class="popupContact" >
+		<div id="popupContact_user" class="popupContact" style="">
 							<a  onclick="cancelForm_user();return false;" class="popupContactClose" style="cursor: pointer; text-decoration:none;">X</a>
 							<h1>User</h1>
 							<form  class="cmxform" id="thisform" method="post" name="thisform">
@@ -380,16 +377,15 @@ $(function(){
 								    <select id="manager" name="manager" style="width: 205px;">
 							    	</select>
 								    </td>
-								  </tr>
+								  </tr>-->
 								  <tr>
 								    <td style="width: 50%;">Quota : </td>
-								    <td style="width: 50%;"><select id="quota" name="quota" style="width: 205px;">
-							    	</select></td>
-								  </tr> -->
+								    <td style="width: 50%;"><input type="text" name="quota" id="quota" size="30"></td>
+								  </tr>
 								  <tr>
 								    <td style="width: 50%;"></td>
 								    <td style="width: 50%;">
-								    <br><br>
+								    <br>
 										<div class="demo" id="popupbutton_user_create">
 											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
 											<button onclick="cancelForm_user(this.form);return false;">Cancel</button>

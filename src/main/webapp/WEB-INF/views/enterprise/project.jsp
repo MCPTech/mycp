@@ -205,7 +205,7 @@ function submitForm_project(f){
 	  
       
 	//var project = {  id:viewed_project,name:null, details:null, company:{}, department:{}, quota:{} };
-	var project = {  id:viewed_project,name:null, details:null, department:{} };
+	var project = {  id:viewed_project,name:null, details:null, department:{}, quota:0 };
 	  dwr.util.getValues(project);
 	  
 	  project.department.id= dwr.util.getValue("department");
@@ -225,7 +225,7 @@ function submitForm_project(f){
 }
 function cancelForm_project(f){
 
-	var project = {  id:null,name:null, details:null,  department:{} };
+	var project = {  id:null,name:null, details:null,  department:{}, quota:null };
 	  dwr.util.setValues(project);
 	  viewed_project = -1;
 	  disablePopup_project();
@@ -318,12 +318,11 @@ function afterSave_project(){
 								    <td style="width: 50%;"><select id="department" name="department" style="width: 205px;" class="required">
 							    	</select></td>
 								  </tr>
-								   <!-- <tr>
+								  <tr>
 								    <td style="width: 50%;">Quota : </td>
-								    <td style="width: 50%;"><select id="quota" name="quota" style="width: 205px;">
-							    	</select></td>
+								    <td style="width: 50%;"><input type="text" name="quota" id="quota" size="30"></td>
 								  </tr>
-								   -->
+
 								  <tr>
 								    <td style="width: 50%;"></td>
 								    <td style="width: 50%;">

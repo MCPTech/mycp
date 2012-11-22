@@ -5,16 +5,11 @@ package in.mycp.domain;
 
 import in.mycp.domain.Asset;
 import in.mycp.domain.KeyPairInfoP;
-import in.mycp.domain.Project;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 privileged aspect KeyPairInfoP_Roo_DbManaged {
-    
-    @ManyToOne
-    @JoinColumn(name = "project", referencedColumnName = "id")
-    private Project KeyPairInfoP.project;
     
     @ManyToOne
     @JoinColumn(name = "asset", referencedColumnName = "id")
@@ -28,14 +23,6 @@ privileged aspect KeyPairInfoP_Roo_DbManaged {
     
     @Column(name = "status", length = 45)
     private String KeyPairInfoP.status;
-    
-    public Project KeyPairInfoP.getProject() {
-        return project;
-    }
-    
-    public void KeyPairInfoP.setProject(Project project) {
-        this.project = project;
-    }
     
     public Asset KeyPairInfoP.getAsset() {
         return asset;

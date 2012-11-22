@@ -26,6 +26,17 @@ public class KeyPairInfoP {
     @Transient
     public String product;
 
+    @Transient
+    public int projectId;
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
+    }
+
     public String getProduct() {
         return product;
     }

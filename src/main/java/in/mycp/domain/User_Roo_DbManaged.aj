@@ -76,6 +76,9 @@ privileged aspect User_Roo_DbManaged {
     @Column(name = "designation", length = 90)
     private String User.designation;
     
+    @Column(name = "quota")
+    private Integer User.quota;
+    
     public Set<Project> User.getProjects() {
         return projects;
     }
@@ -194,6 +197,14 @@ privileged aspect User_Roo_DbManaged {
     
     public void User.setDesignation(String designation) {
         this.designation = designation;
+    }
+    
+    public Integer User.getQuota() {
+        return quota;
+    }
+    
+    public void User.setQuota(Integer quota) {
+        this.quota = quota;
     }
     
 }

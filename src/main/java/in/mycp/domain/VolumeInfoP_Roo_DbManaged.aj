@@ -5,7 +5,6 @@ package in.mycp.domain;
 
 import in.mycp.domain.Asset;
 import in.mycp.domain.AttachmentInfoP;
-import in.mycp.domain.Project;
 import in.mycp.domain.VolumeInfoP;
 import java.util.Date;
 import java.util.Set;
@@ -21,10 +20,6 @@ privileged aspect VolumeInfoP_Roo_DbManaged {
     
     @OneToMany(mappedBy = "volumeInfo")
     private Set<AttachmentInfoP> VolumeInfoP.attachmentInfoPs;
-    
-    @ManyToOne
-    @JoinColumn(name = "project", referencedColumnName = "id")
-    private Project VolumeInfoP.project;
     
     @ManyToOne
     @JoinColumn(name = "asset", referencedColumnName = "id")
@@ -65,14 +60,6 @@ privileged aspect VolumeInfoP_Roo_DbManaged {
     
     public void VolumeInfoP.setAttachmentInfoPs(Set<AttachmentInfoP> attachmentInfoPs) {
         this.attachmentInfoPs = attachmentInfoPs;
-    }
-    
-    public Project VolumeInfoP.getProject() {
-        return project;
-    }
-    
-    public void VolumeInfoP.setProject(Project project) {
-        this.project = project;
     }
     
     public Asset VolumeInfoP.getAsset() {

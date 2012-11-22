@@ -20,6 +20,7 @@ import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.KeyPairWorker;
@@ -110,6 +111,7 @@ public class KeyPairService {
 				Asset asset = Commons.getNewAsset(assetTypeKeyPair,
 						currentUser, instance.getProduct(), allAssetTotalCosts,
 						company);
+				asset.setProject(Project.findProject(instance.getProjectId()));
 				instance.setAsset(asset);
 				instance = instance.merge();
 				if (true == assetTypeKeyPair.getWorkflowEnabled()) {

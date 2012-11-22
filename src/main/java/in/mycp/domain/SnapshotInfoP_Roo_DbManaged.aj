@@ -4,7 +4,6 @@
 package in.mycp.domain;
 
 import in.mycp.domain.Asset;
-import in.mycp.domain.Project;
 import in.mycp.domain.SnapshotInfoP;
 import java.util.Date;
 import javax.persistence.Column;
@@ -15,10 +14,6 @@ import javax.persistence.TemporalType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 privileged aspect SnapshotInfoP_Roo_DbManaged {
-    
-    @ManyToOne
-    @JoinColumn(name = "project", referencedColumnName = "id")
-    private Project SnapshotInfoP.project;
     
     @ManyToOne
     @JoinColumn(name = "asset", referencedColumnName = "id")
@@ -55,14 +50,6 @@ privileged aspect SnapshotInfoP_Roo_DbManaged {
     
     @Column(name = "tagSet", length = 255)
     private String SnapshotInfoP.tagSet;
-    
-    public Project SnapshotInfoP.getProject() {
-        return project;
-    }
-    
-    public void SnapshotInfoP.setProject(Project project) {
-        this.project = project;
-    }
     
     public Asset SnapshotInfoP.getAsset() {
         return asset;

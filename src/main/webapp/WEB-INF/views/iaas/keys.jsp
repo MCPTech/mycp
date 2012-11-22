@@ -111,7 +111,7 @@
                 	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_keys('+p[i].id+')>';
         	}
 			
-			oTable.fnAddData( [start+i+1,p[i].keyName, p[i].project, p[i].keyFingerprint,p[i].status,'<a href=\"#\" onClick=\"+showKeyMaterial('+p[i].id+')\">Download</a>'+d,
+			oTable.fnAddData( [start+i+1,p[i].keyName, p[i].asset.project.name, p[i].keyFingerprint,p[i].status,'<a href=\"#\" onClick=\"+showKeyMaterial('+p[i].id+')\">Download</a>'+d,
 			                   p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}
@@ -174,9 +174,9 @@
 			} );
 				
 			ProjectService.findAll(function(p){
-				dwr.util.removeAllOptions('project');
+				dwr.util.removeAllOptions('projectId');
 				//dwr.util.addOptions('project', p, 'id', 'name');
-				dwr.util.addOptions('project', p, 'id', function(p) {
+				dwr.util.addOptions('projectId', p, 'id', function(p) {
 					return p.name+' @ '+p.department.name;
 				});
 				//dwr.util.setValue(id, sel);
@@ -220,9 +220,8 @@
 		});
 		
 	function submitForm_keys(f){
-		var keyPairInfop = {  id:viewed_keys,keyName:null,product:null, project:{} };
+		var keyPairInfop = {  id:viewed_keys,keyName:null,product:null, projectId:null };
 		  dwr.util.getValues(keyPairInfop);
-		  keyPairInfop.project.id=dwr.util.getValue("project");
 		  if(viewed_keys == -1){
 			  keyPairInfop.id  = null; 
 		  }
@@ -234,9 +233,8 @@
 	}
 	function cancelForm_keys(f){
 	
-		var keyPairInfop = {  id:null,keyName:null ,product:null, project:{}};
+		var keyPairInfop = {  id:null,keyName:null ,product:null, projectId:null};
 		  dwr.util.setValues(keyPairInfop);
-		  keyPairInfop.project.id=dwr.util.getValue("project");
 		  viewed_keys = -1;
 		  disablePopup_keys();
 	}
@@ -343,7 +341,7 @@
 								  <tr>
 								    <td style="width: 20%;">project : </td>
 								    <td style="width: 80%;">
-								    <select id="project" name="project" style="width: 205px;" class="required">
+								    <select id="projectId" name="projectId" style="width: 205px;" class="required">
 							    	</select>
 							    	</td>
 								  </tr>

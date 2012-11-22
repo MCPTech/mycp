@@ -21,6 +21,7 @@ import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.InstanceP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.ComputeWorker;
@@ -72,6 +73,7 @@ public class InstancePService {
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser,instance.getProduct(), allAssetTotalCosts,company);
+			asset.setProject(Project.findProject(instance.getProjectId()));
 			instance.setAsset(asset);
 			instance = instance.merge();
 			Set<InstanceP> instances = new HashSet<InstanceP>();
