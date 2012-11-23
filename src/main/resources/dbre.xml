@@ -55,10 +55,6 @@
         <column name="endTime" primaryKey="false" required="false" scale="0" size="19" type="93,DATETIME"/>
         <column name="startRate" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <foreign-key foreignTable="project" name="fk_Asset_Project" onDelete="none" onUpdate="none">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="project"/>
-        </foreign-key>
         <foreign-key foreignTable="asset_type" name="fk_Asset_Asset_Type1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="assetType"/>
@@ -66,6 +62,10 @@
         <foreign-key foreignTable="product_catalog" name="fk_Asset_Product_Catalog1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="productCatalog"/>
+        </foreign-key>
+        <foreign-key foreignTable="project" name="fk_Asset_Project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
         </foreign-key>
         <foreign-key foreignTable="user" name="fk_Asset_User1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
@@ -659,7 +659,7 @@
             <option key="exported" value="true"/>
             <reference foreign="user" local="id"/>
         </foreign-key>
-        <foreign-key foreignTable="user_project" name="FK_USER_ID" onDelete="none" onUpdate="none">
+        <foreign-key foreignTable="user_project" name="FK_USER_ID" onDelete="cascade" onUpdate="cascade">
             <option key="exported" value="true"/>
             <reference foreign="user_id" local="id"/>
         </foreign-key>
@@ -683,13 +683,13 @@
     <table name="user_project">
         <column name="user_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
         <column name="project_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="cascade" onUpdate="cascade">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="user_id"/>
+        </foreign-key>
         <foreign-key foreignTable="project" name="FK_PROJECT_ID" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="project_id"/>
-        </foreign-key>
-        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="none" onUpdate="none">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="user_id"/>
         </foreign-key>
         <unique name="PRIMARY">
             <unique-column name="user_id"/>

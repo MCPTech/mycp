@@ -11,15 +11,13 @@ import in.mycp.domain.User;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 privileged aspect Project_Roo_DbManaged {
     
-    @ManyToMany
-    @JoinTable(name = "user_project", joinColumns = { @JoinColumn(name = "project_id", nullable = false) }, inverseJoinColumns = { @JoinColumn(name = "user_id", nullable = false) })
+    @ManyToMany(mappedBy = "projects")
     private Set<User> Project.users;
     
     @OneToMany(mappedBy = "project")

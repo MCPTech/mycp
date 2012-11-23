@@ -6,7 +6,6 @@
 <script type='text/javascript' src='/dwr/interface/QuotaService.js'></script> -->
 <script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
 <script type='text/javascript' src='/dwr/interface/DepartmentService.js'></script>
-
 <script type="text/javascript">
 /***************************/
 //@Author: Adrian "yEnS" Mato Gondelle
@@ -66,12 +65,10 @@
 		/* alert(p.length);
 		alert(p[0].imageId); */
 	//alert(dwr.util.toDescriptiveString(p,3));
-		
 		//var tableData = eval( dwr.util.toDescriptiveString(p,3) );
 		//var continents = arrayAsJSONText.parseJSON();
 		//alert(tableData);
 		//alert(tableData[0].id+tableData[0].name);
-
 		 oTable = $('#compute-table').dataTable( {
 	    	"sPaginationType": "full_numbers",
 	    	"bDestroy": true,
@@ -92,9 +89,7 @@
 	           
 	        ]
 	    } );
-		
 		//oTable.fnClearTable();
-		
 		var i=0;
 		for (i=0;i<p.length;i++)
 		{
@@ -103,21 +98,17 @@
 			}else{
 				p[i].active='<img title="disabled" alt="disabled" src=/images/waiting.png>&nbsp;';
 			}
+			//alert(p[i].projects[0].id);
 			oTable.fnAddData( [i+1,p[i].email, dateFormat(p[i].registereddate), p[i].active,
 			                   p[i].role.name,
 			                   '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_user('+p[i].id+')>&nbsp; &nbsp; &nbsp; '+
 			                   '<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_user('+p[i].id+')>' ] );
 		}
-		
-		
-	
 	}
 
 	var viewed_user = -1;	
-$(function(){
-	
-	
-	//LOADING POPUP
+	$(function(){
+		//LOADING POPUP
 		//Click the button event!
 		$("#popupbutton_user").click(function(){
 			viewed_user = -1;
@@ -126,110 +117,103 @@ $(function(){
 			//load popup
 			loadPopup_user();
 			dwr.util.setValue('active',true);
-			
+			$("#projects").val('');
 		});
 	
 		$("#popupbutton_userlist").click(function(){
-			
-				dwr.engine.beginBatch();
-				RealmService.findAll(findAll_user);
-			  dwr.engine.endBatch();
-			  
-		
+			dwr.engine.beginBatch();
+			RealmService.findAll(findAll_user);
+		  	dwr.engine.endBatch();
 		} );
-		
-		});
-		
-		
-		
-					
-		//CLOSING POPUP
-		//Click the x event!
-		$("#popupContactClose_user").click(function(){
-			viewed_user = -1;
-			disablePopup_user();
-		});
-		//Click out event!
-		$("#backgroundPopup_user").click(function(){
-			viewed_user = -1;
-			disablePopup_user();
-		});
-		//Press Escape event!
-		$(document).keypress(function(e){
-			if(e.keyCode==27 && popupStatus_user==1){
-				disablePopup_user();
-			}
-		});
-		
-		$(document).ready(function() {
-			$("#popupbutton_userlist").click();
-
-			RealmService.findAllRoles(function(p){
-				dwr.util.removeAllOptions('role');
-				dwr.util.addOptions('role', p, 'id', 'name');
+		ProjectService.findAll(function(p){
+			dwr.util.removeAllOptions('projects');
+			dwr.util.addOptions('projects', p, 'id', function(p) {
+				return p.name+' @ '+p.department.name;
 			});
-
-		/* 	QuotaService.findAll(function(p){
-	  				dwr.util.removeAllOptions('quota');
-	  				dwr.util.addOptions('quota', p, 'id', 'name');
-	  			});
-	              
-	              ManagerService.findAll(function(p){
-	  				dwr.util.removeAllOptions('manager');
-	  				dwr.util.addOptions('manager', ["Please select ..."]);
-	  				dwr.util.addOptions('manager', p, 'id', 'firstname');
-	  			}); */
-			
-	  			ProjectService.findAll(function(p){
-					dwr.util.removeAllOptions('projects');
-					//dwr.util.addOptions('project', p, 'id', 'name');
-					dwr.util.addOptions('projects', p, 'id', function(p) {
-						return p.name+' @ '+p.department.name;
-					});
-					//dwr.util.setValue(id, sel);
-					
-				});
-	  			
-	  			DepartmentService.findAll(function(p){
-					dwr.util.removeAllOptions('department');
-					//dwr.util.addOptions('department', p, 'id', 'name');
-					dwr.util.addOptions('department', p, 'id', function(p) {
-						return p.name;
-					});
-					//dwr.util.setValue(id, sel);
-					
-				});
-	  			
-	  			$( '#email').blur( function() {
-	  				RealmService.emailExists(this.value, function(p) {
-	  					//alert(p);
-	  					if(p){
-	  						$( '#email' ).select();
-	  						$( '#email' ).val('Email already taken.Choose another.');
-		  					//alert('Exists');
-		  				}else{
-		  					//alert('ok');
-		  				}
-	  				})});
-	  			
-		
-	  			
-			$("#thisform").validate({
-				 submitHandler: function(form) {
-					 submitForm_user(form);
-					 return false;
-				 }
-				});
 		});
+	});
+	//CLOSING POPUP
+	//Click the x event!
+	$("#popupContactClose_user").click(function(){
+		viewed_user = -1;
+		disablePopup_user();
+	});
+	//Click out event!
+	$("#backgroundPopup_user").click(function(){
+		viewed_user = -1;
+		disablePopup_user();
+	});
+	//Press Escape event!
+	$(document).keypress(function(e){
+		if(e.keyCode==27 && popupStatus_user==1){
+			disablePopup_user();
+		}
+	});
+		
+	$(function() {
+		$("#popupbutton_userlist").click();
+
+		RealmService.findAllRoles(function(p){
+			dwr.util.removeAllOptions('role');
+			dwr.util.addOptions('role', p, 'id', 'name');
+		});
+
+	/* 	QuotaService.findAll(function(p){
+			dwr.util.removeAllOptions('quota');
+			dwr.util.addOptions('quota', p, 'id', 'name');
+		});
+	          
+	          ManagerService.findAll(function(p){
+			dwr.util.removeAllOptions('manager');
+			dwr.util.addOptions('manager', ["Please select ..."]);
+			dwr.util.addOptions('manager', p, 'id', 'firstname');
+		}); */
+		
+  			DepartmentService.findAll(function(p){
+				dwr.util.removeAllOptions('department');
+				//dwr.util.addOptions('department', p, 'id', 'name');
+				dwr.util.addOptions('department', p, 'id', function(p) {
+					return p.name;
+				});
+				//dwr.util.setValue(id, sel);
+				
+			});
+  			$( '#email').blur( function() {
+  				RealmService.emailExists(this.value, function(p) {
+  					//alert(p);
+  					if(p){
+  						$( '#email' ).select();
+  						$( '#email' ).val('Email already taken.Choose another.');
+	  					//alert('Exists');
+	  				}else{
+	  					//alert('ok');
+	  				}
+  				})});
+  			
+	
+  			
+		$("#thisform").validate({
+			 submitHandler: function(form) {
+				 submitForm_user(form);
+				 return false;
+			 }
+			});
+	});
 		
 	function submitForm_user(f){
 		//alert(f);
-		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, department:{}, quota:0};
-		  dwr.util.getValues(user);
-		  user.role.id= dwr.util.getValue("role");
-		  //user.projects=dwr.util.getValue("projects");
-		  //user.projects[1].id=dwr.util.getValue("project")[1];
-		  user.department.id=dwr.util.getValue("department");
+		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, department:{}, quota:0, projects:{}};
+		dwr.util.getValues(user);
+		//construct json object and set it to projects
+		var strProjectIds = dwr.util.getValue("projects");
+		var arrProjectIds = [];
+		for (i = 0; i < strProjectIds.length; ++i) {
+			arrProjectIds.push({id: strProjectIds[i]});
+		}
+		user.projects = arrProjectIds;
+		  
+		user.role.id= dwr.util.getValue("role");
+		user.department.id=dwr.util.getValue("department");
 		 // alert(user.role.id);
 		  /* try{
 			if('Please select ...' == dwr.util.getValue("manager")){
@@ -260,6 +244,11 @@ $(function(){
 	
 	function afterEdit_user(p){
 		var user = eval(p);
+		var arrProjectIds = [];
+		for (i = 0; i < p.projects.length; ++i) {
+			arrProjectIds.push(p.projects[i].id);
+		}
+		$("#projects").val(arrProjectIds);
 		viewed_user=p.id;
 		centerPopup_user();
 		loadPopup_user();
@@ -361,9 +350,9 @@ $(function(){
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Project : </td>
-								    <td style="width: 50%;"> 
-								    <select id="projects" name="projects" style="width: 205px;" class="required" multiple>
-							    	</select></td>
+								    <td style="width: 50%;"><span> 
+								    <select id="projects" name="projects" style="width: 205px;" class="required" multiple="multiple">
+							    	</select></span></td>
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Department : </td>

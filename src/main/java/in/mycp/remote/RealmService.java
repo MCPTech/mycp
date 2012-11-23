@@ -23,7 +23,10 @@ import in.mycp.utils.Commons;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -72,27 +75,30 @@ public class RealmService {
 	@RemoteMethod
 	public User saveOrUpdate(User instance) {
 		try {
-			System.out.println(instance.getDepartment().getId());
-			System.out.println(instance.getProjects());
-			//instance.setProject(Project.findProject(instance.getProject().getId()));
-			//instance.setManager(Manager.findManager(instance.getManager().getId()));
-			//instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
-			// ShaPasswordEncoder passEncoder = new ShaPasswordEncoder(256);
 			if (instance != null && StringUtils.isBlank(instance.getPassword())) {
 				throw new Exception("Password cannot be empty");
 			}
-			System.out.println("instance.getRole().getId() = " + instance.getRole().getId());
-			if (instance.getId() == null || instance.getId() < 1) {
+			//to update the user projects
+			Set<Project> stProjects = instance.getProjects();
+			for (Iterator iterator = stProjects.iterator(); iterator.hasNext();) {
+				Project project = (Project) iterator.next();
+				project = Project.findProject(project.getId());
+				project.getUsers().add(instance);
+			}
+			User localUser = User.findUser(instance.getId());
+			if (localUser == null) {
 				instance.setRegistereddate(new Date());
 				instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
 			} else {
-				User localUser = User.findUser(instance.getId());
 				instance.setRegistereddate(localUser.getRegistereddate());
 				if (!localUser.getPassword().equals(instance.getPassword())) {
 					instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
 				}
 			}
-
+			//instance.setProject(Project.findProject(instance.getProject().getId()));
+			//instance.setManager(Manager.findManager(instance.getManager().getId()));
+			//instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
+			// ShaPasswordEncoder passEncoder = new ShaPasswordEncoder(256);
 			accountLogService.saveLog("User " + instance.getEmail()+" created, ",
 					Commons.task_name.USER.name(),
 					Commons.task_status.SUCCESS.ordinal(),
@@ -132,6 +138,7 @@ public class RealmService {
 	public User findById(int id) {
 		try {
 			User user = User.findUser(id);
+			user.getProjects().size();//without this user page will not work properly
 			return user;
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
@@ -147,6 +154,11 @@ public class RealmService {
 					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				return User.findAllUsers();
 			} else {
+				List<User> list = User.findAllUsers();
+				for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+					User user = (User) iterator.next();
+					user.getProjects().size();//without this user page will not work properly
+				}
 				return User.findUsersByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId())).getResultList();
