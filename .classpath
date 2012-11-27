@@ -41,7 +41,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/httpcore-nio/4.1/httpcore-nio-4.1.jar" sourcepath="M2_REPO/org/apache/httpcomponents/httpcore-nio/4.1/httpcore-nio-4.1-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/jasypt/jasypt/1.9.0/jasypt-1.9.0.jar" sourcepath="M2_REPO/org/jasypt/jasypt/1.9.0/jasypt-1.9.0-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javassist/javassist/3.12.0.GA/javassist-3.12.0.GA.jar" sourcepath="M2_REPO/javassist/javassist/3.12.0.GA/javassist-3.12.0.GA-sources.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/jbpm/jbpm4/jbpm/4.4/jbpm-4.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/jbpm/jbpm4/jbpm/4.4/jbpm-4.4.jar" sourcepath="/jbpm4.4_pvm_src"/>
 	<classpathentry kind="var" path="M2_REPO/org/jbpm/jbpm4/jbpm-jpdl/4.4/jbpm-jpdl-4.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/jbpm/jbpm4/jbpm-pvm/4.4/jbpm-pvm-4.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/slf4j/jcl-over-slf4j/1.6.2/jcl-over-slf4j-1.6.2.jar" sourcepath="M2_REPO/org/slf4j/jcl-over-slf4j/1.6.2/jcl-over-slf4j-1.6.2-sources.jar"/>
@@ -90,5 +90,7 @@
 	<classpathentry kind="var" path="M2_REPO/com/vmware/vijava/5.0/vijava-5.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
+	<classpathentry kind="lib" path="src/main/webapp/WEB-INF/lib/juel-2.1.0.jar"/>
+	<classpathentry kind="lib" path="src/main/webapp/WEB-INF/lib/junit-4.9.jar"/>
 	<classpathentry kind="output" path="src/main/webapp/WEB-INF/classes"/>
 </classpath>

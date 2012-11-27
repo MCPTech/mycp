@@ -148,6 +148,7 @@ ALTER TABLE `mycp`.`instance_p` CHANGE COLUMN `instanceId` `instanceId` VARCHAR(
 
 -- end infra changes for vmware - charu - 18 Nov 2012
 
+
 -- start quota & user-project relationship changes for  - gangu
 ALTER TABLE `user` DROP FOREIGN KEY `fk_user_project` ;
 ALTER TABLE `user` ADD COLUMN `department` INT(11) NULL  AFTER `project` , 
@@ -168,5 +169,15 @@ ALTER TABLE `asset` ADD CONSTRAINT `fk_Asset_Project` FOREIGN KEY (`project` ) R
 ALTER TABLE `department` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
 ALTER TABLE `project` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
 ALTER TABLE `user` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
+
 -- end quota & user-project relationship changes for  - gangu
 
+
+
+
+INSERT INTO `jbpm4_deployment` (`DBID_`, `TIMESTAMP_`, `STATE_`) VALUES ('80044', '0', 'active');
+INSERT INTO `jbpm4_deployprop` (`DBID_`, `DEPLOYMENT_`, `OBJNAME_`, `KEY_`) VALUES ('80052', '80044', 'QuotaExceedCheck', 'langid');
+INSERT INTO `jbpm4_deployprop` (`DBID_`, `DEPLOYMENT_`, `OBJNAME_`, `KEY_`, `STRINGVAL_`) VALUES ('80053', '80044', 'QuotaExceedCheck', 'pdid', 'QuotaExceedCheck-1');
+INSERT INTO `jbpm4_deployprop` (`DBID_`, `DEPLOYMENT_`, `OBJNAME_`, `KEY_`, `STRINGVAL_`) VALUES ('80054', '80044', 'QuotaExceedCheck', 'pdkey', 'QuotaExceedCheck');
+INSERT INTO `jbpm4_deployprop` (`DBID_`, `DEPLOYMENT_`, `OBJNAME_`, `KEY_`, `LONGVAL_`) VALUES ('80055', '80044', 'QuotaExceedCheck', 'pdversion', '1');
+INSERT INTO `jbpm4_lob` VALUES ('81045', '0','<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n\r\n<process name=\"QuotaExceedCheck\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n  <start>\r\n    <transition to=\"Quotacheck\" />\r\n  </start>\r\n  <state name=\"Quotacheck\">\r\n    <on event=\"timeout\">\r\n      <timer duedate=\"10 minutes\" repeat=\"10 seconds\" />\r\n      <event-listener class=\"in.mycp.job.QuotaAlertsJob\" />\r\n    </on>\r\n    <transition name=\"go on\" to=\"next step\"/>\r\n  </state>\r\n  <state name=\"next step\"/>\r\n</process>', '80044', 'file:/D:/Servers/apache-tomcat-6.0.35/webapps/ROOT/WEB-INF/classes/jbpm/QuotaAlerts.jpdl.xml');
