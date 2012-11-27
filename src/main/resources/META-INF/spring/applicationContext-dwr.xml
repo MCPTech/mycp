@@ -9,7 +9,8 @@
 	
 	
     <dwr:configuration>
-    	<dwr:convert type="hibernate3" class="in.mycp.domain.**" />
+    	<dwr:convert type="hibernate3" class="in.mycp.domain.**"  />
+    	<dwr:convert type="collection" class="java.util.Set"  />
     </dwr:configuration>   
    <dwr:annotation-scan  base-package="in.mycp" scanDataTransferObject="true" scanRemoteProxy="true"/>
         

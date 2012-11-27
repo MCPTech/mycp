@@ -6,6 +6,7 @@ package in.mycp.domain;
 import in.mycp.domain.AvailabilityZoneP;
 import in.mycp.domain.Company;
 import in.mycp.domain.Infra;
+import in.mycp.domain.InfraType;
 import in.mycp.domain.ProductCatalog;
 import java.util.Date;
 import java.util.Set;
@@ -28,6 +29,10 @@ privileged aspect Infra_Roo_DbManaged {
     @ManyToOne
     @JoinColumn(name = "company", referencedColumnName = "id")
     private Company Infra.company;
+    
+    @ManyToOne
+    @JoinColumn(name = "infraType", referencedColumnName = "id", nullable = false)
+    private InfraType Infra.infraType;
     
     @Column(name = "accessId", length = 90)
     private String Infra.accessId;
@@ -75,6 +80,9 @@ privileged aspect Infra_Roo_DbManaged {
     @Column(name = "syncstatus")
     private Integer Infra.syncstatus;
     
+    @Column(name = "vcloud_account_name", length = 90)
+    private String Infra.vcloudAccountName;
+    
     public Set<AvailabilityZoneP> Infra.getAvailabilityZonePs() {
         return availabilityZonePs;
     }
@@ -97,6 +105,14 @@ privileged aspect Infra_Roo_DbManaged {
     
     public void Infra.setCompany(Company company) {
         this.company = company;
+    }
+    
+    public InfraType Infra.getInfraType() {
+        return infraType;
+    }
+    
+    public void Infra.setInfraType(InfraType infraType) {
+        this.infraType = infraType;
     }
     
     public String Infra.getAccessId() {
@@ -209,6 +225,14 @@ privileged aspect Infra_Roo_DbManaged {
     
     public void Infra.setSyncstatus(Integer syncstatus) {
         this.syncstatus = syncstatus;
+    }
+    
+    public String Infra.getVcloudAccountName() {
+        return vcloudAccountName;
+    }
+    
+    public void Infra.setVcloudAccountName(String vcloudAccountName) {
+        this.vcloudAccountName = vcloudAccountName;
     }
     
 }

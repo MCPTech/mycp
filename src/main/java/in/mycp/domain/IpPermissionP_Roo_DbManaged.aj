@@ -30,6 +30,27 @@ privileged aspect IpPermissionP_Roo_DbManaged {
     @Column(name = "uid_group_pairs", length = 45)
     private String IpPermissionP.uidGroupPairs;
     
+    @Column(name = "description", length = 255)
+    private String IpPermissionP.description;
+    
+    @Column(name = "policy", length = 45)
+    private String IpPermissionP.policy;
+    
+    @Column(name = "source_ip", length = 45)
+    private String IpPermissionP.sourceIp;
+    
+    @Column(name = "source_port")
+    private Integer IpPermissionP.sourcePort;
+    
+    @Column(name = "destination_ip", length = 45)
+    private String IpPermissionP.destinationIp;
+    
+    @Column(name = "destination_port")
+    private Integer IpPermissionP.destinationPort;
+    
+    @Column(name = "direction", length = 45)
+    private String IpPermissionP.direction;
+    
     public GroupDescriptionP IpPermissionP.getGroupDescription() {
         return groupDescription;
     }
@@ -76,6 +97,62 @@ privileged aspect IpPermissionP_Roo_DbManaged {
     
     public void IpPermissionP.setUidGroupPairs(String uidGroupPairs) {
         this.uidGroupPairs = uidGroupPairs;
+    }
+    
+    public String IpPermissionP.getDescription() {
+        return description;
+    }
+    
+    public void IpPermissionP.setDescription(String description) {
+        this.description = description;
+    }
+    
+    public String IpPermissionP.getPolicy() {
+        return policy;
+    }
+    
+    public void IpPermissionP.setPolicy(String policy) {
+        this.policy = policy;
+    }
+    
+    public String IpPermissionP.getSourceIp() {
+        return sourceIp;
+    }
+    
+    public void IpPermissionP.setSourceIp(String sourceIp) {
+        this.sourceIp = sourceIp;
+    }
+    
+    public Integer IpPermissionP.getSourcePort() {
+        return sourcePort;
+    }
+    
+    public void IpPermissionP.setSourcePort(Integer sourcePort) {
+        this.sourcePort = sourcePort;
+    }
+    
+    public String IpPermissionP.getDestinationIp() {
+        return destinationIp;
+    }
+    
+    public void IpPermissionP.setDestinationIp(String destinationIp) {
+        this.destinationIp = destinationIp;
+    }
+    
+    public Integer IpPermissionP.getDestinationPort() {
+        return destinationPort;
+    }
+    
+    public void IpPermissionP.setDestinationPort(Integer destinationPort) {
+        this.destinationPort = destinationPort;
+    }
+    
+    public String IpPermissionP.getDirection() {
+        return direction;
+    }
+    
+    public void IpPermissionP.setDirection(String direction) {
+        this.direction = direction;
     }
     
 }

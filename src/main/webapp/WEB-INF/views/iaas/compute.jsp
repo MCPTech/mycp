@@ -122,14 +122,14 @@
 				'<img class="clickimg" title="Edit" alt="Edit" src=/images/edit.png onclick=edit_compute('+p[i].id+')>&nbsp; '+
                 '<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>'
             
-            if('running' == state || 'RUNNING' == state){
+            if('running' == state || 'RUNNING' == state || 'POWERED_ON' == state){
 				state='<img  title="Running" alt="Running" src=../images/running.png>&nbsp;';
 				//Euca 2.0 does not impl stop and reboot
 				//actions='<img alt="Edit" src=../images/stop.png onclick=stop_compute('+p[i].id+')>&nbsp; '+
                 //'<img alt="Edit" src=../images/restart.png onclick=restart_compute('+p[i].id+')>&nbsp; '+
                 actions='<img class="clickimg" title="terminate" alt="terminate" src=/images/terminate.png onclick=terminate_compute('+p[i].id+')>&nbsp; ';
                 //'<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>';
-			}else if('STOPPED' == state){
+			}else if('STOPPED' == state  || 'POWERED_OFF' == state){
 				actions='<img class="clickimg" title="start" alt="start" src=/images/start.png onclick=start_compute('+p[i].id+')>&nbsp; '+
 				'<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>';
 			}else if('TERMINATED' == state || 'terminated' == state){

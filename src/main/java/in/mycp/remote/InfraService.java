@@ -25,9 +25,11 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -35,6 +37,10 @@ import org.directwebremoting.annotations.RemoteProxy;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vmware.vcloud.api.rest.schema.ReferenceType;
+import com.vmware.vcloud.sdk.VcloudClient;
+import com.vmware.vcloud.sdk.constants.Version;
+import com.vmware.vcloud.sdk.samples.FakeSSLSocketFactory;
 import com.xerox.amazonws.ec2.Jec2;
 import com.xerox.amazonws.ec2.RegionInfo;
 
@@ -53,6 +59,9 @@ public class InfraService {
 
 	@Autowired
 	EucalyptusService eucalyptusService;
+	
+	@Autowired
+	VmwareService vmwareService;
 
 	@Autowired
 	AccountLogService accountLogService;
@@ -83,7 +92,14 @@ public class InfraService {
 			instance.setSyncstatus(Commons.sync_status.running.ordinal());
 			instance.merge();
 
-			eucalyptusService.syncDataFromEuca(instance);
+			if(instance.getInfraType().getId() == Commons.INFRA_TYPE_VCLOUD){
+				vmwareService.syncDataFromVcloud(instance);
+			}else {
+				eucalyptusService.syncDataFromEuca(instance);
+			}
+			
+			
+			
 			instance.setSyncInProgress(false);
 			instance.setSyncstatus(Commons.sync_status.success.ordinal());
 			instance.merge();
@@ -120,11 +136,12 @@ public class InfraService {
 	@RemoteMethod
 	public Infra saveOrUpdate(Infra instance) {
 		try {
-
+			String logCreated=" created ";
+			
 			// instance.setRegion(RegionP.findRegionP(instance.getRegion().getId()));
 			instance.setCompany(Company.findCompany(instance.getCompany()
 					.getId()));
-
+			
 			BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
 			textEncryptor.setPassword("gothilla");
 			String encAccessId = textEncryptor.encrypt(instance.getAccessId());
@@ -135,6 +152,7 @@ public class InfraService {
 				instance.setAccessId(encAccessId);
 				instance.setSecretKey(encSecretKey);
 			} else {
+				logCreated=" updated ";
 				// avoid double encryption
 				Infra local = Infra.findInfra(instance.getId());
 				if (!local.getSecretKey().equals(instance.getSecretKey())) {
@@ -148,7 +166,7 @@ public class InfraService {
 			}
 			instance = instance.merge();
 			accountLogService.saveLog("Cloud " + instance.getName()
-					+ " created, ", Commons.task_name.CLOUD.name(),
+					+ logCreated, Commons.task_name.CLOUD.name(),
 					Commons.task_status.SUCCESS.ordinal(), Commons
 							.getCurrentUser().getEmail());
 			// now create all products supported by this infra
@@ -157,8 +175,8 @@ public class InfraService {
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
-			accountLogService.saveLog("Cloud created " + instance.getName()
-					+ ", ", Commons.task_name.CLOUD.name(),
+			accountLogService.saveLog("Cloud creation failed " + instance.getName()
+					+ " ", Commons.task_name.CLOUD.name(),
 					Commons.task_status.FAIL.ordinal(), Commons
 							.getCurrentUser().getEmail());
 		}
@@ -237,8 +255,9 @@ public class InfraService {
 
 	@RemoteMethod
 	public String remove(int id) {
+		Infra i = null;
 		try {
-			Infra i = Infra.findInfra(id);
+			i = Infra.findInfra(id);
 			List<ProductCatalog> products = ProductCatalog
 					.findProductCatalogsByInfra(i).getResultList();
 			if (products != null && products.size() > 0) {
@@ -262,11 +281,11 @@ public class InfraService {
 			accountLogService.saveLog("Cloud " + i.getName() + " removed, ",
 					Commons.task_name.CLOUD.name(), Commons.task_status.SUCCESS
 							.ordinal(), Commons.getCurrentUser().getEmail());
-			return "Removed Infra " + Infra.findInfra(id).getName();
+			return "Removed Infra " +i.getName();
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
 			accountLogService.saveLog("Error in Cloud removal "
-					+ Infra.findInfra(id).getName() + ", ",
+					+ i.getName() + ", ",
 					Commons.task_name.CLOUD.name(), Commons.task_status.FAIL
 							.ordinal(), Commons.getCurrentUser().getEmail());
 		}
@@ -320,7 +339,7 @@ public class InfraService {
 
 			return infras;
 		} catch (Exception e) {
-			log.error(e.getMessage());// e.printStackTrace();
+			log.error(e.getMessage());
 		}
 		return null;
 	}// end of method findAll
@@ -328,6 +347,8 @@ public class InfraService {
 	public String getInfraStatus(Infra infra) {
 		String status = Commons.EUCA_STATUS.unknown + "";
 		try {
+			//System.out.println(" in infra getInfraStatus for  "+infra.getName());
+			
 			// first , just try to reach and ping the server, then try
 			// connecting
 			try {
@@ -339,6 +360,7 @@ public class InfraService {
 				theSock.connect(sockaddr, 2000);
 			} catch (Exception e) {
 				// log.error(e.getMessage());//e.printStackTrace();
+				//e.printStackTrace();
 				log.info(e.getMessage());
 				status = Commons.EUCA_STATUS.unreachable + "";
 				throw new Exception("Cant even open socket to server "
@@ -350,27 +372,47 @@ public class InfraService {
 			String decAccessId = textEncryptor.decrypt(infra.getAccessId());
 			String decSecretKey = textEncryptor.decrypt(infra.getSecretKey());
 
-			Jec2 ec2 = new Jec2(decAccessId, decSecretKey, false,
-					infra.getServer(), infra.getPort());
-			ec2.setResourcePrefix(infra.getResourcePrefix());
-			ec2.setSignatureVersion(infra.getSignatureVersion());
-			ec2.setMaxRetries(1);
-			List params = new ArrayList<String>();
-			List<RegionInfo> regions = ec2.describeRegions(params);
-			for (Iterator iterator = regions.iterator(); iterator.hasNext();) {
-				RegionInfo regionInfo = (RegionInfo) iterator.next();
-				if (regionInfo != null) {
-					status = Commons.EUCA_STATUS.running + "";
-				} else if (regionInfo == null) {
-					status = Commons.EUCA_STATUS.unknown + "";
+			if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS || 
+					infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+				Jec2 ec2 = new Jec2(decAccessId, decSecretKey, false,
+						infra.getServer(), infra.getPort());
+				ec2.setResourcePrefix(infra.getResourcePrefix());
+				ec2.setSignatureVersion(infra.getSignatureVersion());
+				ec2.setMaxRetries(1);
+				List params = new ArrayList<String>();
+				List<RegionInfo> regions = ec2.describeRegions(params);
+				for (Iterator iterator = regions.iterator(); iterator.hasNext();) {
+					RegionInfo regionInfo = (RegionInfo) iterator.next();
+					if (regionInfo != null) {
+						status = Commons.EUCA_STATUS.running + "";
+					} else if (regionInfo == null) {
+						status = Commons.EUCA_STATUS.unknown + "";
+					}
+					break;
 				}
-				break;
+			}else if(infra.getInfraType().getId() == Commons.INFRA_TYPE_VCLOUD){
+				VcloudClient.setLogLevel(Level.SEVERE);
+				VcloudClient vcloudClient = new VcloudClient("https://"+infra.getServer(), Version.V1_5);
+				String login = decAccessId+"@"+infra.getVcloudAccountName();
+				vcloudClient.registerScheme("https", infra.getPort().intValue(), FakeSSLSocketFactory.getInstance());
+				vcloudClient.login(login, decSecretKey);
+				Collection<ReferenceType> orgRefs = vcloudClient.getOrgRefs();
+				for (Iterator iterator = orgRefs.iterator(); iterator.hasNext();) {
+					ReferenceType orgRefType = (ReferenceType) iterator.next();
+					if(orgRefType !=null){
+						status = Commons.EUCA_STATUS.running + "";
+					}else {
+						status = Commons.EUCA_STATUS.unknown + "";
+					}
+					break;
+				}
+				
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());// e.printStackTrace();
+			//e.printStackTrace();
+			log.error(e.getMessage());
 			status = Commons.EUCA_STATUS.unknown + "";
 		}
-		// System.out.println(" = ssssssssssssssssssssssssssssssss ");
 		return status;
 	}
 
@@ -389,7 +431,8 @@ public class InfraService {
 				Socket theSock = new Socket();
 				theSock.connect(sockaddr, 4000);
 			} catch (Exception e) {
-				// log.error(e.getMessage());//e.printStackTrace();
+				// log.error(e.getMessage());
+				//e.printStackTrace();
 				log.error(e);
 				status = Commons.EUCA_STATUS.unreachable + "";
 				log.info("Cant even open socket to server " + infra.getServer()
@@ -403,26 +446,48 @@ public class InfraService {
 			String decAccessId = textEncryptor.decrypt(infra.getAccessId());
 			String decSecretKey = textEncryptor.decrypt(infra.getSecretKey());
 
-			Jec2 ec2 = new Jec2(decAccessId, decSecretKey, false,
-					infra.getServer(), infra.getPort());
-			if (infra.getServer() != null
-					&& !infra.getServer().contains("ec2.amazonaws.com")) {
-				ec2.setResourcePrefix(infra.getResourcePrefix());
-				ec2.setSignatureVersion(infra.getSignatureVersion());
-				ec2.setMaxRetries(1);
-			}
-
-			List params = new ArrayList<String>();
-
-			List<RegionInfo> regions = ec2.describeRegions(params);
-			for (Iterator iterator = regions.iterator(); iterator.hasNext();) {
-				RegionInfo regionInfo = (RegionInfo) iterator.next();
-				if (regionInfo != null) {
-					status = Commons.EUCA_STATUS.running + "";
-				} else if (regionInfo == null) {
-					status = Commons.EUCA_STATUS.error + "";
+			if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS || 
+					infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+				Jec2 ec2 = new Jec2(decAccessId, decSecretKey, false,
+						infra.getServer(), infra.getPort());
+				if (infra.getServer() != null
+						&& !infra.getServer().contains("ec2.amazonaws.com")) {
+					ec2.setResourcePrefix(infra.getResourcePrefix());
+					ec2.setSignatureVersion(infra.getSignatureVersion());
+					ec2.setMaxRetries(1);
 				}
-				break;
+	
+				List params = new ArrayList<String>();
+	
+				List<RegionInfo> regions = ec2.describeRegions(params);
+				for (Iterator iterator = regions.iterator(); iterator.hasNext();) {
+					RegionInfo regionInfo = (RegionInfo) iterator.next();
+					if (regionInfo != null) {
+						status = Commons.EUCA_STATUS.running + "";
+					} else if (regionInfo == null) {
+						status = Commons.EUCA_STATUS.error + "";
+					}
+					break;
+				}
+			}else if(infra.getInfraType().getId() == Commons.INFRA_TYPE_VCLOUD){
+				
+				VcloudClient.setLogLevel(Level.SEVERE);
+				VcloudClient vcloudClient = new VcloudClient("https://"+infra.getServer(), Version.V1_5);
+				
+				String login = decAccessId+"@"+infra.getVcloudAccountName();
+				vcloudClient.registerScheme("https", infra.getPort().intValue(), FakeSSLSocketFactory.getInstance());
+				vcloudClient.login(login, decSecretKey);
+				Collection<ReferenceType> orgRefs = vcloudClient.getOrgRefs();
+				for (Iterator iterator = orgRefs.iterator(); iterator.hasNext();) {
+					ReferenceType orgRefType = (ReferenceType) iterator.next();
+					if(orgRefType !=null){
+						status = Commons.EUCA_STATUS.running + "";
+					}else {
+						status = Commons.EUCA_STATUS.unknown + "";
+					}
+					break;
+				}
+				
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
@@ -438,7 +503,6 @@ public class InfraService {
 				status = Commons.EUCA_STATUS.unknown + "";
 			}
 		}
-		// System.out.println(" = ssssssssssssssssssssssssssssssss ");
 		return infra.getServer() + "=" + status;
 	}
 

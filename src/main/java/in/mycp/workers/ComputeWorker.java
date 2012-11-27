@@ -602,8 +602,7 @@ public class ComputeWorker extends Worker {
 			launchConfiguration.setMinCount(1);
 			launchConfiguration.setMaxCount(1);
 
-			ReservationDescription reservationDescription = ec2
-					.runInstances(launchConfiguration);
+			ReservationDescription reservationDescription = ec2.runInstances(launchConfiguration);
 			instanceLocal = InstanceP.findInstanceP(instance.getId());
 
 			Instance instanceEc2 = reservationDescription.getInstances().get(0);

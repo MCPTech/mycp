@@ -87,6 +87,45 @@
 		
 	}
 	
+	var popupStatus_infra_vcloud = 0;
+
+	function loadPopup_infra_vcloud(){
+		if(popupStatus_infra_vcloud==0){
+			$("#backgroundPopup_infra_vcloud").css({
+				"opacity": "0.7"
+			});
+			$("#backgroundPopup_infra_vcloud").fadeIn("slow");
+			$("#popupContact_infra_vcloud").fadeIn("slow");
+			popupStatus_infra_vcloud = 1;
+		}
+	}
+
+	function disablePopup_infra_vcloud(){
+		if(popupStatus_infra_vcloud==1){
+			$("#backgroundPopup_infra_vcloud").fadeOut("slow");
+			$("#popupContact_infra_vcloud").fadeOut("slow");
+			popupStatus_infra_vcloud = 0;
+		}
+	}
+
+	function centerPopup_infra_vcloud(){
+		var windowWidth = document.documentElement.clientWidth;
+		var windowHeight = document.documentElement.clientHeight;
+		var popupHeight = $("#popupContact_infra_vcloud").height();
+		var popupWidth = $("#popupContact_infra_vcloud").width();
+		$("#popupContact_infra_vcloud").css({
+			"position": "absolute",
+			"top": windowHeight/2-popupHeight/2,
+			"left": windowWidth/2-popupWidth/2
+		});
+		
+		$("#backgroundPopup_infra_vcloud").css({
+			"height": windowHeight
+		});
+		
+	}
+	
+	
 	var isMycpAdmin = false;
 	var isAdmin = false;
 	function findAll_infra(p){
@@ -116,7 +155,8 @@
 	      	            { "sTitle": "Secure?" },
 	      	            { "sTitle": "Server IP/DNS" },
 	      	            { "sTitle": "Server Port" },
-	      	            { "sTitle": "Sync" },
+	      	          	{ "sTitle": "Type" },
+	      	          	{ "sTitle": "Sync" },
 	      	            { "sTitle": "Actions" }
 	      	           
 	      	        ]
@@ -148,7 +188,7 @@
 				
 			}
 			//oTable.fnAddData( [i+1, p[i].accessId, p[i].secretKey,p[i].isSecure,p[i].server,p[i].port,p[i].details,
-			oTable.fnAddData( [i+1, p[i].name, p[i].accessId,p[i].isSecure,p[i].server,p[i].port,p[i].syncInProgress,
+			oTable.fnAddData( [i+1, p[i].name, p[i].accessId,p[i].isSecure,p[i].server,p[i].port,p[i].infraType.name,p[i].syncInProgress,
 			                   options ] );
 		}
 		
@@ -158,10 +198,23 @@
 	
 	
 	var viewed_infra = -1;	
+	var viewed_infra_aws = -1;
+	var viewed_infra_vcloud = -1;
 $(function(){
 
 	$("#popupbutton_infra").click(function(){
 			viewed_infra = -1;
+			viewed_infra_aws = -1;
+			viewed_infra_vcloud = -1;
+			dwr.util.removeAllOptions('cloudtype');
+	    	
+	    	dwr.util.addOptions('cloudtype',{
+								    		  Euca:'Eucalyptus',
+								    		  AWS:'Amazon Web Services',
+								    		  vcloud:'vCloud Director 1.5'
+								    		 });
+	    	
+
 			centerPopup_infra();
 			loadPopup_infra();
 		});
@@ -176,28 +229,51 @@ $(function(){
 		$("#popupContactClose_infra").click(function(){
 			viewed_infra = -1;
 			disablePopup_infra();
+			disablePopup_infra_aws();
+			disablePopup_infra_vcloud();
 		});
 
 		$("#backgroundPopup_infra").click(function(){
 			viewed_infra = -1;
 			disablePopup_infra();
+			disablePopup_infra_aws();
+			disablePopup_infra_vcloud();
 		});
 		
 		$("#popupContactClose_infra_aws").click(function(){
 			viewed_infra = -1;
+			disablePopup_infra();
 			disablePopup_infra_aws();
+			disablePopup_infra_vcloud();
 		});
 
 		$("#backgroundPopup_infra_aws").click(function(){
 			viewed_infra = -1;
+			disablePopup_infra();
 			disablePopup_infra_aws();
+			disablePopup_infra_vcloud();
+		});
+		
+		$("#popupContactClose_infra_vcloud").click(function(){
+			viewed_infra = -1;
+			disablePopup_infra();
+			disablePopup_infra_aws();
+			disablePopup_infra_vcloud();
+		});
+
+		$("#backgroundPopup_infra_vcloud").click(function(){
+			viewed_infra = -1;
+			disablePopup_infra();
+			disablePopup_infra_aws();
+			disablePopup_infra_vcloud();
 		});
 
 		$(document).keypress(function(e){
 			if(e.keyCode==27 && (popupStatus_infra==1 ||
-					popupStatus_infra_aws==1)){
+					popupStatus_infra_aws==1 || popupStatus_infra_vcloud==1)){
 				disablePopup_infra();
 				disablePopup_infra_aws();
+				disablePopup_infra_vcloud();
 			}
 		});
 		
@@ -214,6 +290,13 @@ $(function(){
 			$("#thisform_aws").validate({
 				 submitHandler: function(form) {
 					 submitForm_infra_aws(form);
+					 return false;
+				 }
+			});
+			
+			$("#thisform_vcloud").validate({
+				 submitHandler: function(form) {
+					 submitForm_infra_vcloud(form);
 					 return false;
 				 }
 			});
@@ -244,36 +327,79 @@ $(function(){
 				//dwr.util.setValue(id, sel);
 			});
 			
+			CompanyService.findAll(function(p){
+				dwr.util.removeAllOptions('company_vcloud');
+				dwr.util.addOptions('company_vcloud', p, 'id', 'name');
+				//dwr.util.setValue(id, sel);
+			});
+			
 			
 			function loadCloudType(sel)  {
 				var value = sel.options[sel.selectedIndex].value;
 				//alert(sel.selectedIndex);
 				viewed_infra = -1;
+				viewed_infra_aws = -1;
+				viewed_infra_vcloud = -1;
+				
 				if('AWS' == value){
+					disablePopup_infra_vcloud();
+					disablePopup_infra_aws();
 					disablePopup_infra();
 					
 					centerPopup_infra_aws();
 					loadPopup_infra_aws();
+					dwr.util.removeAllOptions('cloudtype_aws');
+			    	
+			    	dwr.util.addOptions('cloudtype_aws',{
+										    		  Euca:'Eucalyptus',
+										    		  AWS:'Amazon Web Services',
+										    		  vcloud:'vCloud Director 1.5'
+										    		 });
+			    	
 					var selObj = document.getElementById('cloudtype_aws');
 					selObj.selectedIndex = 1;
 					
 				}else if('Euca' == value){
+					disablePopup_infra_vcloud();
 					disablePopup_infra_aws();
+					disablePopup_infra();
 					
 					centerPopup_infra();
 					loadPopup_infra();
+					dwr.util.removeAllOptions('cloudtype');
+			    	dwr.util.addOptions('cloudtype',{
+										    		  Euca:'Eucalyptus',
+										    		  AWS:'Amazon Web Services',
+										    		  vcloud:'vCloud Director 1.5'
+										    		 });
 					var selObj = document.getElementById('cloudtype');
 					selObj.selectedIndex = 0;
+				}else if('vcloud' == value){
+					disablePopup_infra_vcloud();
+					disablePopup_infra_aws();
+					disablePopup_infra();
+					
+					centerPopup_infra_vcloud();
+					loadPopup_infra_vcloud();
+					dwr.util.removeAllOptions('cloudtype_vcloud');
+			    	dwr.util.addOptions('cloudtype_vcloud',{
+										    		  Euca:'Eucalyptus',
+										    		  AWS:'Amazon Web Services',
+										    		  vcloud:'vCloud Director 1.5'
+										    		 });
+			    	
+					var selObj = document.getElementById('cloudtype_vcloud');
+					selObj.selectedIndex = 2;
 				}
 				
 			}
 		
 		
 	function submitForm_infra(f){
-		var infra = {  id:viewed_infra,name:null,accessId:null, secretKey:null, isSecure:null, server:null,resourcePrefix:null,signatureVersion:null, port:null, details:null, company:{} };
+		var infra = {  id:viewed_infra,name:null,accessId:null, secretKey:null, isSecure:null, server:null,resourcePrefix:null,signatureVersion:null, port:null, details:null, company:{},infraType:{} };
 		  dwr.util.getValues(infra);
 		  infra.company.id= dwr.util.getValue("company");
-		  
+		  infra.infraType.id=1;
 		  if(viewed_infra == -1){
 			  infra.id  = null; 
 		  }
@@ -289,7 +415,7 @@ $(function(){
 	}
 
 	function submitForm_infra_aws(f){
-		var infra = {  id:viewed_infra,name:null,accessId:null, secretKey:null, server:null,port:null, details:null, company:{} };
+		var infra = {  id:viewed_infra,name:null,accessId:null, secretKey:null, server:null,port:null, details:null, company:{},infraType:{} };
 		  
 		  infra.company.id= dwr.util.getValue("company_aws");
 		  infra.name=dwr.util.getValue("name_aws");
@@ -298,6 +424,7 @@ $(function(){
 		  infra.server=dwr.util.getValue("server_aws");
 		  infra.details=dwr.util.getValue("details_aws");
 		  infra.port='80';
+		  infra.infraType.id=2;
 		  if(viewed_infra == -1){
 			  infra.id  = null; 
 		  }
@@ -310,30 +437,93 @@ $(function(){
 		  viewed_infra=-1;
 		  
 	}
+	
+	function submitForm_infra_vcloud(f){
+		var infra = {  id:viewed_infra,name:null,accessId:null, secretKey:null, server:null,port:null, details:null,vcloudAccountName:null, company:{},infraType:{} };
+		  
+		  infra.company.id= dwr.util.getValue("company_vcloud");
+		  infra.name=dwr.util.getValue("name_vcloud");
+		  infra.vcloudAccountName=dwr.util.getValue("vcloud_account_vcloud");
+		  infra.accessId=dwr.util.getValue("user_vcloud");
+		  infra.secretKey=dwr.util.getValue("password_vcloud");
+		  infra.server=dwr.util.getValue("server_vcloud");
+		  //infra.resourcePrefix = dwr.util.getValue("resourcePrefix_vcloud");
+		  
+		  infra.details=dwr.util.getValue("details_vcloud");
+		  infra.port=dwr.util.getValue("port_vcloud");
+		  infra.infraType.id=3;
+		  if(viewed_infra == -1){
+			  infra.id  = null; 
+		  }
+		  
+		  InfraService.saveOrUpdate(infra,afterSave_infra);
+		 
+		  dwr.util.setValue('cloudtype_vcloud','');
+		  dwr.util.setValue('cloudtype_aws','');
+		  dwr.util.setValue('cloudtype','');
+		  disablePopup_infra_vcloud();
+		  viewed_infra=-1;
+	}
+	
+	function clear_form_fields(){
+		var infra = {  id:null,name:null,accessId:null, secretKey:null, isSecure:null, server:null,resourcePrefix:null,signatureVersion:null, port:null, details:null };
+		dwr.util.setValues(infra);
+		infra = {  id:null,name_aws:null,accessId_aws:null, secretKey_aws:null, server_aws:null, details_aws:null };
+		dwr.util.setValues(infra);
+		infra = {  id:null,name_vcloud:null,vcloud_account_vcloud:null, user_vcloud:null,password_vcloud:null, server_vcloud:null,port_vcloud:null,details_vcloud:null,vcloud_account_vcloud:null };
+		dwr.util.setValues(infra);
+		
+		dwr.util.setValue('cloudtype_vcloud','');
+		dwr.util.setValue('cloudtype_aws','');
+		dwr.util.setValue('cloudtype','');
+		
+	}
 
-function cancelForm_infra(f){
+	function cancelForm_infra(f){
+		clear_form_fields();
+		  
+		  viewed_infra = -1;
+		  disablePopup_infra();
+	}
 
-	var infra = {  id:null,name:null,accessId:null, secretKey:null, isSecure:null, server:null,resourcePrefix:null,signatureVersion:null, port:null, details:null };
-	  dwr.util.setValues(infra);
-	  dwr.util.setValue('cloudtype_aws','');
-	  dwr.util.setValue('cloudtype','');
-	  viewed_infra = -1;
-	  disablePopup_infra();
-}
+	function cancelForm_infra_aws(f){
+	
+		clear_form_fields();
+		  viewed_infra_aws = -1;
+		  disablePopup_infra_aws();
+	}
 
-function cancelForm_infra_aws(f){
-
-	var infra = {  id:null,name:null,accessId:null, secretKey:null, isSecure:null, server:null, details:null };
-	  dwr.util.setValues(infra);
-	  dwr.util.setValue('cloudtype_aws','');
-	  dwr.util.setValue('cloudtype','');
-	  viewed_infra_aws = -1;
-	  disablePopup_infra_aws();
-}
+	function cancelForm_infra_vcloud(f){
+		clear_form_fields();
+		
+		  viewed_infra_vcloud = -1;
+		  disablePopup_infra_vcloud();
+	}
 
 function afterEdit_infra(p){
 	var infra = eval(p);
-	if(infra.server=='ec2.amazonaws.com'){
+	
+	if(infra.infraType.name !=null && infra.infraType.name=='VCLOUD'){
+		viewed_infra_vcloud=p.id;
+		viewed_infra=p.id;
+		centerPopup_infra_vcloud();
+		loadPopup_infra_vcloud();
+		dwr.util.setValues(infra);
+		  
+			dwr.util.setValue("company_vcloud",p.company.id);
+		  	dwr.util.setValue("name_vcloud",p.name);
+		  	dwr.util.setValue("user_vcloud",p.accessId);
+		  	dwr.util.setValue("password_vcloud",p.secretKey);
+		  	dwr.util.setValue("server_vcloud",p.server);
+		  	dwr.util.setValue("details_vcloud",p.details);
+		  	dwr.util.setValue("port_vcloud",p.port);
+		  	dwr.util.setValue("vcloud_account_vcloud",p.vcloudAccountName);
+		  	//dwr.util.setValue("resourcePrefix_vcloud",p.resourcePrefix);
+
+		  	dwr.util.removeAllOptions('cloudtype_vcloud');
+		  	dwr.util.addOptions('cloudtype_vcloud',["vCloud Director 1.5"]);
+		
+	}else if(infra.infraType.name !=null && infra.infraType.name=='AWS'){
 		viewed_infra_aws=p.id;
 		viewed_infra=p.id;
 		centerPopup_infra_aws();
@@ -345,18 +535,23 @@ function afterEdit_infra(p){
 		  	dwr.util.setValue("secretKey_aws",p.secretKey);
 		  	dwr.util.setValue("server_aws",p.server);
 		  	dwr.util.setValue("details_aws",p.details);
-		  
-		
-		var selObj = document.getElementById('cloudtype_aws');
+		/* var selObj = document.getElementById('cloudtype_aws');
 		selObj.selectedIndex = 1;
+		 */
+		dwr.util.removeAllOptions('cloudtype_aws');
+    	dwr.util.addOptions('cloudtype_aws',["Amazon Web Services"]);
+    	
 	}else{
 		viewed_infra=p.id;
 		centerPopup_infra();
 		loadPopup_infra();
 		dwr.util.setValues(infra);
 		dwr.util.setValue('company',p.company.id);
-		var selObj = document.getElementById('cloudtype');
+		/* var selObj = document.getElementById('cloudtype');
 		selObj.selectedIndex = 0;
+		 */
+		dwr.util.removeAllOptions('cloudtype');
+    	dwr.util.addOptions('cloudtype',["Eucalyptus"]);
 	}
 	
 	
@@ -437,24 +632,28 @@ function sync_infra(id){
 								    <td style="width: 50%;">Cloud Type: </td>
 								    <td style="width: 50%;"> 
 									    <select id="cloudtype" name="cloudtype" style="width: 205px;" class="required" onchange="loadCloudType(this)" >
-									    	<option value="Euca" selected="selected">Eucalyptus</option>
+									    	<option value="Euca" >Eucalyptus</option>
 									    	<option value="AWS" >Amazon Web Services</option>
+									    	<option value="vcloud" >vCloud Director 1.5</option>
 									    </select>
 								    </td>
 								  </tr>
 								  
 								<tr>
 								    <td style="width: 50%;">Name : </td>
-								    <td style="width: 50%;"><input type="text" name="name" id="name" size="30" class="required"></td>
+								    <td style="width: 50%;"><input type="text" name="name" id="name" size="30" class="required" 
+								     maxlength="45"></td>
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Access Key : </td>
-								    <td style="width: 50%;"><input type="text" name="accessId" id="accessId" size="30" class="required"></td>
+								    <td style="width: 50%;"><input type="text" name="accessId" id="accessId" size="30" class="required" 
+								     maxlength="90"></td>
 								  </tr>
 								  
 								  <tr>
 								    <td style="width: 50%;">Secret Key : </td>
-								    <td style="width: 50%;"><input type="text" name="secretKey" id="secretKey" size="30" class="required"></td>
+								    <td style="width: 50%;"><input type="text" name="secretKey" id="secretKey" size="30" class="required" 
+								     maxlength="90"></td>
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Secure? : </td>
@@ -463,29 +662,34 @@ function sync_infra(id){
 								  
 								  <tr>
 								    <td style="width: 50%;">Server : </td>
-								    <td style="width: 50%;"><input type="text" name="server" id="server" size="30" class="required"></td>
+								    <td style="width: 50%;"><input type="text" name="server" id="server" size="30" class="required" 
+								     maxlength="45"></td>
 								  </tr>
 								  
 								  
 								  <tr>
 								    <td style="width: 50%;">Resource Prefix : </td>
-								    <td style="width: 50%;"><input type="text" name="resourcePrefix" id="resourcePrefix" size="30" ></td>
+								    <td style="width: 50%;"><input type="text" name="resourcePrefix" id="resourcePrefix" size="30" 
+								     maxlength="90"></td>
 								  </tr>
 								  
 								  <tr>
 								    <td style="width: 50%;">Signature Version : </td>
-								    <td style="width: 50%;"><input type="text" name="signatureVersion" id="signatureVersion" size="30" class="number" ></td>
+								    <td style="width: 50%;"><input type="text" name="signatureVersion" id="signatureVersion" size="30" class="number" 
+								     maxlength="2" ></td>
 								  </tr>
 								  
 								  
 								   <tr>
 								    <td style="width: 50%;">Port : </td>
-								    <td style="width: 50%;"><input type="text" name="port" id="port" size="30" class="required number"></td>
+								    <td style="width: 50%;"><input type="text" name="port" id="port" size="30" class="required number" 
+								     maxlength="5"></td>
 								  </tr>
 								  
 								  <tr>
 								    <td style="width: 50%;">Details : </td>
-								    <td style="width: 50%;"><input type="text" name="details" id="details" size="30"></td>
+								    <td style="width: 50%;"><input type="text" name="details" id="details" size="30" 
+								     maxlength="90"></td>
 								  </tr>
 								   <tr>
 								    <td style="width: 50%;">Account : </td>
@@ -525,32 +729,38 @@ function sync_infra(id){
 								    <td style="width: 50%;"> 
 									    <select id="cloudtype_aws" name="cloudtype_aws" style="width: 205px;" class="required" onchange="loadCloudType(this)" >
 									    	<option value="Euca" >Eucalyptus</option>
-									    	<option value="AWS" selected="selected">Amazon Web Services</option>
-									    	
+									    	<option value="AWS" >Amazon Web Services</option>
+									    	<option value="vcloud" >vCloud Director 1.5</option>
 									    </select>
 								    </td>
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Name : </td>
-								    <td style="width: 50%;"><input type="text" name="name_aws" id="name_aws" size="30" class="required"></td>
+								    <td style="width: 50%;"><input type="text" name="name_aws" id="name_aws" size="30" class="required" 
+								     maxlength="45"></td>
 								  </tr>
 								  
 								  <tr>
 								    <td style="width: 50%;">Access Key : </td>
-								    <td style="width: 50%;"><input type="text" name="accessId_aws" id="accessId_aws" size="30" class="required"></td>
+								    <td style="width: 50%;"><input type="text" name="accessId_aws" id="accessId_aws" size="30" class="required" 
+								     maxlength="90"></td>
 								  </tr>
 								  
 								  <tr>
 								    <td style="width: 50%;">Secret Key : </td>
-								    <td style="width: 50%;"><input type="text" name="secretKey_aws" id="secretKey_aws" size="30" class="required"></td>
+								    <td style="width: 50%;"><input type="text" name="secretKey_aws" id="secretKey_aws" size="30" class="required" 
+								     maxlength="90"></td>
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Server : </td>
-								    <td style="width: 50%;"><input type="text" name="server_aws" id="server_aws" size="30" class="required" readonly="readonly" value="ec2.amazonaws.com"></td>
+								    <td style="width: 50%;"><input type="text" name="server_aws" id="server_aws" size="30" class="required" 
+								    readonly="readonly" value="ec2.amazonaws.com" 
+								     maxlength="45"></td>
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Details : </td>
-								    <td style="width: 50%;"><input type="text" name="details_aws" id="details_aws" size="30"></td>
+								    <td style="width: 50%;"><input type="text" name="details_aws" id="details_aws" size="30" 
+								     maxlength="90"></td>
 								  </tr>
 								   <tr>
 								    <td style="width: 50%;">Account : </td>
@@ -574,3 +784,84 @@ function sync_infra(id){
 						</div>
 		<div id="backgroundPopup_infra_aws" class="backgroundPopup" ></div>
 	</div>			
+	
+	<div id="popupContactParent_infra_vcloud" >
+		<div id="popupContact_infra_vcloud" class="popupContact" >
+							<a  onclick="cancelForm_infra_vcloud();return false;" class="popupContactClose" style="cursor: pointer; text-decoration:none;">X</a>
+							<h1>Cloud</h1>
+							<form class="cmxform" id="thisform_vcloud" method="post" name="thisform_vcloud">
+								<p id="contactArea_infra_vcloud" class="contactArea" >
+								<input type="hidden" id="id" name="id">
+								<table style="width: 100%;">
+								  <tr>
+								    <td style="width: 50%;">Cloud Type: </td>
+								    <td style="width: 50%;"> 
+									    <select id="cloudtype_vcloud" name="cloudtype_vcloud" style="width: 205px;" class="required" onchange="loadCloudType(this)" >
+									    	<option value="Euca" >Eucalyptus</option>
+									    	<option value="AWS" >Amazon Web Services</option>
+									    	<option value="vcloud" >vCloud Director 1.5</option>
+									    </select>
+								    </td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;">Name : </td>
+								    <td style="width: 50%;"><input type="text" name="name_vcloud" id="name_vcloud" size="30" class="required" 
+								     maxlength="45"></td>
+								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">vCloud Account : </td>
+								    <td style="width: 50%;"><input type="text" name="vcloud_account_vcloud" id="vcloud_account_vcloud" size="30" class="required" 
+								    maxlength="" ></td>
+								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">User : </td>
+								    <td style="width: 50%;"><input type="text" name="user_vcloud" id="user_vcloud" size="30" class="required" 
+								    maxlength="90"></td>
+								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">Password : </td>
+								    <td style="width: 50%;"><input type="text" name="password_vcloud" id="password_vcloud" size="30" class="required"  
+								     maxlength="90"></td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;">Server : </td>
+								    <td style="width: 50%;"><input type="text" name="server_vcloud" id="server_vcloud" size="30" class="required" 
+								     maxlength="45"></td>
+								  </tr>
+								  
+								  
+								   <tr>
+								    <td style="width: 50%;">Port : </td>
+								    <td style="width: 50%;"><input type="text" name="port_vcloud" id="port_vcloud" size="30" class="required" value="443" 
+								    	maxlength="5"></td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;">Details : </td>
+								    <td style="width: 50%;"><input type="text" name="details_vcloud" id="details_vcloud" size="30"
+								     maxlength="90"></td>
+								  </tr>
+								   <tr>
+								    <td style="width: 50%;">MyCP Account : </td>
+								    <td style="width: 50%;">
+								    <select id="company_vcloud" name="company_vcloud" style="width: 205px;" class="required"></select>
+								    </td>
+								  </tr> 
+								  <tr>
+								    <td style="width: 50%;"></td>
+								    <td style="width: 50%;">
+								    <br><br>
+										<div class="demo" id="popupbutton_infra_create_vcloud">
+											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
+											<button onclick="cancelForm_infra_vcloud(this.form);return false;">Cancel</button>
+										</div>
+									</td>
+								  </tr>
+								</table>
+								</p>
+							</form>
+						</div>
+		<div id="backgroundPopup_infra_vcloud" class="backgroundPopup" ></div>
+	</div>

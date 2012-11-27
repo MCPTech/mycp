@@ -120,6 +120,20 @@ public class Commons {
 	public static int ROLE_ADMIN_INTVAL = 3;
 	public static int ROLE_MANAGER_INTVAL = 6;
 	public static int ROLE_SUPERADMIN_INTVAL = 9;
+	
+	public static int INFRA_TYPE_EUCA=1;
+	public static int INFRA_TYPE_AWS=2;
+	public static int INFRA_TYPE_VCLOUD=3;
+	
+	public static String PROTOCOL_TYPE_TCP="tcp";
+	public static String PROTOCOL_TYPE_UDP="udp";
+	public static String PROTOCOL_TYPE_ICMP="icmp";
+	public static String PROTOCOL_TYPE_ANY="any";
+	public static String PROTOCOL_TYPE_TCP_UDP="tcp_udp";
+	public static String PROTOCOL_TYPE_TCP_ICMP="tcp_icmp";
+	public static String PROTOCOL_TYPE_UDP_ICMP="udp_icmp";
+	
+	
 
 	static public enum ROLE {
 		ROLE_USER, ROLE_ADMIN, ROLE_MANAGER, ROLE_SUPERADMIN
@@ -135,9 +149,9 @@ public class Commons {
 	
 	public static String QUOTA_EXCEED_MSG = "Quota Exceeded.";
 	
-	public static int OS_EDITION_ENABLED=1;
+	public static int PRIVATE_CLOUD_EDITION_ENABLED=1;
 	public static int HOSTED_EDITION_ENABLED=2;
-	public static int SP_EDITION_ENABLED=3;
+	public static int SERVICE_PROVIDER_EDITION_ENABLED=3;
 	
 	public static int EDITION_ENABLED=HOSTED_EDITION_ENABLED;
 	
