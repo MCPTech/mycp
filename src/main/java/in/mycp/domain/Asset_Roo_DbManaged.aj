@@ -12,6 +12,7 @@ import in.mycp.domain.InstanceP;
 import in.mycp.domain.IpAddressP;
 import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.SnapshotInfoP;
 import in.mycp.domain.User;
 import in.mycp.domain.VolumeInfoP;
@@ -58,6 +59,10 @@ privileged aspect Asset_Roo_DbManaged {
     @ManyToOne
     @JoinColumn(name = "productCatalog", referencedColumnName = "id")
     private ProductCatalog Asset.productCatalog;
+    
+    @ManyToOne
+    @JoinColumn(name = "project", referencedColumnName = "id")
+    private Project Asset.project;
     
     @ManyToOne
     @JoinColumn(name = "user", referencedColumnName = "id")
@@ -163,6 +168,14 @@ privileged aspect Asset_Roo_DbManaged {
     
     public void Asset.setProductCatalog(ProductCatalog productCatalog) {
         this.productCatalog = productCatalog;
+    }
+    
+    public Project Asset.getProject() {
+        return project;
+    }
+    
+    public void Asset.setProject(Project project) {
+        this.project = project;
     }
     
     public User Asset.getUser() {

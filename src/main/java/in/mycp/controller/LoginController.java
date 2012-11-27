@@ -142,7 +142,7 @@ public class LoginController {
 	            p.setDepartment(d);
 	            p.setName("Proj @ " + d.getName());
 	            p = p.merge();
-            user.setProject(p);
+            user.getProjects().add(p);
             user = user.merge();
             
             
@@ -180,8 +180,6 @@ public class LoginController {
     				return "cloud-portal/userdash";
     			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
     				return "cloud-portal/managerdash";
-    			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN+"")){
-    				return "cloud-portal/admindash";
     			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
     				return "cloud-portal/superadmindash";
     			}
@@ -313,8 +311,6 @@ public class LoginController {
 				return "cloud-portal/userdash";
 			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
 				return "cloud-portal/managerdash";
-			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN+"")){
-				return "cloud-portal/admindash";
 			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
 				return "cloud-portal/superadmindash";
 			}

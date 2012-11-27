@@ -163,7 +163,7 @@ public class ImageService {
 			long allAssetTotalCosts = reportService.getAllAssetCosts()
 					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment()
+			Company company = currentUser.getDepartment()
 					.getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeImageDescription,
 					currentUser, "", allAssetTotalCosts, company);

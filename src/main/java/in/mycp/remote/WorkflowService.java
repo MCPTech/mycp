@@ -122,8 +122,7 @@ public class WorkflowService {
 
 			User user = Commons.getCurrentUser();
 			List<Workflow> wfs = null;
-			if (user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + "")) {
+			if (user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				wfs = Workflow.findWorkflowsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId())).getResultList();
 			} else if (user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				wfs = Workflow.findAllWorkflows();

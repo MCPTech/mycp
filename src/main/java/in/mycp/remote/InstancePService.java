@@ -21,6 +21,7 @@ import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.InstanceP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.ComputeWorker;
@@ -70,8 +71,9 @@ public class InstancePService {
 
 			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment().getCompany();
+			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser,instance.getProduct(), allAssetTotalCosts,company);
+			asset.setProject(Project.findProject(instance.getProjectId()));
 			instance.setAsset(asset);
 			instance = instance.merge();
 			Set<InstanceP> instances = new HashSet<InstanceP>();
@@ -197,8 +199,7 @@ public class InstancePService {
 			//if role is MANAGER , show all VMs
 			//if role is MYCP_ADMIN , show all VMs including System VMs
 			//for everybody else, just show their own VMs
-			if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")
-					|| user.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN+"")){
+			if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
 				return InstanceP.findInstancePsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId()),start, max,search).getResultList();
 			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
 				return InstanceP.findAllInstancePs(start, max,search);

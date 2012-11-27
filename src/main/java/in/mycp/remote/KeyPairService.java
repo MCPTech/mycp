@@ -20,6 +20,7 @@ import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.KeyPairWorker;
@@ -82,8 +83,7 @@ public class KeyPairService {
 				if (KeyPairInfoP
 						.findKeyPairInfoPsByKeyNameEqualsAndCompanyEquals(
 								instance.getKeyName(),
-								Commons.getCurrentUser().getProject()
-										.getDepartment().getCompany())
+								Commons.getCurrentUser().getDepartment().getCompany())
 						.getSingleResult().getId() > 0) {
 					throw new Exception(
 							"Key with this name already exists for this account, Choose another name.");
@@ -107,11 +107,11 @@ public class KeyPairService {
 				currentUser = User.findUser(currentUser.getId());
 				long allAssetTotalCosts = reportService.getAllAssetCosts()
 						.getTotalCost();
-				Company company = currentUser.getProject().getDepartment()
-						.getCompany();
+				Company company = currentUser.getDepartment().getCompany();
 				Asset asset = Commons.getNewAsset(assetTypeKeyPair,
 						currentUser, instance.getProduct(), allAssetTotalCosts,
 						company);
+				asset.setProject(Project.findProject(instance.getProjectId()));
 				instance.setAsset(asset);
 				instance = instance.merge();
 				if (true == assetTypeKeyPair.getWorkflowEnabled()) {
@@ -231,9 +231,7 @@ public class KeyPairService {
 				return KeyPairInfoP.findKeyPairInfoPsByUser(user, start, max,
 						search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				return KeyPairInfoP.findKeyPairInfoPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)

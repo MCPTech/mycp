@@ -620,12 +620,19 @@ public class EucalyptusService {
 
 		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			logger.info("SP Edition Enabled and Current user is Super Admin, synching everything cloud<-->mycp");
+/*<<<<<<< HEAD*/
+
 		} else if (company != null && Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || currentUser.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + ""))) {
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") )) {
 			logger.info("Private Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
 		}else if (company != null && Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || currentUser.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + ""))) {
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") )) {
 			logger.info("Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
+/*=======
+		} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + ""))) {
+			logger.info("OS/Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
+>>>>>>> origin/development*/
 		} else {
 			if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
 				throw new Exception("You cannot sync if you are not super admin");

@@ -5,7 +5,7 @@
 <!-- <script type='text/javascript' src='/dwr/interface/ManagerService.js'></script>
 <script type='text/javascript' src='/dwr/interface/QuotaService.js'></script> -->
 <script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
-
+<script type='text/javascript' src='/dwr/interface/DepartmentService.js'></script>
 <script type="text/javascript">
 /***************************/
 //@Author: Adrian "yEnS" Mato Gondelle
@@ -65,12 +65,10 @@
 		/* alert(p.length);
 		alert(p[0].imageId); */
 	//alert(dwr.util.toDescriptiveString(p,3));
-		
 		//var tableData = eval( dwr.util.toDescriptiveString(p,3) );
 		//var continents = arrayAsJSONText.parseJSON();
 		//alert(tableData);
 		//alert(tableData[0].id+tableData[0].name);
-
 		 oTable = $('#compute-table').dataTable( {
 	    	"sPaginationType": "full_numbers",
 	    	"bDestroy": true,
@@ -91,9 +89,7 @@
 	           
 	        ]
 	    } );
-		
 		//oTable.fnClearTable();
-		
 		var i=0;
 		for (i=0;i<p.length;i++)
 		{
@@ -102,21 +98,17 @@
 			}else{
 				p[i].active='<img title="disabled" alt="disabled" src=/images/waiting.png>&nbsp;';
 			}
+			//alert(p[i].projects[0].id);
 			oTable.fnAddData( [i+1,p[i].email, dateFormat(p[i].registereddate), p[i].active,
 			                   p[i].role.name,
 			                   '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_user('+p[i].id+')>&nbsp; &nbsp; &nbsp; '+
 			                   '<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_user('+p[i].id+')>' ] );
 		}
-		
-		
-	
 	}
 
 	var viewed_user = -1;	
-$(function(){
-	
-	
-	//LOADING POPUP
+	$(function(){
+		//LOADING POPUP
 		//Click the button event!
 		$("#popupbutton_user").click(function(){
 			viewed_user = -1;
@@ -125,98 +117,103 @@ $(function(){
 			//load popup
 			loadPopup_user();
 			dwr.util.setValue('active',true);
-			
+			$("#projects").val('');
 		});
 	
 		$("#popupbutton_userlist").click(function(){
-			
-				dwr.engine.beginBatch();
-				RealmService.findAll(findAll_user);
-			  dwr.engine.endBatch();
-			  
-		
+			dwr.engine.beginBatch();
+			RealmService.findAll(findAll_user);
+		  	dwr.engine.endBatch();
 		} );
-		
-		});
-		
-		
-		
-					
-		//CLOSING POPUP
-		//Click the x event!
-		$("#popupContactClose_user").click(function(){
-			viewed_user = -1;
-			disablePopup_user();
-		});
-		//Click out event!
-		$("#backgroundPopup_user").click(function(){
-			viewed_user = -1;
-			disablePopup_user();
-		});
-		//Press Escape event!
-		$(document).keypress(function(e){
-			if(e.keyCode==27 && popupStatus_user==1){
-				disablePopup_user();
-			}
-		});
-		
-		$(document).ready(function() {
-			$("#popupbutton_userlist").click();
-
-			RealmService.findAllRoles(function(p){
-				dwr.util.removeAllOptions('role');
-				dwr.util.addOptions('role', p, 'id', 'name');
+		ProjectService.findAll(function(p){
+			dwr.util.removeAllOptions('projects');
+			dwr.util.addOptions('projects', p, 'id', function(p) {
+				return p.name+' @ '+p.department.name;
 			});
-
-		/* 	QuotaService.findAll(function(p){
-	  				dwr.util.removeAllOptions('quota');
-	  				dwr.util.addOptions('quota', p, 'id', 'name');
-	  			});
-	              
-	              ManagerService.findAll(function(p){
-	  				dwr.util.removeAllOptions('manager');
-	  				dwr.util.addOptions('manager', ["Please select ..."]);
-	  				dwr.util.addOptions('manager', p, 'id', 'firstname');
-	  			}); */
-			
-	  			ProjectService.findAll(function(p){
-					dwr.util.removeAllOptions('project');
-					//dwr.util.addOptions('project', p, 'id', 'name');
-					dwr.util.addOptions('project', p, 'id', function(p) {
-						return p.name+' @ '+p.department.name;
-					});
-					//dwr.util.setValue(id, sel);
-					
-				});
-	  			
-	  			$( '#email').blur( function() {
-	  				RealmService.emailExists(this.value, function(p) {
-	  					//alert(p);
-	  					if(p){
-	  						$( '#email' ).select();
-	  						$( '#email' ).val('Email already taken.Choose another.');
-		  					//alert('Exists');
-		  				}else{
-		  					//alert('ok');
-		  				}
-	  				})});
-	  			
-		
-	  			
-			$("#thisform").validate({
-				 submitHandler: function(form) {
-					 submitForm_user(form);
-					 return false;
-				 }
-				});
 		});
+	});
+	//CLOSING POPUP
+	//Click the x event!
+	$("#popupContactClose_user").click(function(){
+		viewed_user = -1;
+		disablePopup_user();
+	});
+	//Click out event!
+	$("#backgroundPopup_user").click(function(){
+		viewed_user = -1;
+		disablePopup_user();
+	});
+	//Press Escape event!
+	$(document).keypress(function(e){
+		if(e.keyCode==27 && popupStatus_user==1){
+			disablePopup_user();
+		}
+	});
+		
+	$(function() {
+		$("#popupbutton_userlist").click();
+
+		RealmService.findAllRoles(function(p){
+			dwr.util.removeAllOptions('role');
+			dwr.util.addOptions('role', p, 'id', 'name');
+		});
+
+	/* 	QuotaService.findAll(function(p){
+			dwr.util.removeAllOptions('quota');
+			dwr.util.addOptions('quota', p, 'id', 'name');
+		});
+	          
+	          ManagerService.findAll(function(p){
+			dwr.util.removeAllOptions('manager');
+			dwr.util.addOptions('manager', ["Please select ..."]);
+			dwr.util.addOptions('manager', p, 'id', 'firstname');
+		}); */
+		
+  			DepartmentService.findAll(function(p){
+				dwr.util.removeAllOptions('department');
+				//dwr.util.addOptions('department', p, 'id', 'name');
+				dwr.util.addOptions('department', p, 'id', function(p) {
+					return p.name;
+				});
+				//dwr.util.setValue(id, sel);
+				
+			});
+  			$( '#email').blur( function() {
+  				RealmService.emailExists(this.value, function(p) {
+  					//alert(p);
+  					if(p){
+  						$( '#email' ).select();
+  						$( '#email' ).val('Email already taken.Choose another.');
+	  					//alert('Exists');
+	  				}else{
+	  					//alert('ok');
+	  				}
+  				})});
+  			
+	
+  			
+		$("#thisform").validate({
+			 submitHandler: function(form) {
+				 submitForm_user(form);
+				 return false;
+			 }
+			});
+	});
 		
 	function submitForm_user(f){
 		//alert(f);
-		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, project:{}};
-		  dwr.util.getValues(user);
-		  user.role.id= dwr.util.getValue("role");
-		  user.project.id=dwr.util.getValue("project");
+		var user = {  id:viewed_user,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, department:{}, quota:0, projects:{}};
+		dwr.util.getValues(user);
+		//construct json object and set it to projects
+		var strProjectIds = dwr.util.getValue("projects");
+		var arrProjectIds = [];
+		for (i = 0; i < strProjectIds.length; ++i) {
+			arrProjectIds.push({id: strProjectIds[i]});
+		}
+		user.projects = arrProjectIds;
+		  
+		user.role.id= dwr.util.getValue("role");
+		user.department.id=dwr.util.getValue("department");
 		 // alert(user.role.id);
 		  /* try{
 			if('Please select ...' == dwr.util.getValue("manager")){
@@ -239,7 +236,7 @@ $(function(){
 	}
 	function cancelForm_user(f){
 	
-		var user = {  id:null,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, project:{}};
+		var user = {  id:null,email:null, password:null,active:null,role:{},firstName:null, lastName:null,designation:null,phone:null, projects:{}, department:{}, quota:null};
 		  dwr.util.setValues(user);
 		  viewed_user = -1;
 		  disablePopup_user();
@@ -247,6 +244,11 @@ $(function(){
 	
 	function afterEdit_user(p){
 		var user = eval(p);
+		var arrProjectIds = [];
+		for (i = 0; i < p.projects.length; ++i) {
+			arrProjectIds.push(p.projects[i].id);
+		}
+		$("#projects").val(arrProjectIds);
 		viewed_user=p.id;
 		centerPopup_user();
 		loadPopup_user();
@@ -254,9 +256,7 @@ $(function(){
 		//alert(user.role.id);
 		$('#email').attr("readonly", true); 
 		dwr.util.setValue('role',user.role.id);
-		if(user.project !=null){
-			dwr.util.setValue('project',user.project.id);
-		}
+		dwr.util.setValue('department',user.department.id);
 		/* try{dwr.util.setValue('manager',user.manager.id);}catch(e){}
 		try{dwr.util.setValue('quota',user.quota.id);}catch(e){} */
 	}
@@ -305,7 +305,7 @@ $(function(){
 				</div>
 				
 	<div id="popupContactParent_user" >
-		<div id="popupContact_user" class="popupContact" >
+		<div id="popupContact_user" class="popupContact" style="">
 							<a  onclick="cancelForm_user();return false;" class="popupContactClose" style="cursor: pointer; text-decoration:none;">X</a>
 							<h1>User</h1>
 							<form  class="cmxform" id="thisform" method="post" name="thisform">
@@ -350,8 +350,14 @@ $(function(){
 								  </tr>
 								  <tr>
 								    <td style="width: 50%;">Project : </td>
+								    <td style="width: 50%;"><span> 
+								    <select id="projects" name="projects" style="width: 205px;" class="required" multiple="multiple">
+							    	</select></span></td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;">Department : </td>
 								    <td style="width: 50%;"> 
-								    <select id="project" name="project" style="width: 205px;" class="required">
+								    <select id="department" name="department" style="width: 205px;" class="required">
 							    	</select></td>
 								  </tr>
 								  <!--  <tr>
@@ -360,16 +366,15 @@ $(function(){
 								    <select id="manager" name="manager" style="width: 205px;">
 							    	</select>
 								    </td>
-								  </tr>
+								  </tr>-->
 								  <tr>
 								    <td style="width: 50%;">Quota : </td>
-								    <td style="width: 50%;"><select id="quota" name="quota" style="width: 205px;">
-							    	</select></td>
-								  </tr> -->
+								    <td style="width: 50%;"><input type="text" name="quota" id="quota" size="30"></td>
+								  </tr>
 								  <tr>
 								    <td style="width: 50%;"></td>
 								    <td style="width: 50%;">
-								    <br><br>
+								    <br>
 										<div class="demo" id="popupbutton_user_create">
 											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
 											<button onclick="cancelForm_user(this.form);return false;">Cancel</button>

@@ -136,7 +136,7 @@ public class Commons {
 	
 
 	static public enum ROLE {
-		ROLE_USER, ROLE_ADMIN, ROLE_MANAGER, ROLE_SUPERADMIN
+		ROLE_USER, ROLE_MANAGER, ROLE_SUPERADMIN
 	}
 
 	static public enum WORKFLOW_STATUS {
@@ -268,8 +268,8 @@ public class Commons {
 			mysession.setFirstName("");
 			mysession.setLastName("");
 			try {
-				mysession.setCompany(user.getProject().getDepartment().getCompany().getName());
-				mysession.setCompanyId(user.getProject().getDepartment().getCompany().getId());
+				mysession.setCompany(user.getDepartment().getCompany().getName());
+				mysession.setCompanyId(user.getDepartment().getCompany().getId());
 			} catch (Exception e) {
 				// e.printStackTrace();
 			}

@@ -3,6 +3,7 @@
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
 <script type='text/javascript' src='/dwr/interface/SnapshotInfoP.js'></script>
 <script type='text/javascript' src='/dwr/interface/VolumeInfoP.js'></script>
+<script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
 <script type="text/javascript">
 /***************************/
 //@Author: Adrian "yEnS" Mato Gondelle
@@ -69,6 +70,7 @@
 	        "aoColumns": [
 	            { "sTitle": "#" },
 	            { "sTitle": "Snapshot Id" },
+	            { "sTitle": "Project" },
 	            { "sTitle": "Volume Id" },
 	            { "sTitle": "Start Time" },
 	            { "sTitle": "Status" },
@@ -101,7 +103,7 @@
                 	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_backup('+p[i].id+')>';
         	}
 			
-			oTable.fnAddData( [start+i+1,p[i].snapshotId, p[i].volumeId, 
+			oTable.fnAddData( [start+i+1,p[i].snapshotId, p[i].asset.project.name, p[i].volumeId, 
 			                   dateFormat(p[i].startTime,"mmm dd yyyy HH:MM:ss"), p[i].status,p[i].progress, p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}
@@ -148,7 +150,15 @@ $(function(){
 			
 		} );
 	
-		
+		ProjectService.findAll(function(p){
+			dwr.util.removeAllOptions('projectId');
+			//dwr.util.addOptions('project', p, 'id', 'name');
+			dwr.util.addOptions('projectId', p, 'id', function(p) {
+				return p.name+' @ '+p.department.name;
+			});
+			//dwr.util.setValue(id, sel);
+			
+		});
 		});
 
 	$("#popupContactClose_backup").click(function(){
@@ -195,13 +205,13 @@ $(function(){
 		});
 		
 	function submitForm_backup(f){
-		var snapshotInfop = {  id:viewed_backup,description:null, volumeId:null,product:null };
+		var snapshotInfop = {  id:viewed_backup,description:null, volumeId:null,product:null, projectId:null };
 		  dwr.util.getValues(snapshotInfop);
 		  if(viewed_backup == -1){
 			  snapshotInfop.id  = null; 
 		  }
 		  dwr.engine.beginBatch();
-		  SnapshotInfoP.saveOrUpdate(snapshotInfop,afterSave_backup);
+		  SnapshotInfoP.requestSnapshot(snapshotInfop,afterSave_backup);
 		  dwr.engine.endBatch();
 		  disablePopup_backup();
 		  viewed_backup=-1;
@@ -209,7 +219,7 @@ $(function(){
 	}
 	function cancelForm_backup(f){
 	
-		var snapshotInfop = {  id:null,description:null, volumeId:null,product:null  };
+		var snapshotInfop = {  id:null,description:null, volumeId:null,product:null, projectId:null };
 		  dwr.util.setValues(snapshotInfop);
 		  viewed_backup = -1;
 		  disablePopup_backup();
@@ -318,6 +328,13 @@ $(function(){
 								    <td style="width: 50%;">Product : </td>
 								    <td style="width: 50%;">
 								    <select id="product" name="product" style="width: 205px;" class="required">
+							    	</select>
+							    	</td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;">project : </td>
+								    <td style="width: 50%;">
+								    <select id="projectId" name="projectId" style="width: 205px;" class="required">
 							    	</select>
 							    	</td>
 								  </tr>

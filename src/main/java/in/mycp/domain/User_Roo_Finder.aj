@@ -3,7 +3,6 @@
 
 package in.mycp.domain;
 
-import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -27,14 +26,6 @@ privileged aspect User_Roo_Finder {
         q.setParameter("email", email);
         q.setParameter("password", password);
         q.setParameter("active", active);
-        return q;
-    }
-    
-    public static TypedQuery<User> User.findUsersByProject(Project project) {
-        if (project == null) throw new IllegalArgumentException("The project argument is required");
-        EntityManager em = User.entityManager();
-        TypedQuery<User> q = em.createQuery("SELECT o FROM User AS o WHERE o.project = :project", User.class);
-        q.setParameter("project", project);
         return q;
     }
     

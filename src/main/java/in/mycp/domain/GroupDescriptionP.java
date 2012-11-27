@@ -22,6 +22,18 @@ public class GroupDescriptionP {
     @Transient
     public String product;
 
+    @Transient
+    public int projectId;
+
+    public int getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
+    }
+
+    
     public String getProduct() {
         return product;
     }
@@ -115,9 +127,9 @@ public class GroupDescriptionP {
         EntityManager em = entityManager();
         TypedQuery<GroupDescriptionP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.asset.user.project.department.company = :company", GroupDescriptionP.class);
+            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.asset.user.department.company = :company", GroupDescriptionP.class);
         } else {
-            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.asset.user.project.department.company = :company " + " and " + "(o.name like :search or o.description like :search)", GroupDescriptionP.class);
+            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.asset.user.department.company = :company " + " and " + "(o.name like :search or o.description like :search)", GroupDescriptionP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -134,9 +146,9 @@ public class GroupDescriptionP {
         EntityManager em = entityManager();
         TypedQuery<GroupDescriptionP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.project.department.company = :company", GroupDescriptionP.class);
+            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.department.company = :company", GroupDescriptionP.class);
         } else {
-            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.project.department.company = :company " + " and " + " (o.name like :search or o.description like :search)", GroupDescriptionP.class);
+            q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.department.company = :company " + " and " + " (o.name like :search or o.description like :search)", GroupDescriptionP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -152,7 +164,7 @@ public class GroupDescriptionP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<GroupDescriptionP> q = null;
-        q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.project.department.company = :company", GroupDescriptionP.class);
+        q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.department.company = :company", GroupDescriptionP.class);
         q.setParameter("company", company);
         return q;
     }
@@ -161,7 +173,11 @@ public class GroupDescriptionP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<GroupDescriptionP> q = null;
+/*<<<<<<< HEAD
         q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.project.department.company = :company" + " and o.asset.productCatalog.infra = :infra", GroupDescriptionP.class);
+=======*/
+        q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.status='active' and o.asset.user.department.company = :company" + " and o.asset.productCatalog.infra = :infra", GroupDescriptionP.class);
+
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -179,7 +195,7 @@ public class GroupDescriptionP {
     public static Number findGroupDescriptionCountByCompany(Company company, String status) {
         String queryStr = "SELECT COUNT(i.id) FROM GroupDescriptionP i where i.status = :status ";
         if (company != null) {
-            queryStr = queryStr + "  and i.asset.user.project.department.company = :company";
+            queryStr = queryStr + "  and i.asset.user.department.company = :company";
         }
         Query q = entityManager().createQuery(queryStr);
         q.setParameter("status", status);
@@ -192,7 +208,7 @@ public class GroupDescriptionP {
     public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsByNameEqualsAndCompanyEquals(String name, Company company) {
         if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
         EntityManager em = entityManager();
-        TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name " + " and o.asset.user.project.department.company = :company", GroupDescriptionP.class);
+        TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name " + " and o.asset.user.department.company = :company", GroupDescriptionP.class);
         q.setParameter("name", name);
         q.setParameter("company", company);
         return q;
@@ -201,7 +217,11 @@ public class GroupDescriptionP {
     public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsBy(Infra infra, String name, Company company) {
         if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
         EntityManager em = entityManager();
+/*<<<<<<< HEAD
         TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name " + " and o.asset.user.project.department.company = :company" + " and o.asset.productCatalog.infra = :infra ", GroupDescriptionP.class);
+=======*/
+        TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name " + " and o.asset.user.department.company = :company" + " and o.asset.productCatalog.infra = :infra ", GroupDescriptionP.class);
+
         q.setParameter("name", name);
         q.setParameter("company", company);
         q.setParameter("infra", infra);

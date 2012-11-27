@@ -3,6 +3,7 @@
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
 <script type='text/javascript' src='/dwr/interface/GroupDescriptionP.js'></script>
 <script type='text/javascript' src='/dwr/interface/IpPermissionP.js'></script>
+<script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
 <script type="text/javascript">
 	function clearTable(tableID) {
 		$(document.getElementById(tableID)).find("tr:gt(0)").remove();	
@@ -11,14 +12,14 @@
 	function addRowWithData(tableID,id,protocol,fromPort,toPort,cidrIps) {
 		var table = document.getElementById('secTable');
 
-			var rowData = '<tr>'+
+			var rowData = '<tr valign="top">'+
 					'<input type="hidden" name="ids" id="ids" value=\''+id+'\'>'+	  
 					'<td style="width: 20%;"><input type="text" name="protocol" id="protocol" size="20" value=\''+protocol+'\' class="required"></td>'+
 				  '<td style="width: 20%;"><input type="text" name="fromPort" id="fromPort" size="20" value=\''+fromPort+'\' class="required number"></td>'+
 				  '<td style="width: 20%;"><input type="text" name="toPort" id="toPort" size="20" value=\''+toPort+'\' class="required number"></td>'+
 				  '<td style="width: 20%;"><input type="text" name="cidrIps" id="cidrIps" size="20" value=\''+cidrIps+'\' ></td>'+
-				  '<td style="width: 20%;">'+
-						'&nbsp;&nbsp;<img alt="Remove" src=../images/deny.png onclick="deleteRow(this,'+id+')">'+
+				  '<td style="width: 5%;">'+
+						'<a title="Remove Rule" onclick="deleteRow(this,'+id+')"><img src=../images/minus.png></a>'+
 				  '</td>'+
 			  '</tr>';
 			  
@@ -28,14 +29,14 @@
 	function addRow(tableID) {
 	var table = document.getElementById('secTable');
 
-		var rowData = '<tr>'+
+		var rowData = '<tr valign="top">'+
 				'<input type="hidden" name="ids" id="ids" value=0>'+
 			  '<td style="width: 20%;"><input type="text" name="protocol" id="protocol" size="20" class="required"></td>'+
 			  '<td style="width: 20%;"><input type="text" name="fromPort" id="fromPort" size="20" class="required number"></td>'+
 			  '<td style="width: 20%;"><input type="text" name="toPort" id="toPort" size="20" class="required number"></td>'+
 			  '<td style="width: 20%;"><input type="text" name="cidrIps" id="cidrIps" size="20" ></td>'+
-			  '<td style="width: 20%;">'+
-					'&nbsp;&nbsp;<img alt="Remove" src=../images/deny.png onclick="deleteRow(this,null)">'+
+			  '<td style="width: 5%;">'+
+					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
 			  '</td>'+
 		  '</tr>';
 		  
@@ -124,6 +125,7 @@
 	        "aoColumns": [
 	            { "sTitle": "#" },
 	            { "sTitle": "Name" },
+	            { "sTitle": "Project" },
 	            { "sTitle": "Description" },
 	            { "sTitle": "Owner" },
 	            { "sTitle": "Status" },
@@ -156,7 +158,7 @@
 				status = '<img title="unknown" alt="unknown" src=../images/unknown.png >';
 			}
 			
-			oTable.fnAddData( [i+1,p[i].name, p[i].descripton, p[i].owner,status,
+			oTable.fnAddData( [i+1,p[i].name, p[i].asset.project.name, p[i].descripton, p[i].owner,status,
 			                   '', '', '',
 			                   '',p[i].asset.productCatalog.infra.name,
 			                   '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_secgroup('+p[i].id+')>&nbsp;&nbsp;&nbsp;'+
@@ -166,7 +168,7 @@
 				var j=0;
 				for (j=0;j<p[i].ipPermissionPs.length;j++)
 				{
-					oTable.fnAddData( ['','', '', '','',
+					oTable.fnAddData( ['','', '', '', '','',
 					                   p[i].ipPermissionPs[j].protocol, p[i].ipPermissionPs[j].fromPort, p[i].ipPermissionPs[j].toPort,
 					                   p[i].ipPermissionPs[j].cidrIps,'',
 					                   '' ] );
@@ -221,6 +223,15 @@ $(function(){
 				
 			} );
 	
+			ProjectService.findAll(function(p){
+				dwr.util.removeAllOptions('projectId');
+				//dwr.util.addOptions('project', p, 'id', 'name');
+				dwr.util.addOptions('projectId', p, 'id', function(p) {
+					return p.name+' @ '+p.department.name;
+				});
+				//dwr.util.setValue(id, sel);
+				
+			});
 		});
 
 		$("#popupContactClose_secgroup").click(function(){
@@ -257,7 +268,7 @@ $(function(){
 		
 	function submitForm_secgroup(f){
 		CommonService.getSessionMsg(function(p){   $.sticky(p);  });
-		var groupDescriptionp = {  id:viewed_secgroup,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null };
+		var groupDescriptionp = {  id:viewed_secgroup,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null, projectId:null };
 	     dwr.util.getValues(groupDescriptionp); 
 		  if(viewed_secgroup == -1){
 			  groupDescriptionp.id  = null; 
@@ -292,7 +303,7 @@ $(function(){
 	}
 	function cancelForm_secgroup(f){
 	
-		var groupDescriptionp = {  id:null,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null };
+		var groupDescriptionp = {  id:null,name:null, descripton:null,owner:null,ipPermissionPs:[],product:null, projectId:null };
 		  dwr.util.setValues(groupDescriptionp);
 		  viewed_secgroup = -1;
 		  disablePopup_secgroup();
@@ -388,62 +399,61 @@ $(function(){
 				
 	<div id="popupContactParent_secgroup" >
 	
-		<div id="popupContact_secgroup" class="popupContact" >
+		<div id="popupContact_secgroup" class="popupContact" style="width: 70%">
 							<a  onclick="cancelForm_secgroup();return false;" class="popupContactClose" style="cursor: pointer; text-decoration:none;">X</a>
 							<h1>Security Group</h1>
 							<form class="cmxform" id="thisform" method="post" name="thisform">
 								<p id="contactArea_secgroup" class="contactArea" >
 								<input type="hidden" id="id" name="id">
-								<table  style="width: 100%;">
+								<table  style="width: 100%;" border="0">
 								<tr>
 								    <td style="width: 20%;">Name : </td>
 								    <td style="width: 20%;">Description : </td>
 								    <td style="width: 20%;">Owner : </td>
 								    <td style="width: 20%;">Product : </td>
-								    <td style="width: 20%;"></td>
+								    <td style="width: 20%;">Project : </td>
 								</tr>
 								 
-								<tr>
-								    <td style="width: 20%;"><input type="text" name="name" id="name" size="20" class="required"></td>
-								    <td style="width: 20%;"><input type="text" name="descripton" id="descripton" size="20" class="required"></td>
-								    <td style="width: 20%;"><input type="text" name="owner" id="owner" size="20" class="required"> </td>
-								    <td style="width: 20%;"><select id="product" name="product" style="width: 205px;" class="required"></select>
+								<tr valign="top">
+								    <td><input type="text" name="name" id="name" size="20" class="required"></td>
+								    <td><input type="text" name="descripton" id="descripton" size="20" class="required"></td>
+								    <td><input type="text" name="owner" id="owner" size="20" class="required"> </td>
+								    <td><select id="product" name="product" style="width: 185px;" class="required"></select>
 								    </td>
-								    <td style="width: 20%;"></td>
+								    <td>
+									    <select id="projectId" name="projectId" style="width: 185px;" class="required">
+								    	</select>
+							    	</td>
 								</tr>
-								
-								<tr>
-									  <td colspan="5">
-										  <table style="width: 100%;" id="secTable">
-											  <tr>
-												  <td style="width: 15%;">Protocol : </td>
-												  <td style="width: 15%;">From Port : </td>
-												  <td style="width: 15%;">To Port : </td>
-												  <td style="width: 15%;">CIDR : </td>
-												  <td style="width: 40%;">
-												  	<div class="demo" ><button onclick="addRow('secTable');return false;">Add New Rule</button></div>
-												  </td>
-											  </tr>
-											  
-											  
-										  </table>
-									  </td>
-								</tr>
-								  
-								<tr>
-								  	<td style="width: 20%;"></td>
-								  	<td style="width: 20%;"></td>
-								  	<td style="width: 20%;"></td>
-								  	<td style="width: 20%;"></td>
-								  	<td style="width: 20%;">
-								    <br><br>
-										<div class="demo" id="popupbutton_secgroup_create">
-										<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
-											<button onclick="cancelForm_secgroup(this.form);return false;">Cancel</button>
-										</div>
-									</td>
-									
-								</tr>
+								</table>
+								<br>
+								<table  style="width: 100%;">
+									<tr>
+										  <td>
+											  <table style="width: 100%;" id="secTable">
+												  <tr>
+													  <td style="width: 20%;">Protocol : </td>
+													  <td style="width: 20%;">From Port : </td>
+													  <td style="width: 20%;">To Port : </td>
+													  <td style="width: 20%;">CIDR : </td>
+													  <td style="width: 5%;">
+													  	<a title="Add New Rule" onclick="addRow('secTable');return false;"> <img src="../images/add_row.png"/> </a>
+													  </td>
+													  <td style="width: 15%;"></td>
+												  </tr>
+											  </table>
+										  </td>
+									</tr>
+									<tr>
+									  	<td align="right">
+									    <br><br>
+											<div class="demo" id="popupbutton_secgroup_create">
+											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
+												<button onclick="cancelForm_secgroup(this.form);return false;">Cancel</button>
+											</div>
+										</td>
+										
+									</tr>
 								</table>
 								</p>
 							</form>

@@ -6,6 +6,7 @@ package in.mycp.domain;
 import in.mycp.domain.Company;
 import in.mycp.domain.Department;
 import in.mycp.domain.Project;
+import in.mycp.domain.User;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
@@ -17,6 +18,9 @@ privileged aspect Department_Roo_DbManaged {
     @OneToMany(mappedBy = "department")
     private Set<Project> Department.projects;
     
+    @OneToMany(mappedBy = "department")
+    private Set<User> Department.users;
+    
     @ManyToOne
     @JoinColumn(name = "company", referencedColumnName = "id")
     private Company Department.company;
@@ -24,12 +28,23 @@ privileged aspect Department_Roo_DbManaged {
     @Column(name = "name", length = 45)
     private String Department.name;
     
+    @Column(name = "quota")
+    private Integer Department.quota;
+    
     public Set<Project> Department.getProjects() {
         return projects;
     }
     
     public void Department.setProjects(Set<Project> projects) {
         this.projects = projects;
+    }
+    
+    public Set<User> Department.getUsers() {
+        return users;
+    }
+    
+    public void Department.setUsers(Set<User> users) {
+        this.users = users;
     }
     
     public Company Department.getCompany() {
@@ -46,6 +61,14 @@ privileged aspect Department_Roo_DbManaged {
     
     public void Department.setName(String name) {
         this.name = name;
+    }
+    
+    public Integer Department.getQuota() {
+        return quota;
+    }
+    
+    public void Department.setQuota(Integer quota) {
+        this.quota = quota;
     }
     
 }

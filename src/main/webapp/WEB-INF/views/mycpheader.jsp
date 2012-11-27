@@ -56,8 +56,7 @@
     <%
     String roles = Commons.getCurrentUserRolesNonDWR();
     
-    if(roles.contains(Commons.ROLE.ROLE_ADMIN+"") || 
-    		roles.contains(Commons.ROLE.ROLE_MANAGER+"") ||
+    if(roles.contains(Commons.ROLE.ROLE_MANAGER+"") ||
     			roles.contains(Commons.ROLE.ROLE_SUPERADMIN+""))
     {
     %>

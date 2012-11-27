@@ -19,6 +19,7 @@ import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.SnapshotInfoP;
 import in.mycp.domain.User;
 import in.mycp.domain.VolumeInfoP;
@@ -108,9 +109,7 @@ public class SnapshotService {
 				return SnapshotInfoP.findSnapshotInfoPsByUser(user, start, max,
 						search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				return SnapshotInfoP.findSnapshotInfoPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)
@@ -133,10 +132,10 @@ public class SnapshotService {
 			long allAssetTotalCosts = reportService.getAllAssetCosts()
 					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getProject().getDepartment()
-					.getCompany();
+			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetTypeSnapshot, currentUser,
 					snapshotInfoP.getProduct(), allAssetTotalCosts, company);
+			asset.setProject(Project.findProject(snapshotInfoP.getProjectId()));
 			snapshotInfoP.setAsset(asset);
 			snapshotInfoP = snapshotInfoP.merge();
 			VolumeInfoP volumeInfoP = volumeService.findById( Integer.parseInt(snapshotInfoP.getVolumeId()) );

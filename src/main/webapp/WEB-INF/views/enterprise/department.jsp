@@ -202,7 +202,7 @@ $(function(){
 		
 function submitForm_department(f){
 
-	var department = {  id:viewed_department,name:null, company:{}};
+	var department = {  id:viewed_department,name:null, company:{}, quota:0};
 	  dwr.util.getValues(department);
 	  
 	  department.company.id= dwr.util.getValue("company");
@@ -220,7 +220,7 @@ function submitForm_department(f){
 }
 function cancelForm_department(f){
 
-	var department = {  id:null,name:null, company:null };
+	var department = {  id:null,name:null, company:null, quota:0 };
 	  dwr.util.setValues(department);
 	  viewed_department = -1;
 	  disablePopup_department();
@@ -320,15 +320,12 @@ function afterSave_department(){
 								    <input type="text" name="manager" id="manager" size="30">
 								    </td>
 								  </tr> -->
-								  <!-- 
 								  <tr>
 								    <td style="width: 50%;">Quota : </td>
 								    <td style="width: 50%;">
-								    <select id="quota" name="quota" style="width: 205px;">
-							    	</select>
 								    <input type="text" name="quota" id="quota" size="30">
 								    </td>
-								  </tr> -->
+								  </tr>
 								   
 								  <tr>
 								    <td style="width: 50%;"></td>

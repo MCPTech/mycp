@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -70,7 +71,7 @@ public class ReportService {
 		if (currentRole.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			return Asset.findAssets4Report4User(0, assetType, billable, active).getResultList();
 			// if not , get owner asset report only
-		} else if (currentRole.equals(Commons.ROLE.ROLE_ADMIN + "") || currentRole.equals(Commons.ROLE.ROLE_MANAGER + "")) {
+		} else if (currentRole.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 			return Asset.findAssets4Report4Company(Commons.getCurrentSession().getCompanyId(), assetType, billable, active).getResultList();
 		} else {
 			return Asset.findAssets4Report4User(currentUser.getId(), assetType, billable, active).getResultList();
@@ -854,7 +855,8 @@ public class ReportService {
 	public List<Asset> findAssets4AllUsers(int projectId) {
 		List<Asset> assets = new ArrayList<Asset>();
 			try {
-				List<User> users = User.findUsersByProject(Project.findProject(projectId)).getResultList();
+				//List<User> users = User.findUsersByProject(Project.findProject(projectId)).getResultList();
+				Set<User> users = Project.findProject(projectId).getUsers();
 				for (Iterator iterator = users.iterator(); iterator.hasNext();) {
 					try {
 						User user = (User) iterator.next();

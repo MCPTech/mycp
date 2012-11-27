@@ -21,6 +21,7 @@ import in.mycp.domain.Company;
 import in.mycp.domain.GroupDescriptionP;
 import in.mycp.domain.IpPermissionP;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.SecurityGroupWorker;
@@ -93,8 +94,7 @@ public class SecurityGroupService {
 				if (GroupDescriptionP
 						.findGroupDescriptionPsByNameEqualsAndCompanyEquals(
 								instance.getName(),
-								Commons.getCurrentUser().getProject()
-										.getDepartment().getCompany())
+								Commons.getCurrentUser().getDepartment().getCompany())
 						.getSingleResult().getId() > 0) {
 					throw new Exception(
 							"Security group with this name already exists for this account, Choose another name.");
@@ -121,11 +121,11 @@ public class SecurityGroupService {
 				long allAssetTotalCosts = reportService.getAllAssetCosts()
 						.getTotalCost();
 				currentUser = User.findUser(currentUser.getId());
-				Company company = currentUser.getProject().getDepartment()
-						.getCompany();
+				Company company = currentUser.getDepartment().getCompany();
 				Asset asset = Commons.getNewAsset(assetTypeSecurityGroup,
 						currentUser, instance.getProduct(), allAssetTotalCosts,
 						company);
+				asset.setProject(Project.findProject(instance.getProjectId()));
 				instance.setAsset(asset);
 
 				if (true == assetTypeSecurityGroup.getWorkflowEnabled()) {
@@ -283,9 +283,7 @@ public class SecurityGroupService {
 				gds = GroupDescriptionP.findActiveGroupDescriptionPsByUser(
 						user, start, max, search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 
 				gds = GroupDescriptionP.findActiveGroupDescriptionPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
@@ -333,9 +331,7 @@ public class SecurityGroupService {
 				gds = GroupDescriptionP.findAllGroupDescriptionPsByUser(user,
 						start, max, search).getResultList();
 			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")
-					|| user.getRole().getName()
-							.equals(Commons.ROLE.ROLE_ADMIN + "")) {
+					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
 				gds = GroupDescriptionP.findAllGroupDescriptionPsByCompany(
 						Company.findCompany(Commons.getCurrentSession()
 								.getCompanyId()), start, max, search)
