@@ -1,0 +1,23 @@
+run the following manually since there is no maven repo for vcloud java sdk
+
+
+mvn install:install-file -Dfile=C:/WORK/stsWorkspace/vmware_SDk/WebContent/WEB-INF/lib/vcloud-java-sdk-1.5.0.jar -DgroupId=com.vmware -DartifactId=vcloud -Dversion=1.5 -Dpackaging=jar -DgeneratePom=true
+
+mvn install:install-file -Dfile=C:/WORK/stsWorkspace/vmware_SDk/WebContent/WEB-INF/lib/rest-api-schemas-1.5.0.jar -DgroupId=com.vmware -DartifactId=rest-api-schemas -Dversion=1.5 -Dpackaging=jar -DgeneratePom=true
+
+once the above is done , then in ROO do the following
+
+perform clean
+perform package
+perform eclipse 
+	- to rebuild m2_repo variable inside eclipse, otherwise the jars wont be included in teh project classpath
+	- after you do "perform eclipse", check to see if your project--properties--builders and file sync is all setup properly.
+	- also check project -- properties -- java build path --> source
+
+
+
+if you get error org.jbpm.api.JbpmException: 
+  error: parsing exception: expression factory class not found : javax.el.ELException: expression factory class not found
+  ...then add the juel file manually.
+  
+mvn install:install-file -Dfile="C:/Users/charu/Documents/My Received Files/juel-2.1.0.jar" -DgroupId=de.odysseus.el -DartifactId=juel -Dversion=2.1.0 -Dpackaging=jar -DgeneratePom=true
