@@ -618,14 +618,24 @@ public class EucalyptusService {
 		currentUser = Commons.getCurrentUser();
 		company = Company.findCompany(Commons.getCurrentSession().getCompanyId());
 
-		if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			logger.info("SP Edition Enabled and Current user is Super Admin, synching everything cloud<-->mycp");
-		} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED
+		} else if (company != null && Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED
 				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || currentUser.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + ""))) {
-			logger.info("OS/Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
+			logger.info("Private Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
+		}else if (company != null && Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || currentUser.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + ""))) {
+			logger.info("Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
 		} else {
-			throw new Exception("You cannot sync if\n" + "1. you are not Super Admin and running a SP edition of mycloudportal.\n"
-					+ "2. you are Super Admin but running any other edition of mycloudportal\n");
+			if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+				throw new Exception("You cannot sync if you are not super admin");
+			}else if(Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED){
+				throw new Exception("You cannot sync if you are not account manager");
+			}else if(Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED){
+				throw new Exception("You cannot sync if you are not account manager");
+			}else{
+				throw new Exception("You cannot sync. What edition of mycp are you running?");
+			}
 		}
 
 		AssetType assetTypeIpAddress = AssetType.findAssetTypesByNameEquals("IpAddress").getSingleResult();
@@ -828,9 +838,9 @@ public class EucalyptusService {
 			// getting created for the last 1 hour
 			List<GroupDescriptionP> secGroups = null;
 
-			if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				secGroups = GroupDescriptionP.findActiveGroupDescriptionPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
 				secGroups = GroupDescriptionP.findActiveGroupDescriptionPsBy(infra, company).getResultList();
 			} else {
 				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
@@ -852,15 +862,18 @@ public class EucalyptusService {
 					 * get all groups from mycp db loop and find out if they
 					 * exist in cloud if not remove them
 					 */
-
-					if (groupDescsFromCloud.containsKey(groupDescriptionP.getName())
-							&& groupDescsFromCloud.get(groupDescriptionP.getName()).getOwner().equals(groupDescriptionP.getOwner())) {
-
-					} else {
-						logger.info("removing groupDescriptionP " + groupDescriptionP.getName() + ", owner " + groupDescriptionP.getOwner()
-								+ " in mycp since it does not have a corresponding entry in the cloud");
-						groupDescriptionP.remove();
-						continue;
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
+						
+						if (groupDescsFromCloud.containsKey(groupDescriptionP.getName())
+								&& groupDescsFromCloud.get(groupDescriptionP.getName()).getOwner().equals(groupDescriptionP.getOwner())) {
+	
+						} else {
+							logger.info("removing groupDescriptionP " + groupDescriptionP.getName() + ", owner " + groupDescriptionP.getOwner()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							groupDescriptionP.remove();
+							continue;
+						}
 					}
 				} catch (Exception e) {
 					// e.printStackTrace();
@@ -926,9 +939,9 @@ public class EucalyptusService {
 			// corresponding state in the cloud
 			List<AddressInfoP> addresses = null;
 
-			if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				addresses = AddressInfoP.findAddressInfoPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
 				addresses = AddressInfoP.findAddressInfoPsBy(infra, company).getResultList();
 			} else {
 				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
@@ -946,40 +959,16 @@ public class EucalyptusService {
 						continue;
 					}
 
-					/*
-					 * logger.info("addressInfoP.getPublicIp() "+
-					 * addressInfoP.getPublicIp()); logger.info(
-					 * "IpNobody.containsKey(addressInfoP.getPublicIp()) "
-					 * +IpNobody.containsKey(addressInfoP.getPublicIp()));
-					 * logger.info("addressInfoP.getInstanceId() "+addressInfoP.
-					 * getInstanceId());
-					 * logger.info("IpAll.get(addressInfoP.getPublicIp()) "
-					 * +IpAll.get(addressInfoP.getPublicIp()));
-					 */
-					// remove those ip address entries for which the mycp DB has
-					// not yet updated the data
-					// i.e remmove those ips from mycp whcih is not owned by
-					// anybody in teh cloud.
-					/*
-					 * if(addressInfoP.getPublicIp()!=null &&
-					 * addressInfoP.getInstanceId()!=null &&
-					 * IpNobody.containsKey(addressInfoP.getPublicIp())){
-					 * logger.
-					 * info("removing ip address for ownership void in MYCP "
-					 * +addressInfoP
-					 * .getName()+" "+addressInfoP.getPublicIp()+" "
-					 * +addressInfoP.getInstanceId()); addressInfoP.remove();
-					 * continue; }
-					 */
-
-					// remove those ip address for which the ownership has
-					// chnaged
-					if (addressInfoP.getPublicIp() != null && addressInfoP.getInstanceId() != null && IpAll.containsKey(addressInfoP.getPublicIp())
-							&& !addressInfoP.getInstanceId().equals(IpAll.get(addressInfoP.getPublicIp()))) {
-						logger.info("removing ip address in MYCP for those whose ownership has changed in the cloud " + addressInfoP.getName() + " "
-								+ addressInfoP.getPublicIp() + " " + addressInfoP.getInstanceId());
-						addressInfoP.remove();
-						continue;
+					// remove those ip address for which the ownership has changed
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
+						if (addressInfoP.getPublicIp() != null && addressInfoP.getInstanceId() != null && IpAll.containsKey(addressInfoP.getPublicIp())
+								&& !addressInfoP.getInstanceId().equals(IpAll.get(addressInfoP.getPublicIp()))) {
+							logger.info("removing ip address in MYCP for those whose ownership has changed in the cloud " + addressInfoP.getName() + " "
+									+ addressInfoP.getPublicIp() + " " + addressInfoP.getInstanceId());
+							addressInfoP.remove();
+							continue;
+						}
 					}
 
 				} catch (Exception e) {
@@ -1047,30 +1036,33 @@ public class EucalyptusService {
 		try {
 			List<AvailabilityZoneP> zones = null;
 
-			if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				zones = AvailabilityZoneP.findAllAvailabilityZonePsByInfra(infra);
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
 				zones = AvailabilityZoneP.findAllAvailabilityZonePsBy(infra, company);
 			} else {
 				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
 						+ "2. you are Super Admin but running any other edition of mycloudportal");
 			}
 
-			for (Iterator iterator = zones.iterator(); iterator.hasNext();) {
-				AvailabilityZoneP availabilityZoneP = (AvailabilityZoneP) iterator.next();
-				try {
-					if (zonesFromCloud.containsKey(availabilityZoneP.getName())
-							&& zonesFromCloud.get(availabilityZoneP.getName()).getState().equals(availabilityZoneP.getState())) {
-
-					} else {
-						logger.info("removing availabilityZoneP " + availabilityZoneP.getName() + ", state " + availabilityZoneP.getState()
-								+ " in mycp since it does not have a corresponding entry in the cloud");
-						availabilityZoneP.remove();
+			if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+				//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
+				for (Iterator iterator = zones.iterator(); iterator.hasNext();) {
+					AvailabilityZoneP availabilityZoneP = (AvailabilityZoneP) iterator.next();
+					try {
+						if (zonesFromCloud.containsKey(availabilityZoneP.getName())
+								&& zonesFromCloud.get(availabilityZoneP.getName()).getState().equals(availabilityZoneP.getState())) {
+	
+						} else {
+							logger.info("removing availabilityZoneP " + availabilityZoneP.getName() + ", state " + availabilityZoneP.getState()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							availabilityZoneP.remove();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}// for zones.iterator();
+				}// for zones.iterator();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1085,7 +1077,7 @@ public class EucalyptusService {
 			logger.info("Available Volumes");
 			for (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
 				VolumeInfo volumeInfo = (VolumeInfo) iterator.next();
-				logger.info("adding volumeInfo.getVolumeId() into volumesFromCloud "+volumeInfo.getVolumeId());
+				//logger.info("adding volumeInfo.getVolumeId() into volumesFromCloud "+volumeInfo.getVolumeId());
 				volumesFromCloud.put(volumeInfo.getVolumeId(), volumeInfo);
 
 				logger.info(volumeInfo.getSize() + volumeInfo.getVolumeId() + volumeInfo.getCreateTime().getTime());
@@ -1154,9 +1146,9 @@ public class EucalyptusService {
 		}
 		List<VolumeInfoP> vols = null;
 
-		if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			vols = VolumeInfoP.findVolumeInfoPsByInfra(infra).getResultList();
-		} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
+		} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
 			vols = VolumeInfoP.findVolumeInfoPsBy(infra, company).getResultList();
 		} else {
 			throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
@@ -1173,13 +1165,17 @@ public class EucalyptusService {
 					volumeInfo2.merge();
 					continue;
 				}
-
-				if (volumesFromCloud.containsKey(volumeInfo2.getVolumeId()) && volumesFromCloud.get(volumeInfo2.getVolumeId()).getSize().equals(volumeInfo2.getSize())) {
-
-				} else {
-					logger.info("removing volumeInfo " + volumeInfo2.getVolumeId() + ", size " + volumeInfo2.getSize()
-							+ " in mycp since it does not have a corresponding entry in the cloud");
-					volumeInfo2.remove();
+				
+				if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+					//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
+					if (volumesFromCloud.containsKey(volumeInfo2.getVolumeId()) && 
+							volumesFromCloud.get(volumeInfo2.getVolumeId()).getSize().equals(volumeInfo2.getSize().toString())) {
+	
+					} else {
+						logger.info("removing volumeInfo " + volumeInfo2.getVolumeId() + ", size " + volumeInfo2.getSize()
+								+ " in mycp since it does not have a corresponding entry in the cloud");
+						volumeInfo2.remove();
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -1239,9 +1235,9 @@ public class EucalyptusService {
 
 			List<SnapshotInfoP> snaps = null;
 
-			if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				snaps = SnapshotInfoP.findSnapshotInfoPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
 				snaps = SnapshotInfoP.findSnapshotInfoPsBy(infra, company).getResultList();
 			} else {
 				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
@@ -1259,13 +1255,16 @@ public class EucalyptusService {
 						snapshotInfoP.merge();
 					}
 
-					if (snapshotsFromCloud.containsKey(snapshotInfoP.getSnapshotId())
-							&& snapshotsFromCloud.get(snapshotInfoP.getSnapshotId()).getVolumeId().equals(snapshotInfoP.getVolumeId())) {
-
-					} else {
-						logger.info("removing snapshotInfoP " + snapshotInfoP.getSnapshotId() + ", volumeId " + snapshotInfoP.getVolumeId()
-								+ " in mycp since it does not have a corresponding entry in the cloud");
-						snapshotInfoP.remove();
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
+						if (snapshotsFromCloud.containsKey(snapshotInfoP.getSnapshotId())
+								&& snapshotsFromCloud.get(snapshotInfoP.getSnapshotId()).getVolumeId().equals(snapshotInfoP.getVolumeId())) {
+	
+						} else {
+							logger.info("removing snapshotInfoP " + snapshotInfoP.getSnapshotId() + ", volumeId " + snapshotInfoP.getVolumeId()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							snapshotInfoP.remove();
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -1315,6 +1314,7 @@ public class EucalyptusService {
 						}
 
 						// for image removal
+						//logger.info("putting into imagesFromCloud img.getImageId() = "+img.getImageId());
 						imagesFromCloud.put(img.getImageId(), img);
 
 						logger.info(img.getImageId() + "\t" + img.getImageLocation() + "\t" + img.getImageOwnerId());
@@ -1366,40 +1366,43 @@ public class EucalyptusService {
 
 					}
 
-					// now clean up the images in mycp db which do not exist in
-					// the cloud.
-					List<ImageDescriptionP> imagesInMycp = null;
-
-					if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-						imagesInMycp = ImageDescriptionP.findImageDescriptionPsByInfra(infra).getResultList();
-					} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
-						imagesInMycp = ImageDescriptionP.findImageDescriptionPsByCompany(infra, company).getResultList();
-					} else {
-						throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-								+ "2. you are Super Admin but running any other edition of mycloudportal");
-					}
-
-					for (Iterator iterator = imagesInMycp.iterator(); iterator.hasNext();) {
-						ImageDescriptionP imageDescriptionP = (ImageDescriptionP) iterator.next();
-						try {
-
-							if (imagesFromCloud.containsKey(imageDescriptionP.getImageId())
-									&& imagesFromCloud.get(imageDescriptionP.getImageId()).getImageLocation().equals(imageDescriptionP.getImageLocation())) {
-
-							} else {
-								logger.info("removing imageDescriptionP " + imageDescriptionP.getImageId() + ", location " + imageDescriptionP.getImageLocation()
-										+ " in mycp since it does not have a corresponding entry in the cloud");
-								imageDescriptionP.remove();
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}// end of for ImageDescription img : images
+			
+			// now clean up the images in mycp db which do not exist in
+			// the cloud.
+			List<ImageDescriptionP> imagesInMycp = null;
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				imagesInMycp = ImageDescriptionP.findImageDescriptionPsByInfra(infra).getResultList();
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				imagesInMycp = ImageDescriptionP.findImageDescriptionPsByCompany(infra, company).getResultList();
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+				//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
+				for (Iterator iterator = imagesInMycp.iterator(); iterator.hasNext();) {
+				ImageDescriptionP imageDescriptionP = (ImageDescriptionP) iterator.next();
+				try {
+				
+					if (imagesFromCloud.containsKey(imageDescriptionP.getImageId())
+							&& imagesFromCloud.get(imageDescriptionP.getImageId()).getImageLocation().equals(imageDescriptionP.getImageLocation())) {
+				
+					} else {
+						logger.info("removing imageDescriptionP " + imageDescriptionP.getImageId() + ", location " + imageDescriptionP.getImageLocation()
+								+ " in mycp since it does not have a corresponding entry in the cloud");
+							imageDescriptionP.remove();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1503,9 +1506,9 @@ public class EucalyptusService {
 
 			List<InstanceP> insts = null;
 
-			if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				insts = InstanceP.findInstancePsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
 				insts = InstanceP.findInstancePsBy(infra, company).getResultList();
 			} else {
 				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
@@ -1521,14 +1524,17 @@ public class EucalyptusService {
 						instanceP2.setState(Commons.REQUEST_STATUS.FAILED + "");
 						instanceP2.merge();
 					}
-
-					if (instancesFromCloud.containsKey(instanceP2.getInstanceId())
-							&& instancesFromCloud.get(instanceP2.getInstanceId()).getImageId().equals(instanceP2.getImageId())) {
-
-					} else {
-						logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImageId()
-								+ " in mycp since it does not have a corresponding entry in the cloud");
-						instanceP2.remove();
+					
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER
+						if (instancesFromCloud.containsKey(instanceP2.getInstanceId())
+								&& instancesFromCloud.get(instanceP2.getInstanceId()).getImageId().equals(instanceP2.getImageId())) {
+	
+						} else {
+							logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImageId()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							instanceP2.remove();
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -1575,9 +1581,9 @@ public class EucalyptusService {
 
 			List<KeyPairInfoP> keys = null;
 
-			if (Commons.EDITION_ENABLED == Commons.SP_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				keys = KeyPairInfoP.findKeyPairInfoPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED) {
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
 				keys = KeyPairInfoP.findKeyPairInfoPsBy(infra, company).getResultList();
 			} else {
 				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
@@ -1594,15 +1600,17 @@ public class EucalyptusService {
 						keyPairInfoP.merge();
 					}
 
-					if (keysFromCloud.containsKey(keyPairInfoP.getKeyName())
-							&& keysFromCloud.get(keyPairInfoP.getKeyName()).getKeyFingerprint().equals(keyPairInfoP.getKeyFingerprint())) {
-
-					} else {
-						logger.info("removing keyPairInfoP " + keyPairInfoP.getKeyName() + ", fingerprint " + keyPairInfoP.getKeyFingerprint()
-								+ " in mycp since it does not have a corresponding entry in the cloud");
-						keyPairInfoP.remove();
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER
+						if (keysFromCloud.containsKey(keyPairInfoP.getKeyName())
+								&& keysFromCloud.get(keyPairInfoP.getKeyName()).getKeyFingerprint().equals(keyPairInfoP.getKeyFingerprint())) {
+	
+						} else {
+							logger.info("removing keyPairInfoP " + keyPairInfoP.getKeyName() + ", fingerprint " + keyPairInfoP.getKeyFingerprint()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							keyPairInfoP.remove();
+						}
 					}
-
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

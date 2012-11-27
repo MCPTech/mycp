@@ -89,7 +89,7 @@ public class ImageDescriptionP {
         q.setParameter("company", company);
         return q;
     }
-    
+
     public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsByCompany(Company company) {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
@@ -98,19 +98,17 @@ public class ImageDescriptionP {
         q.setParameter("company", company);
         return q;
     }
-    
+
     public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsByCompany(Infra infra, Company company) {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<ImageDescriptionP> q = null;
-        q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.asset.user.project.department.company = :company " +
-        		" and o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
+        q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
     }
-    
-    
+
     public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsByInfra(Infra infra) {
         if (infra == null) throw new IllegalArgumentException("The infra argument is required");
         EntityManager em = entityManager();
@@ -119,8 +117,6 @@ public class ImageDescriptionP {
         q.setParameter("infra", infra);
         return q;
     }
-
-    
 
     public static Number findImageDescriptionCount() {
         String queryStr = "SELECT COUNT(i.id) FROM ImageDescriptionP i ";
@@ -140,8 +136,6 @@ public class ImageDescriptionP {
         }
         return (Number) q.getSingleResult();
     }
-    
-   
 
     public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsByImageIdEqualsAndCompanyEquals(String imageId, Company company) {
         if (imageId == null || imageId.length() == 0) throw new IllegalArgumentException("The imageId argument is required");
@@ -151,13 +145,11 @@ public class ImageDescriptionP {
         q.setParameter("company", company);
         return q;
     }
-    
+
     public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsBy(Infra infra, String imageId, Company company) {
         if (imageId == null || imageId.length() == 0) throw new IllegalArgumentException("The imageId argument is required");
         EntityManager em = entityManager();
-        TypedQuery<ImageDescriptionP> q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.imageId = :imageId" 
-        + " and o.asset.user.project.department.company = :company " +
-        " and o.asset.productCatalog.infra = :infra", ImageDescriptionP.class);
+        TypedQuery<ImageDescriptionP> q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.imageId = :imageId" + " and o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", ImageDescriptionP.class);
         q.setParameter("imageId", imageId);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
