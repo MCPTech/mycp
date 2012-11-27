@@ -28,6 +28,12 @@
     
     </properties>
     <repositories>
+    	
+    	<!-- <repository>
+	        <id>releases</id>
+	        <name>Releases</name>
+	        <url>https://oss.sonatype.org/content/repositories/releases</url>
+      	</repository> -->
 	    <repository>
 			<id>jboss</id>
 			<url>http://repository.jboss.com/maven2</url>
@@ -67,11 +73,47 @@
         </pluginRepository>
     </pluginRepositories>
     <dependencies>
+		<!-- <dependency>
+		  <groupId>org.jclouds</groupId>
+		  <artifactId>jclouds-allcompute</artifactId>
+		  <version>1.5.2</version>
+		</dependency>
+		<dependency>
+		  <groupId>org.jclouds</groupId>
+		  <artifactId>jclouds-allblobstore</artifactId>
+		  <version>1.5.2</version>
+		</dependency>
+		<dependency>
+	        <groupId>org.jclouds.driver</groupId>
+	        <artifactId>jclouds-sshj</artifactId>
+	        <version>1.1.0</version>
+      	</dependency> -->
+      	<!-- 
+			mvn install:install-file -Dfile="C:/Users/charu/Documents/My Received Files/juel-2.1.0.jar" -DgroupId=de.odysseus.el -DartifactId=juel -Dversion=2.1.0 -Dpackaging=jar -DgeneratePom=true
+      	  -->
     	<dependency>
 		      <groupId>de.odysseus.el</groupId>
 		      <artifactId>juel</artifactId>
 		      <version>2.1.0</version>
 		</dependency>
+		
+		
+		 <!-- 
+		 	look into maven.updates for installing these repos manually.
+		 	vCloud dependencies 
+		 	
+		 -->
+		  <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>vcloud</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vmware</groupId>
+            <artifactId>rest-api-schemas</artifactId>
+            <version>1.5</version>
+        </dependency>
+        
         <!-- General dependencies for standard applications -->
         <dependency>
             <groupId>junit</groupId>
@@ -120,6 +162,31 @@
             <artifactId>flexjson</artifactId>
             <version>2.1</version>
         </dependency>
+        <!-- vcloud java SDK dependencies -->
+        <dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore-nio</artifactId>
+			<version>4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+		            		            
+		            
+		            
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>

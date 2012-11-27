@@ -18,6 +18,7 @@ package in.mycp.controller;
 import in.mycp.domain.Company;
 import in.mycp.domain.Department;
 import in.mycp.domain.Infra;
+import in.mycp.domain.InfraType;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
 import in.mycp.domain.Role;
@@ -143,6 +144,8 @@ public class LoginController {
 	            p = p.merge();
             user.setProject(p);
             user = user.merge();
+            
+            
             Infra infra = new Infra();
 	            infra.setName(c.getName() + " Euca Setup");
 	            infra.setAccessId("change it");
@@ -154,6 +157,7 @@ public class LoginController {
 	            infra.setResourcePrefix("/services/Eucalyptus");
 	            infra.setSignatureVersion(1);
 	            infra.setZone("");
+	            infra.setInfraType(InfraType.findInfraType(Commons.INFRA_TYPE_EUCA));
 	            infra = infra.merge();
             createAllProducts(infra);
             //send signup notification to the user
@@ -163,8 +167,13 @@ public class LoginController {
         	mailDetailsDTO.setToName(user.getFirstName());
         	Map<String, Object> variables = new HashMap<String, Object>(); 
 		    variables.put("mailDetailsDTO", mailDetailsDTO);
-		    workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
+		    //charu - even if email sedning fails, lets the user signup process work fine.
 		    
+		    try{
+		    workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
+		    }catch(Exception e){
+		    	e.printStackTrace();
+		    }
             req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: green;\"> User " + user.getEmail() + " created.Please Sign In now.</font>");
             if(authenticate(email,password)){
             	if(user.getRole().getName().equals(Commons.ROLE.ROLE_USER+"")){

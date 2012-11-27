@@ -19,9 +19,13 @@ import in.mycp.domain.Asset;
 import in.mycp.domain.Infra;
 
 import java.util.Date;
+import java.util.logging.Level;
 
 import org.jasypt.util.text.BasicTextEncryptor;
 
+import com.vmware.vcloud.sdk.VcloudClient;
+import com.vmware.vcloud.sdk.constants.Version;
+import com.vmware.vcloud.sdk.samples.FakeSSLSocketFactory;
 import com.xerox.amazonws.ec2.Jec2;
 
 /**
@@ -52,6 +56,28 @@ public class Worker {
 			}
 		
 	}
+	
+	
+	public VcloudClient getVcloudClient(Infra infra) {
+		try {
+			
+		BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
+		textEncryptor.setPassword("gothilla");
+		String decAccessId = textEncryptor.decrypt(infra.getAccessId());
+		String decSecretKey = textEncryptor.decrypt(infra.getSecretKey());
+			VcloudClient.setLogLevel(Level.SEVERE);
+			VcloudClient vcloudClient = new VcloudClient("https://"+infra.getServer(), Version.V1_5);
+			String login = decAccessId+"@"+infra.getVcloudAccountName();
+			vcloudClient.registerScheme("https", infra.getPort().intValue(), FakeSSLSocketFactory.getInstance());
+			vcloudClient.login(login, decSecretKey);
+		return vcloudClient;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	} 
+	
   
 	public void setAssetEndTime(Asset a){
 		//Asset a = instanceLocal.getAsset();
