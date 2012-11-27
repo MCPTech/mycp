@@ -21,7 +21,7 @@ privileged aspect ImageDescriptionP_Roo_DbManaged {
     @JoinColumn(name = "asset", referencedColumnName = "id")
     private Asset ImageDescriptionP.asset;
     
-    @Column(name = "imageId", length = 45)
+    @Column(name = "imageId", length = 255)
     private String ImageDescriptionP.imageId;
     
     @Column(name = "imageLocation", length = 255)

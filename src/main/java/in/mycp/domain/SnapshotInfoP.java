@@ -32,7 +32,6 @@ public class SnapshotInfoP {
     public void setProjectId(int projectId) {
         this.projectId = projectId;
     }
-    
 
     public String getProduct() {
         return product;
@@ -110,11 +109,7 @@ public class SnapshotInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = null;
-/*<<<<<<< HEAD
-        q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
-=======*/
         q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
-
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -154,11 +149,7 @@ public class SnapshotInfoP {
     public static TypedQuery<in.mycp.domain.SnapshotInfoP> findSnapshotInfoPsBy(Infra infra, String snapshotId, Company company) {
         if (snapshotId == null || snapshotId.length() == 0) throw new IllegalArgumentException("The snapshotId argument is required");
         EntityManager em = entityManager();
-/*<<<<<<< HEAD
-        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId" + " and o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
-=======*/
         TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId" + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
-
         q.setParameter("snapshotId", snapshotId);
         q.setParameter("company", company);
         q.setParameter("infra", infra);

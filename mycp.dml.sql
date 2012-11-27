@@ -149,13 +149,24 @@ ALTER TABLE `mycp`.`instance_p` CHANGE COLUMN `instanceId` `instanceId` VARCHAR(
 -- end infra changes for vmware - charu - 18 Nov 2012
 
 -- start quota & user-project relationship changes for  - gangu
+
+CREATE TABLE `user_project` (
+  `user_id` int(11) NOT NULL,
+  `project_id` int(11) NOT NULL,
+  PRIMARY KEY (`user_id`,`project_id`),
+  KEY `FK_PROJECT_ID` (`project_id`),
+  CONSTRAINT `FK_PROJECT_ID` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `FK_USER_ID` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ;
+
+insert into user_project(user_id, project_id)  (select id, project from user where email <> 'superadmin@mycloudportal.in');
+
 ALTER TABLE `user` DROP FOREIGN KEY `fk_user_project` ;
+
 ALTER TABLE `user` ADD COLUMN `department` INT(11) NULL  AFTER `project` , 
   ADD CONSTRAINT `fk_department`
   FOREIGN KEY (`department` )
   REFERENCES `department` (`id` ), ADD INDEX `fk_department_idx` (`department` ASC) ;
-
-insert into user_project(user_id, project_id)  (select id, project from user where email <> 'superadmin@mycloudportal.in');
 
 update user t1, (select  project.department, user.id from project join user on project.id=user.project) t2
 set t1.department = t2.department
@@ -168,5 +179,9 @@ ALTER TABLE `asset` ADD CONSTRAINT `fk_Asset_Project` FOREIGN KEY (`project` ) R
 ALTER TABLE `department` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
 ALTER TABLE `project` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
 ALTER TABLE `user` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
+
+ALTER TABLE `mycp`.`user` DROP COLUMN `project` , DROP INDEX `fk_user_project` ;
+
+
 -- end quota & user-project relationship changes for  - gangu
 

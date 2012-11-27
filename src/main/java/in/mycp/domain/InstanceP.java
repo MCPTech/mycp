@@ -32,7 +32,6 @@ public class InstanceP {
     public void setProjectId(int projectId) {
         this.projectId = projectId;
     }
-    
 
     public String getProduct() {
         return product;
@@ -116,11 +115,7 @@ public class InstanceP {
         if (company == null) throw new IllegalArgumentException("The user argument is required");
         EntityManager em = entityManager();
         TypedQuery<InstanceP> q = null;
-/*<<<<<<< HEAD
-        q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", InstanceP.class);
-=======*/
         q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", InstanceP.class);
-
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -160,11 +155,7 @@ public class InstanceP {
     public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsBy(Infra infra, String instanceId, Company company) {
         if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
         EntityManager em = entityManager();
-/*<<<<<<< HEAD
-        TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.instanceId = :instanceId " + " and o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", InstanceP.class);
-=======*/
         TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.instanceId = :instanceId " + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", InstanceP.class);
-
         q.setParameter("instanceId", instanceId);
         q.setParameter("company", company);
         q.setParameter("infra", infra);

@@ -155,10 +155,10 @@ public class VmwareService {
 		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			logger.info("SP Edition Enabled and Current user is Super Admin, synching everything cloud<-->mycp");
 		} else if (company != null && Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || currentUser.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + ""))) {
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") )) {
 			logger.info("Private Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
 		}else if (company != null && Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || currentUser.getRole().getName().equals(Commons.ROLE.ROLE_ADMIN + ""))) {
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") )) {
 			logger.info("Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
 		} else {
 			if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){

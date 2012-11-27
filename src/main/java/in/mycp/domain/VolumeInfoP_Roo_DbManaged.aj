@@ -45,7 +45,7 @@ privileged aspect VolumeInfoP_Roo_DbManaged {
     @DateTimeFormat(style = "M-")
     private Date VolumeInfoP.createTime;
     
-    @Column(name = "instanceId", length = 90)
+    @Column(name = "instanceId", length = 255)
     private String VolumeInfoP.instanceId;
     
     @Column(name = "device", length = 90)

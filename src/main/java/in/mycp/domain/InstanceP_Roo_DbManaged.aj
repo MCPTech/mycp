@@ -31,7 +31,7 @@ privileged aspect InstanceP_Roo_DbManaged {
     @Column(name = "imageId", length = 45)
     private String InstanceP.imageId;
     
-    @Column(name = "instanceId", length = 45)
+    @Column(name = "instanceId", length = 255)
     private String InstanceP.instanceId;
     
     @Column(name = "privateDnsName", length = 45)

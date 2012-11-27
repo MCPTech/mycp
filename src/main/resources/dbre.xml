@@ -10,7 +10,7 @@
         <column name="task" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="details" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="time_of_entry" primaryKey="false" required="false" scale="0" size="19" type="93,DATETIME"/>
-        <column name="status" primaryKey="false" required="false" scale="0" size="5" type="5,SMALLINT"/>
+        <column name="status" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="user_id" primaryKey="false" required="true" scale="0" size="10" type="4,INT"/>
         <foreign-key foreignTable="user" name="fk_account_log_user1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
@@ -55,6 +55,10 @@
         <column name="endTime" primaryKey="false" required="false" scale="0" size="19" type="93,DATETIME"/>
         <column name="startRate" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <foreign-key foreignTable="project" name="fk_Asset_Project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
+        </foreign-key>
         <foreign-key foreignTable="asset_type" name="fk_Asset_Asset_Type1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="assetType"/>
@@ -62,10 +66,6 @@
         <foreign-key foreignTable="product_catalog" name="fk_Asset_Product_Catalog1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="productCatalog"/>
-        </foreign-key>
-        <foreign-key foreignTable="project" name="fk_Asset_Project" onDelete="none" onUpdate="none">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="project"/>
         </foreign-key>
         <foreign-key foreignTable="user" name="fk_Asset_User1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
@@ -264,7 +264,7 @@
     </table>
     <table name="image_description_p">
         <column name="id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
-        <column name="imageId" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="imageId" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="imageLocation" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="imageOwnerId" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="imageState" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
@@ -384,7 +384,7 @@
         <column name="id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
         <column name="reservationDescription" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="imageId" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
-        <column name="instanceId" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="instanceId" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="privateDnsName" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="dnsName" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="reason" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
@@ -711,13 +711,13 @@
     <table name="user_project">
         <column name="user_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
         <column name="project_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
-        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="cascade" onUpdate="cascade">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="user_id"/>
-        </foreign-key>
         <foreign-key foreignTable="project" name="FK_PROJECT_ID" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="project_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="cascade" onUpdate="cascade">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="user_id"/>
         </foreign-key>
         <unique name="PRIMARY">
             <unique-column name="user_id"/>
@@ -736,7 +736,7 @@
         <column name="status" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="createTime" primaryKey="false" required="false" scale="0" size="19" type="93,DATETIME"/>
         <column name="asset" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <column name="instanceId" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
+        <column name="instanceId" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="device" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="name" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <foreign-key foreignTable="asset" name="fk_Volume_Info_Asset1" onDelete="none" onUpdate="none">

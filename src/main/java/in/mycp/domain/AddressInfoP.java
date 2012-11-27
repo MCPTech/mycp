@@ -32,7 +32,6 @@ public class AddressInfoP {
     public void setProjectId(int projectId) {
         this.projectId = projectId;
     }
-    
 
     public String getProduct() {
         return product;
@@ -114,11 +113,7 @@ public class AddressInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<AddressInfoP> q = null;
-/*<<<<<<< HEAD
-        q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", AddressInfoP.class);
-=======*/
         q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", AddressInfoP.class);
-
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -157,11 +152,7 @@ public class AddressInfoP {
     public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsBy(Infra infra, String publicIp, Company company) {
         if (publicIp == null || publicIp.length() == 0) throw new IllegalArgumentException("The publicIp argument is required");
         EntityManager em = entityManager();
-/*<<<<<<< HEAD
-        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.publicIp = :publicIp " + " and o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", AddressInfoP.class);
-=======*/
         TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.publicIp = :publicIp " + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", AddressInfoP.class);
-
         q.setParameter("publicIp", publicIp);
         q.setParameter("company", company);
         q.setParameter("infra", infra);

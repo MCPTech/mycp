@@ -82,7 +82,6 @@ public class ImageDescriptionP {
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
-            
             q.setParameter("search", "%" + search + "%");
         }
         q.setFirstResult(start);
@@ -104,11 +103,7 @@ public class ImageDescriptionP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<ImageDescriptionP> q = null;
-/*<<<<<<< HEAD
-        q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
-=======*/
         q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
-
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -154,11 +149,7 @@ public class ImageDescriptionP {
     public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsBy(Infra infra, String imageId, Company company) {
         if (imageId == null || imageId.length() == 0) throw new IllegalArgumentException("The imageId argument is required");
         EntityManager em = entityManager();
-/*<<<<<<< HEAD
-        TypedQuery<ImageDescriptionP> q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.imageId = :imageId" + " and o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", ImageDescriptionP.class);
-=======*/
         TypedQuery<ImageDescriptionP> q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.imageId = :imageId" + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", ImageDescriptionP.class);
-
         q.setParameter("imageId", imageId);
         q.setParameter("company", company);
         q.setParameter("infra", infra);

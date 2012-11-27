@@ -35,7 +35,6 @@ public class VolumeInfoP {
     public void setProjectId(int projectId) {
         this.projectId = projectId;
     }
-    
 
     public String getDetails() {
         return details;
@@ -125,11 +124,7 @@ public class VolumeInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = null;
-/*<<<<<<< HEAD
-        q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", VolumeInfoP.class);
-=======*/
         q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", VolumeInfoP.class);
-
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -169,11 +164,7 @@ public class VolumeInfoP {
     public static TypedQuery<in.mycp.domain.VolumeInfoP> findVolumeInfoPsBy(Infra infra, String volumeId, Company company) {
         if (volumeId == null || volumeId.length() == 0) throw new IllegalArgumentException("The volumeId argument is required");
         EntityManager em = entityManager();
-/*<<<<<<< HEAD
-        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId " + " and o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra ", VolumeInfoP.class);
-=======*/
         TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId " + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra ", VolumeInfoP.class);
-
         q.setParameter("volumeId", volumeId);
         q.setParameter("company", company);
         q.setParameter("infra", infra);

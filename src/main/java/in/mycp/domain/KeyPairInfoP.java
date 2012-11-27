@@ -36,7 +36,6 @@ public class KeyPairInfoP {
     public void setProjectId(int projectId) {
         this.projectId = projectId;
     }
-    
 
     public String getProduct() {
         return product;
@@ -126,11 +125,7 @@ public class KeyPairInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = null;
-/*<<<<<<< HEAD
-        q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
-=======*/
         q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
-
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -161,11 +156,7 @@ public class KeyPairInfoP {
     public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsByKeyNameEqualsAndCompanyEquals(String keyName, Company company) {
         if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
         EntityManager em = entityManager();
-/*<<<<<<< HEAD
-        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName " + " and o.asset.user.project.department.company = :company", KeyPairInfoP.class);
-=======*/
         TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName " + " and o.asset.user.department.company = :company", KeyPairInfoP.class);
-
         q.setParameter("keyName", keyName);
         q.setParameter("company", company);
         return q;
@@ -174,11 +165,7 @@ public class KeyPairInfoP {
     public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsBy(Infra infra, String keyName, Company company) {
         if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
         EntityManager em = entityManager();
-/*<<<<<<< HEAD
-        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName " + " and o.asset.user.project.department.company = :company " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
-=======*/
         TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName " + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
-
         q.setParameter("keyName", keyName);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
