@@ -903,8 +903,12 @@ public class VmwareService {
 							logger.info("looping vm.getNetworkCards()");
 								List<VirtualNetworkCard> cards = vm.getNetworkCards();
 								for (Iterator iterator3 = cards.iterator(); iterator3.hasNext();) {
-									VirtualNetworkCard virtualNetworkCard = (VirtualNetworkCard) iterator3.next();
-									logger.info("virtualNetworkCard.getIpAddress() = "+virtualNetworkCard.getIpAddress());
+									try {
+										VirtualNetworkCard virtualNetworkCard = (VirtualNetworkCard) iterator3.next();
+										logger.info("virtualNetworkCard.getIpAddress() = "+virtualNetworkCard.getIpAddress());
+									} catch (Exception e) {
+										logger.error(e.getMessage());
+									}
 								}
 								
 								String platformVendor = "";
@@ -919,6 +923,7 @@ public class VmwareService {
 										platformVersion = vm.getPlatformSection().getVersion().getValue();
 									}	
 								} catch (Exception e) {
+									logger.error(e.getMessage());
 									//e.printStackTrace();
 								}
 								
@@ -933,24 +938,31 @@ public class VmwareService {
 										osVersion = vm.getOperatingSystemSection().getVersion();
 									}	
 								} catch (Exception e) {
+									logger.error(e.getMessage());
 									//e.printStackTrace();
 								}
+								
 								
 								List<VirtualDisk> vdisks = vm.getDisks();
 								int diskSizeGB = 0;
 								String instanceType="";
 								try {
 								for (Iterator iterator5 = vdisks.iterator(); iterator5.hasNext();) {
-									VirtualDisk virtualDisk = (VirtualDisk) iterator5.next();
-									if (virtualDisk.isHardDisk()) {
-										System.out.println("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
-												+ virtualDisk.getHardDiskBusType() + " , virtualDisk.getHardDiskSize() = " + virtualDisk.getHardDiskSize());
-										diskSizeGB = diskSizeGB +(virtualDisk.getHardDiskSize().intValue()/1024);
+									try {
+										VirtualDisk virtualDisk = (VirtualDisk) iterator5.next();
+										if (virtualDisk.isHardDisk()) {
+											logger.info("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
+													+ virtualDisk.getHardDiskBusType() + " , virtualDisk.getHardDiskSize() = " + virtualDisk.getHardDiskSize());
+											diskSizeGB = diskSizeGB +(virtualDisk.getHardDiskSize().intValue()/1024);
+										}
+									} catch (Exception e) {
+										logger.error(e.getMessage());
 									}
 								}
 								
 								} catch (Exception e) {
-									// TODO: handle exception
+									logger.error(e.getMessage());
+									
 								}	
 								instanceType = "vCloud (RAM "+memorySizeGB+" GB, CPU "+noOfCpus+" , HD "+diskSizeGB+" GB)";
 								
@@ -963,6 +975,7 @@ public class VmwareService {
 						try {
 							instanceP = InstanceP.findInstancePsBy(infra, vmId, company).getSingleResult();
 						} catch (Exception e) {
+							logger.error(e.getMessage());
 							// logger.error(e.getMessage());//e.printStackTrace();
 						}
 
@@ -1017,7 +1030,8 @@ public class VmwareService {
 						
 						
 					} catch (Exception e) {
-						// TODO: handle exception
+						logger.error(e.getMessage());
+						
 					}
 					
 				}//for (Iterator iterator2 = vms.iterator(); iterator2.hasNext(); )
