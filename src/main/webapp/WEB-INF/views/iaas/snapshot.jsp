@@ -102,8 +102,13 @@
         		actions=
                 	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_backup('+p[i].id+')>';
         	}
+
+			var projName = '';
+			try{
+				projName = p[i].asset.project.name;
+			}catch(e){}
 			
-			oTable.fnAddData( [start+i+1,p[i].snapshotId, p[i].asset.project.name, p[i].volumeId, 
+			oTable.fnAddData( [start+i+1,p[i].snapshotId, projName, p[i].volumeId, 
 			                   dateFormat(p[i].startTime,"mmm dd yyyy HH:MM:ss"), p[i].status,p[i].progress, p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}

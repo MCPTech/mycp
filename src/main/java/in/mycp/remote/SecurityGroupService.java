@@ -341,7 +341,7 @@ public class SecurityGroupService {
 						search);
 			}
 
-			for (Iterator iterator = gds.iterator(); iterator.hasNext();) {
+			for (Iterator<GroupDescriptionP> iterator = gds.iterator(); iterator.hasNext();) {
 				GroupDescriptionP groupDescriptionP = (GroupDescriptionP) iterator
 						.next();
 
@@ -363,7 +363,8 @@ public class SecurityGroupService {
 
 			return gds;
 		} catch (Exception e) {
-			log.error(e);// e.printStackTrace();
+			log.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}// end of method findAll

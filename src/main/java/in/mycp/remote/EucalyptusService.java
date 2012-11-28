@@ -635,9 +635,9 @@ public class EucalyptusService {
 >>>>>>> origin/development*/
 		} else {
 			if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-				throw new Exception("You cannot sync if you are not super admin");
+				throw new Exception("You are running service provider edition, you can sync if you have super admin role only.");
 			}else if(Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED){
-				throw new Exception("You cannot sync if you are not account manager");
+				throw new Exception("You are running private cloud edition, you need to be a Account Manager to run sync");
 			}else if(Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED){
 				throw new Exception("You cannot sync if you are not account manager");
 			}else{

@@ -191,4 +191,11 @@ INSERT INTO `jbpm4_deployprop` (`DBID_`, `DEPLOYMENT_`, `OBJNAME_`, `KEY_`, `STR
 INSERT INTO `jbpm4_deployprop` (`DBID_`, `DEPLOYMENT_`, `OBJNAME_`, `KEY_`, `LONGVAL_`) VALUES ('80055', '80044', 'QuotaExceedCheck', 'pdversion', '1');
 INSERT INTO `jbpm4_lob` VALUES ('81045', '0','<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n\r\n<process name=\"QuotaExceedCheck\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n  <start>\r\n    <transition to=\"Quotacheck\" />\r\n  </start>\r\n  <state name=\"Quotacheck\">\r\n    <on event=\"timeout\">\r\n      <timer duedate=\"10 minutes\" repeat=\"10 seconds\" />\r\n      <event-listener class=\"in.mycp.job.QuotaAlertsJob\" />\r\n    </on>\r\n    <transition name=\"go on\" to=\"next step\"/>\r\n  </state>\r\n  <state name=\"next step\"/>\r\n</process>', '80044', 'file:/D:/Servers/apache-tomcat-6.0.35/webapps/ROOT/WEB-INF/classes/jbpm/QuotaAlerts.jpdl.xml');
 
+-- charu start - 28 nov 2012
+update asset t1, (select user_id, project_id from user_project
+) t2
+set t1.project = t2.project_id
+where t1.user=t2.user_id;
+commit;
 
+-- charu end  - 28 nov 2012

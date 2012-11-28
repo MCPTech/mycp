@@ -167,6 +167,12 @@ function loadPopup_compute(){
 		
 		for (i=0;i<p.length;i++)
 		{
+			//TODO - if project name is added into the list , then we need use the below code. 
+			var projName = '';
+				try{
+					projName = p[i].asset.project.name;
+				}catch(e){}
+				
 			oTable.fnAddData( [start+i+1,p[i].name, p[i].imageId, 
 			                   p[i].imageOwnerId, p[i].imageState, p[i].isPublic,
 			                   p[i].architecture,p[i].platform,p[i].rootDeviceName,p[i].imageType,p[i].imageLocation,

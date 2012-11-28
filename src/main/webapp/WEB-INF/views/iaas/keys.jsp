@@ -110,8 +110,12 @@
         		actions=
                 	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_keys('+p[i].id+')>';
         	}
+			var projName = '';
+			try{
+				projName = p[i].asset.project.name;
+			}catch(e){}
 			
-			oTable.fnAddData( [start+i+1,p[i].keyName, p[i].asset.project.name, p[i].keyFingerprint,p[i].status,'<a href=\"#\" onClick=\"+showKeyMaterial('+p[i].id+')\">Download</a>'+d,
+			oTable.fnAddData( [start+i+1,p[i].keyName, projName, p[i].keyFingerprint,p[i].status,'<a href=\"#\" onClick=\"+showKeyMaterial('+p[i].id+')\">Download</a>'+d,
 			                   p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}

@@ -135,7 +135,12 @@ function centerPopup_ipaddress(popup,backgroundPopup){
 				actions='<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_ipaddress('+p[i].id+')>&nbsp;';
 			}
  */
-			oTable.fnAddData( [start+i+1,p[i].name,p[i].asset.project.name,p[i].instanceId, p[i].publicIp,p[i].status,p[i].reason,p[i].asset.productCatalog.infra.name,
+            var projName = '';
+			try{
+				projName = p[i].asset.project.name;
+			}catch(e){}
+			
+			oTable.fnAddData( [start+i+1,p[i].name,projName,p[i].instanceId, p[i].publicIp,p[i].status,p[i].reason,p[i].asset.productCatalog.infra.name,
 			                   actions ] );
 		}
 		
