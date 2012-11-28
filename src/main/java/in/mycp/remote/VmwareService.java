@@ -97,7 +97,6 @@ import com.xerox.amazonws.ec2.VolumeInfo;
  * 
  */
 
-
 @RemoteProxy(name = "vmwareService")
 public class VmwareService {
 
