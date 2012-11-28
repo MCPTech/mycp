@@ -255,6 +255,7 @@ public class VmwareComputeWorker extends Worker {
 	public void stopCompute(final Infra infra, final int instancePId,
 			final String userId) {
 		InstanceP instanceP = null;
+		System.out.println("");
 		try {
 
 			logger.info("stopCompute " + infra.getCompany().getName()
