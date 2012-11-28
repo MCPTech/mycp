@@ -138,9 +138,12 @@
             	}
             	
             	
-            	
+            	var projName = '';
+    			try{
+    				projName = p[i].asset.project.name;
+    			}catch(e){}
 				
-			oTable.fnAddData( [start+i+1,p[i].name,p[i].asset.project.name,p[i].volumeId, p[i].size+' (GB)',
+			oTable.fnAddData( [start+i+1,p[i].name,projName,p[i].volumeId, p[i].size+' (GB)',
 			                   dateFormat(p[i].createTime,"mmm dd yyyy HH:MM:ss"),p[i].status,p[i].details,p[i].asset.productCatalog.infra.name,
 			                  actions ] );
 		}

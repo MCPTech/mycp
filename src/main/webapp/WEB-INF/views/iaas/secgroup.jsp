@@ -104,6 +104,8 @@
 	var index=0;
 	
 	function findAll_secgroup(p){
+		
+		//alert(dwr.util.toDescriptiveString(p,3));
 
 		 oTable = $('#compute-table').dataTable( {
 	    	"sPaginationType": "full_numbers",
@@ -144,6 +146,7 @@
 		var i=0;
 		for (i=0;i<p.length;i++)
 		{
+			try{
 			var status = '';
 			if(p[i].status !=null && p[i].status == 'active'){
 				status = '<img  title="running" alt="running" src=../images/running.png >';
@@ -157,8 +160,11 @@
         	}else{
 				status = '<img title="unknown" alt="unknown" src=../images/unknown.png >';
 			}
-			
-			oTable.fnAddData( [i+1,p[i].name, p[i].asset.project.name, p[i].descripton, p[i].owner,status,
+			var projName = '';
+			try{
+				projName = p[i].asset.project.name;
+			}catch(e){}
+			oTable.fnAddData( [i+1,p[i].name, projName, p[i].descripton, p[i].owner,status,
 			                   '', '', '',
 			                   '',p[i].asset.productCatalog.infra.name,
 			                   '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_secgroup('+p[i].id+')>&nbsp;&nbsp;&nbsp;'+
@@ -174,12 +180,15 @@
 					                   '' ] );
 				}//for j
 			}//if
+		}catch(e){alert(e);}
 		}//for i
 	
 	}
 
 	var viewed_secgroup = -1;	
 $(function(){
+	
+	
 		$("#popupbutton_secgroup").click(function(){
 			
 			viewed_secgroup = -1;
@@ -194,6 +203,7 @@ $(function(){
 	
 		
 			$("#popupbutton_secgrouplist").click(function(){
+				
 					dwr.engine.beginBatch();
 					start =0;
 					$('#SearchField').val('');
