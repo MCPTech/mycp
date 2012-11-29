@@ -164,8 +164,11 @@
 				actions ='<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>'
 			}
                 
-			//alert(state);
-			oTable.fnAddData( [start+i+1,p[i].name, p[i].asset.project.name, p[i].instanceId, p[i].imageId, p[i].dnsName,
+        	var projName = '';
+			try{
+				projName = p[i].asset.project.name;
+			}catch(e){}
+			oTable.fnAddData( [start+i+1,p[i].name, projName, p[i].instanceId, p[i].imageId, p[i].dnsName,
 			                   p[i].keyName,p[i].groupName, p[i].platform, state,
 			                   p[i].instanceType,p[i].asset.productCatalog.infra.name,
 			                   actions ] );
