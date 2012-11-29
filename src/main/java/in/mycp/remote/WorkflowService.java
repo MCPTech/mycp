@@ -307,6 +307,7 @@ public class WorkflowService {
 			InstanceP instanceP = instancePService.findById(workflow.getAssetId());
 			AssetRequestWorkflowDTO assetRequestWorkflowDTO = new AssetRequestWorkflowDTO();
 			assetRequestWorkflowDTO.setApproverEmail(loggedInUser.getEmail());
+			if(instanceP != null)
 			assetRequestWorkflowDTO.setResourceName(instanceP.getName());
 			assetRequestWorkflowDTO.setResourceTypeName(workflow.getAssetType());
 			assetRequestWorkflowDTO.setTo(taskOwner.getEmail());

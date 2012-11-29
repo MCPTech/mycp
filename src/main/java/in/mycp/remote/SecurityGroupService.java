@@ -19,6 +19,7 @@ import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.GroupDescriptionP;
+import in.mycp.domain.Infra;
 import in.mycp.domain.IpPermissionP;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
@@ -30,6 +31,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -383,6 +386,13 @@ public class SecurityGroupService {
 							.getCompanyId())).getResultList();
 		}
 	}
+	
+	@RemoteMethod
+	 public List<in.mycp.domain.GroupDescriptionP> findActiveGroupDescriptionPsByInfra(Infra infra) {
+		List<in.mycp.domain.GroupDescriptionP> descriptionPs = GroupDescriptionP.findActiveGroupDescriptionPsByInfra(infra).getResultList();
+		System.out.println("descriptionPs:"+descriptionPs);
+		return descriptionPs;
+	 }
 
 }// end of class SecurityGroupService
 

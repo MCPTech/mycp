@@ -305,7 +305,6 @@ public class InfraService {
 	@RemoteMethod
 	public List<Infra> findAll() {
 		try {
-
 			if (Commons.getCurrentUser().getRole().getName()
 					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				return Infra.findAllInfras();

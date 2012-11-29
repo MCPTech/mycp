@@ -19,12 +19,14 @@ import in.mycp.domain.AddressInfoP;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
+import in.mycp.domain.Infra;
 import in.mycp.domain.InstanceP;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.ComputeWorker;
+import in.mycp.workers.VmwareComputeWorker;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +55,10 @@ public class InstancePService {
 	@Autowired
 	ComputeWorker computeWorker;
 	@Autowired
+	VmwareComputeWorker vmwareComputeWorker;
+	
+	
+	@Autowired
 	ReportService reportService;
 
 	@Autowired
@@ -64,7 +70,26 @@ public class InstancePService {
 	@RemoteMethod
 	public void requestCompute(InstanceP instance) {
 		try {
-
+			System.out.println(instance.getImageId());
+			Infra i = ProductCatalog.findProductCatalog(Integer.parseInt(instance.getProduct())).getInfra();
+			String fullImageId = instance.getImageId();
+			if(i.getInfraType().getId() == Commons.INFRA_TYPE_AWS ||
+					i.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+				
+				
+				if(fullImageId.indexOf(',')>0){
+					instance.setImageId(fullImageId.substring(0,fullImageId.indexOf(',')));  
+				  } 
+				
+				
+			}else if(i.getInfraType().getId() == Commons.INFRA_TYPE_VCLOUD){
+				instance.setImageId(fullImageId.substring(fullImageId.lastIndexOf(',')+1)); 
+				
+				
+			}
+				
+			//System.out.println(instance.getImageId());
+			
 			User currentUser = Commons.getCurrentUser();
 			AssetType assetTypeComputeInstance = AssetType.findAssetTypesByNameEquals(Commons.ASSET_TYPE.ComputeInstance + "")
 					.getSingleResult();
@@ -86,16 +111,19 @@ public class InstancePService {
 				instance = instance.merge();
 				accountLogService.saveLog("Compute '"+instance.getName()+"' with ID "+instance.getId()+" requested, workflow started, pending approval.", Commons.task_name.COMPUTE.name(), 
 						Commons.task_status.SUCCESS.ordinal(),currentUser.getEmail());
+				Commons.setSessionMsg("requestCompute Instance "+instance.getName() +" scheduled");
 			} else {
 				accountLogService.saveLog("Compute '"+instance.getName()+"' with ID "+instance.getId()+" requested, workflow approved automatically.", Commons.task_name.COMPUTE.name(), 
 						Commons.task_status.SUCCESS.ordinal(),currentUser.getEmail());
 				instance.setState(Commons.REQUEST_STATUS.STARTING + "");
 				instance = instance.merge();
+				Commons.setSessionMsg("requestCompute Instance "+instance.getName() +" workflow aproved");
 				workflowApproved(instances);
 			}
 			log.info("end of requestCompute");
 		} catch (Exception e) {
-			log.error(e.getMessage());e.printStackTrace();
+			log.error(e.getMessage());
+			e.printStackTrace();
 			Commons.setSessionMsg("Error while requestCompute Instance "+instance.getName()
 					+"<br> Reason: "+e.getMessage());
 			accountLogService.saveLogAndSendMail("Error in Compute '"+instance.getName()+"' request with ID "+instance.getId()+", "+e.getMessage(), Commons.task_name.COMPUTE.name(), 
@@ -129,7 +157,15 @@ public class InstancePService {
 			for (Iterator iterator = instances.iterator(); iterator.hasNext();) {
 				InstanceP instanceP = (InstanceP) iterator.next();
 				try {
-				computeWorker.createCompute(instanceP.getAsset().getProductCatalog().getInfra(), instanceP,Commons.getCurrentUser().getEmail());
+				Infra infra = instanceP.getAsset().getProductCatalog().getInfra();
+				if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
+						|| infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+					computeWorker.createCompute(infra, instanceP,Commons.getCurrentUser().getEmail());
+				}else{
+					vmwareComputeWorker.createCompute(infra, instanceP,Commons.getCurrentUser().getEmail());
+				}
+					
+				
 				log.info("Scheduled ComputeCreateWorker for " + instanceP.getName());
 				Commons.setSessionMsg("Scheduled Instance creation "+ instanceP.getId());
 				accountLogService.saveLog("Workflow approved for compute '"+instanceP.getName()+"' with ID "+instanceP.getId()+", compute creation scheduled.", Commons.task_name.COMPUTE.name(),

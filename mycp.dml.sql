@@ -199,3 +199,7 @@ where t1.user=t2.user_id;
 commit;
 
 -- charu end  - 28 nov 2012
+
+ALTER TABLE `mycp`.`instance_p` CHANGE COLUMN `imageId` `imageId` VARCHAR(255) NULL DEFAULT NULL  ;
+
+

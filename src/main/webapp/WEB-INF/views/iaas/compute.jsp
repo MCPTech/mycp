@@ -163,11 +163,7 @@
 			}
                 
 			//alert(state);
-        	var projName = '';
-			try{
-				projName = p[i].asset.project.name;
-			}catch(e){}
-			oTable.fnAddData( [start+i+1,p[i].name, projName, p[i].instanceId, p[i].imageId, p[i].dnsName,
+			oTable.fnAddData( [start+i+1,p[i].name, p[i].asset.project.name, p[i].instanceId, p[i].imageId, p[i].dnsName,
 			                   p[i].keyName,p[i].groupName, p[i].platform, state,
 			                   p[i].instanceType,p[i].asset.productCatalog.infra.name,
 			                   actions ] );
@@ -178,12 +174,11 @@
 	var viewed_compute = -1;	
 $(function(){
 
-	$("#popupbutton_compute").click(function(){
+		$("#popupbutton_compute").click(function(){
 			viewed_compute = -1;
 			centerPopup_compute();
 			loadPopup_compute();
 		});
-	
 	
 		$("#popupbutton_computelist").click(function(){
 				dwr.engine.beginBatch();
@@ -215,19 +210,7 @@ $(function(){
 			InstanceP.findAll(start,max,text2Search,findAll_compute);
 			
 		} );
-		
-		ProjectService.findAll(function(p){
-			dwr.util.removeAllOptions('projectId');
-			//dwr.util.addOptions('project', p, 'id', 'name');
-			dwr.util.addOptions('projectId', p, 'id', function(p) {
-				return p.name+' @ '+p.department.name;
-			});
-			//dwr.util.setValue(id, sel);
-			
 		});
-		
-		});
-		
 					
 		//CLOSING POPUP
 		//Click the x event!
@@ -248,36 +231,18 @@ $(function(){
 		});
 		
 		
-		$(document).ready(function() {
+		$(function() {
 			$("#popupbutton_computelist").click();
 			
 			InstanceP.findProductType(function(p){
 				//alert(dwr.util.toDescriptiveString(p,3));
   				dwr.util.removeAllOptions('product');
-  				dwr.util.addOptions('product', p,'id','name');
+  				dwr.util.addOptions('product', {'-1':'Please Select'});
+  				dwr.util.addOptions('product', p, 'id', function(p) {
+  					return p.name;
+  				});
   				//dwr.util.setValue(id, sel);
   			});
-			
-			KeyPairInfoP.findAll4List(function(p){
-				dwr.util.removeAllOptions('keyName');
-				dwr.util.addOptions('keyName', p, 'id', 'keyName');
-				//dwr.util.setValue(id, sel);
-			});
-			/*
-			ImageDescriptionP.findAll4List(0,100,function(p){
-				
-				dwr.util.removeAllOptions('imageId');
-				dwr.util.addOptions('imageId', p, 'imageId', function(p) {
-					return p.imageId+' @ '+p.imageLocation;
-				});
-				
-			});
-			*/
-			GroupDescriptionP.findAll4List(function(p){
-				dwr.util.removeAllOptions('groupName');
-				dwr.util.addOptions('groupName', p, 'name', 'name');
-				//dwr.util.setValue(id, sel);
-			});
 			
 			$("#thisform").validate({
 				 submitHandler: function(form) {
@@ -287,40 +252,19 @@ $(function(){
 				});
 			
 			//$("#imageId").autocomplete("my_autocomplete_backend.php", { minChars:1 });
-			
-			
-			jQuery('#imageId').autocomplete({
-			    source : function(request, response) {
-			    	var text2Search = $('#imageId').val() ;
-			    	ImageDescriptionP.findAll(0,100,text2Search,  function(data) {
-			                var arrayOfData = [];
-			                for(i = 0;i < data.length;i++){
-			                    arrayOfData.push(data[i].imageId+','+data[i].name+','+data[i].imageLocation);
-			                }
-			                response(arrayOfData);
-			            
-			        });
-			    }
-			});
-			
-			
-			
-			
-
-			
-			
 		});
-		
-		
 		
 function submitForm_compute(f){
 	
 	var instancep = {  id:viewed_compute,name:null, reason:null, imageId:null, instanceType:null, keyName:null,groupName:null,product:null, projectId:null };
 	  dwr.util.getValues(instancep);
-	  var imageStr = dwr.util.getValue("imageId");
+	  /*var imageStr = dwr.util.getValue("imageId");
 	  if(imageStr.indexOf(',')>0){
 		  instancep.imageId=imageStr.substring(0,imageStr.indexOf(','));  
-	  }
+	  } */
+	  
+	  instancep.imageId = dwr.util.getValue("imageId");
+	  
 	  
 	  if(viewed_compute == -1){
 		  instancep.id  = null; 
@@ -427,16 +371,15 @@ function afterSave_compute(){
 			InstanceP.startCompute(id,afterSave_compute);
 			dwr.engine.endBatch();
 		}
-
-
 </script>   
+
 <p class="dataTableHeader">Compute Resource</p>
-					<div style="width: 300px;float: right;"> 
-						<div style="float: left; padding-top: 5px; width: 170px;"> <input type="text" name="SearchField" id="SearchField" ></div>
-						 
-						<div class="demo" id="popupbutton_search" style="float: left; padding-bottom: 10px;"><button>Search</button></div>
-					
-					</div>
+			<div style="width: 300px;float: right;"> 
+				<div style="float: left; padding-top: 5px; width: 170px;"> <input type="text" name="SearchField" id="SearchField" ></div>
+				 
+				<div class="demo" id="popupbutton_search" style="float: left; padding-bottom: 10px;"><button>Search</button></div>
+			
+			</div>
 			<div id="datatable-iaas-parent" class="infragrid2">
 					<div id="datatable-iaas" >
 						<table cellpadding="0" cellspacing="0" border="0" class="display" id="compute-table">
@@ -470,7 +413,7 @@ function afterSave_compute(){
 						</table>
 						
 				</div>
-				</div>
+			</div>
 				
 	<div id="popupContactParent_compute" >
 		<div id="popupContact_compute" class="popupContact" >
@@ -479,87 +422,99 @@ function afterSave_compute(){
 							<form class="cmxform" id="thisform" method="post" name="thisform">
 								<p id="contactArea_compute" class="contactArea" >
 								<input type="hidden" id="id" name="id">
-								<table style="width: 100%;">
 								
-								<tr>
-								    <td style="width: 20%;">Product : </td>
-								    <td style="width: 80%;">
-								    <select id="product" name="product" style="width: 385px;" class="required">
-							    	</select>
-							    	</td>
-								  </tr>
-								  
+								<table style="width: 65%;" cellpadding="5" cellspacing="5">
 								  <tr>
-								    <td style="width: 20%;">Name : </td>
-								    <td style="width: 80%;"><input type="text" name="name" id="name" size="58" maxlength="90" class="required"></td>
-								  </tr>
-								  <tr>
-								    <td style="width: 20%;">Reason : </td>
-								    <td style="width: 80%;"><input type="text" name="reason" id="reason" maxlength="90" size="58"></td>
-								  </tr>
-								  <tr>
-								    <td style="width: 20%;">Image : </td>
-								    <td style="width: 80%;">
-								    <input type="text" id="imageId" size="58" class="required">
-								    
-							    	</td>
-								  </tr>
-								  <tr>
-								    <td style="width: 20%;">Type : </td>
-								    <td style="width: 80%;">
-								    <select id="instanceType" name="instanceType" style="width: 385px;" class="required">
-								    	<option value="m1.small">m1.small</option>
-								    	<option value="m1.large">m1.large</option>
-								    	<option value="m1.xlarge">m1.xlarge</option>
-								    	<option value="c1.medium">c1.medium </option>
-								    	<option value="c1.xlarge">c1.xlarge</option>
-							    	</select>
-							    	</td>
-								  </tr>
-								  
-								  <tr>
-								    <td style="width: 20%;">Key : </td>
-								    <td style="width: 80%;">
-								    <select id="keyName" name="keyName" style="width: 385px;" class="required">
-							    	</select>
-							    	</td>
-								  </tr>
-								   <!-- <tr>
-								    <td style="width: 50%;">Base Infra : </td>
-								    <td style="width: 50%;"><input type="text" name="hypervisor" id="hypervisor" size="60"></td>
-								  </tr> -->
-								  <tr>
-								    <td style="width: 20%;">Security Group : </td>
-								    <td style="width: 80%;">
-								    <select id="groupName" name="groupName" style="width: 385px;" class="required">
-							    	</select>
-							    	</td>
-								  </tr>
-								  <tr>
-								    <td style="width: 20%;">project : </td>
-								    <td style="width: 80%;">
-								    <select id="projectId" name="projectId" style="width: 385px;" class="required">
-							    	</select>
-							    	</td>
-								  </tr>
-								  
-								  
-								  <tr>
-								    <td style="width: 50%;"></td>
+								    <td style="width: 50%;">Product : </td>
 								    <td style="width: 50%;">
-								    <br><br>
-										<div class="demo" id="popupbutton_compute_create">
-											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
-											<button onclick="cancelForm_compute(this.form);return false;">Cancel</button>
-										</div>
-									</td>
+								    	<select id="product" name="product" style="width: 385px;" class="required">
+							    		</select>
+								    </td>
 								  </tr>
 								</table>
+								
+								<table style="width: 65%;" id="otherFields" cellpadding="5" cellspacing="5"></table>
 								</p>
 							</form>
 						</div>
 		<div id="backgroundPopup_compute" class="backgroundPopup" ></div>
 	</div>	
 
-
+<script>
+	$("#product").change(function(){
+		var tabEle = '';
+		var productCatId = parseInt($("#product").val());
+		$("#otherFields").html('');
+		ProductService.findById(productCatId, function(s){
+			if(s.infra.infraType.id == 1 || s.infra.infraType.id == 2){
+				tabEle = '<tr><td style=\"width: 50%;\">Name : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"61\" maxlength=\"90\" class=\"required\"><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\">Reason : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"reason\" id=\"reason\" maxlength=\"90\" size=\"61\"><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><input type=\"text\" id=\"imageId\" size=\"61\" class=\"required\">\n<\/td>  <\/tr>' 
+					+'<tr><td style=\"width: 50%;\">Type : <\/td><td style=\"width: 50%;\"><select id=\"instanceType\" name=\"instanceType\" style=\"width: 385px;\" class=\"required\"><option value=\"m1.small\">m1.small<\/option><option value=\"m1.large\">m1.large<\/option><option value=\"m1.xlarge\">m1.xlarge<\/option><option value=\"c1.medium\">c1.medium <\/option><option value=\"c1.xlarge\">c1.xlarge<\/option>\n<\/select>\n<\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\">Key : <\/td><td style=\"width: 50%;\"><select id=\"keyName\" name=\"keyName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\">Security Group : <\/td><td style=\"width: 50%;\"><select id=\"groupName\" name=\"groupName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td><\/tr>'
+					+'<tr><td style=\"width: 50%;\">project : <\/td><td style=\"width: 50%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\"><\/td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_compute_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_compute(this.form);return false;\">Cancel<\/button><\/div><\/td>  <\/tr>';
+			}else if(s.infra.infraType.id == 3){
+				tabEle = '<tr><td style=\"width: 50%;\">Name : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"61\" maxlength=\"90\" class=\"required\"><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><input type=\"text\" id=\"imageId\" size=\"61\" class=\"required\">\n<\/td>  <\/tr>' 
+					+'<tr><td style=\"width: 50%;\">Security Group : <\/td><td style=\"width: 50%;\"><select id=\"groupName\" name=\"groupName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td><\/tr>'
+					+'<tr><td style=\"width: 50%;\">project : <\/td><td style=\"width: 50%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\"><\/td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_compute_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_compute(this.form);return false;\">Cancel<\/button><\/div><\/td>  <\/tr>';
+			} 
+			$("#otherFields").html(tabEle);
+			
+			KeyPairInfoP.findKeyPairInfoPsByInfra(s.infra, function(q){
+				dwr.util.removeAllOptions('keyName');
+				dwr.util.addOptions('keyName', q, 'id', 'keyName');
+			});
+			
+			GroupDescriptionP.findActiveGroupDescriptionPsByInfra(s.infra, function(q){
+				dwr.util.removeAllOptions('groupName');
+				dwr.util.addOptions('groupName', q, 'name', 'name');
+			});
+			/*KeyPairInfoP.findAll4List(function(p){
+				dwr.util.removeAllOptions('keyName');
+				dwr.util.addOptions('keyName', p, 'id', 'keyName');
+				//dwr.util.setValue(id, sel);
+			});*/
+			/*
+			ImageDescriptionP.findAll4List(0,100,function(p){
+				
+				dwr.util.removeAllOptions('imageId');
+				dwr.util.addOptions('imageId', p, 'imageId', function(p) {
+					return p.imageId+' @ '+p.imageLocation;
+				});
+				
+			});
+			*/
+			/*GroupDescriptionP.findAll4List(function(p){
+				dwr.util.removeAllOptions('groupName');
+				dwr.util.addOptions('groupName', p, 'name', 'name');
+				//dwr.util.setValue(id, sel);
+			});*/
+			ProjectService.findAll(function(p){
+				dwr.util.removeAllOptions('projectId');
+				//dwr.util.addOptions('project', p, 'id', 'name');
+				dwr.util.addOptions('projectId', p, 'id', function(p) {
+					return p.name+' @ '+p.department.name;
+				});
+			});
+			
+			jQuery('#imageId').autocomplete({
+			    source : function(request, response) {
+			    	var text2Search = $('#imageId').val() ;
+			    	ImageDescriptionP.findAll(s.infra, 0,100,text2Search,  function(data) {
+			    		var arrayOfData = [];
+			                for(i = 0;i < data.length;i++){
+			                    arrayOfData.push(data[i].imageId+','+data[i].name+','+data[i].imageLocation);
+			                }
+			                response(arrayOfData);
+			            
+			        });
+			    }
+			});
+		});
+	} );
+</script>
 
