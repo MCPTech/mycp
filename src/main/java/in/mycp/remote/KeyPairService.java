@@ -18,6 +18,7 @@ package in.mycp.remote;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
+import in.mycp.domain.Infra;
 import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
@@ -289,6 +290,13 @@ public class KeyPairService {
 							.getCompanyId())).getResultList();
 		}
 	}
+	
+	@RemoteMethod
+	public List<KeyPairInfoP> findKeyPairInfoPsByInfra(Infra infra) {
+		List<KeyPairInfoP> infoPs = KeyPairInfoP.findKeyPairInfoPsByInfra(infra).getResultList();
+		System.out.println(infoPs);
+		return infoPs;
+    }
 
 }// end of class KeyPairInfoPController
 

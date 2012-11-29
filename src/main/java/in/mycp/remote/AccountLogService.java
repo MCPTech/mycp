@@ -23,6 +23,7 @@ import in.mycp.utils.Commons;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
@@ -111,7 +112,12 @@ public class AccountLogService {
 	public void saveLog(String message,String task,int status,String emailId){
 		try{
 			AccountLog acctLog = new AccountLog();
-			acctLog.setDetails(message);
+			if(message !=null && message.length()>243){
+				acctLog.setDetails(message.substring(0,243));
+			}else{
+				acctLog.setDetails(message);
+			}
+			
 			acctLog.setStatus((int)status);
 			acctLog.setTask(task);
 			acctLog.setTimeOfEntry(new Date());

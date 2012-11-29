@@ -70,6 +70,29 @@ public class ImageDescriptionP {
         }
         return q.getResultList();
     }
+    
+    public static List<in.mycp.domain.ImageDescriptionP> findAllImageDescriptionPs(Infra infra, int start, int max, String search) {
+        EntityManager em = entityManager();
+        TypedQuery<ImageDescriptionP> q = null;
+        if (StringUtils.isBlank(search)) {
+            q = em.createQuery("SELECT o FROM ImageDescriptionP o where o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
+        } else {
+            q = em.createQuery("SELECT o FROM ImageDescriptionP o " + " where " + " (o.name like :search or o.imageId like :search" + " or o.imageLocation like :search )" +
+            		" AND o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
+            if (StringUtils.contains(search, " ")) {
+                search = StringUtils.replaceChars(search, " ", "%");
+            }
+            q.setParameter("search", "%" + search + "%");
+        }
+        q.setParameter("infra", infra);
+        q.setFirstResult(start);
+        q.setMaxResults(max);
+        List<ImageDescriptionP> is = q.getResultList();
+        for (Iterator iterator = is.iterator(); iterator.hasNext(); ) {
+            ImageDescriptionP imageDescriptionP = (ImageDescriptionP) iterator.next();
+        }
+        return q.getResultList();
+    }
 
     public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsByCompany(Company company, int start, int max, String search) {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
@@ -84,6 +107,28 @@ public class ImageDescriptionP {
             }
             q.setParameter("search", "%" + search + "%");
         }
+        q.setFirstResult(start);
+        q.setMaxResults(max);
+        q.setParameter("company", company);
+        return q;
+    }
+    
+    public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsByCompany(Infra infra, Company company, int start, int max, String search) {
+        if (company == null) throw new IllegalArgumentException("The company argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<ImageDescriptionP> q = null;
+        if (StringUtils.isBlank(search)) {
+            q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.asset.user.department.company = :company " +
+            		" AND o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
+        } else {
+            q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.asset.user.department.company = :company " + " " + " and (o.name like :search or o.imageId like :search or o.imageLocation like :search) " +
+            		" AND o.asset.productCatalog.infra = :infra ", ImageDescriptionP.class);
+            if (StringUtils.contains(search, " ")) {
+                search = StringUtils.replaceChars(search, " ", "%");
+            }
+            q.setParameter("search", "%" + search + "%");
+        }
+        q.setParameter("infra", infra);
         q.setFirstResult(start);
         q.setMaxResults(max);
         q.setParameter("company", company);

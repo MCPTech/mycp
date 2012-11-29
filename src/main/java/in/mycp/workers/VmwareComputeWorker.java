@@ -449,8 +449,8 @@ public class VmwareComputeWorker extends Worker {
 			VcloudClient vcloudClient = getVcloudClient(infra);
 			
 			String vappTemplateHref =instance.getImageId();
-			String vappName = instance.getName()+" (VAPP) ";
-			String vmNameLocal =instance.getName()+" (VM) ";
+			String vappName = instance.getName()+"_VAPP";
+			String vmNameLocal =instance.getName()+"_VM";
 			//String orgName ="mycloudportal";
 			String vAppNetworkName=instance.getGroupName();
 			String fenceMode="bridged";
@@ -509,6 +509,7 @@ public class VmwareComputeWorker extends Worker {
 			sections.add(new ObjectFactory().createNetworkConfigSection(networkConfigSectionType));
 
 			InstantiateVAppTemplateParamsType instVappTemplParamsType = new InstantiateVAppTemplateParamsType();
+			System.out.println("vappName = "+vappName);
 			instVappTemplParamsType.setName(vappName);
 			instVappTemplParamsType.setSource(vappTemplate.getReference());
 			

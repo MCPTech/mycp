@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 
@@ -88,13 +89,19 @@ public class RealmService {
 			User localUser = User.findUser(instance.getId());
 			if (localUser == null) {
 				instance.setRegistereddate(new Date());
-				instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
+				//instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
 			} else {
-				instance.setRegistereddate(localUser.getRegistereddate());
-				if (!localUser.getPassword().equals(instance.getPassword())) {
+				if(localUser.getRegistereddate() != null)
+					instance.setRegistereddate(localUser.getRegistereddate());
+				else
+					instance.setRegistereddate(new Date());
+				instance.setLoggedInDate(localUser.getLoggedInDate());
+				/*if (!localUser.getPassword().equals(instance.getPassword())) {
 					instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
-				}
+				}*/
 			}
+			/*String[] ignoreProperties = new String[]{"id", "password", "registereddate", "loggedInDate"};
+			BeanUtils.copyProperties(instance, localUser, ignoreProperties);*/
 			//instance.setProject(Project.findProject(instance.getProject().getId()));
 			//instance.setManager(Manager.findManager(instance.getManager().getId()));
 			//instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
@@ -106,7 +113,7 @@ public class RealmService {
 			
 			return instance.merge();
 		} catch (Exception e) {
-			log.error(e.getMessage());e.printStackTrace();
+			log.error(e.getMessage());//e.printStackTrace();
 			accountLogService.saveLog("Error in User " + instance.getEmail()+" creation, "+e.getMessage(),
 					Commons.task_name.USER.name(),
 					Commons.task_status.FAIL.ordinal(),

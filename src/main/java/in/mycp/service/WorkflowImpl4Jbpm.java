@@ -176,7 +176,14 @@ public class WorkflowImpl4Jbpm  {
     public ProcessInstance moveProcessInstance(String processInstanceId,String transition, Map<String, Object> variables) {
         try {
         	return executionService.signalExecutionById(processInstanceId, transition, variables);
-    	}catch(Exception e){log.error(e.getMessage());//e.printStackTrace();
+        }catch(org.jbpm.api.JbpmException jbmEx){
+        	jbmEx.printStackTrace();
+        	//: could not send email
+        	
+        	return executionService.signalExecutionById(processInstanceId, transition);
+        	
+    	}catch(Exception e){
+    		log.error(e.getMessage());//e.printStackTrace();
     	}
         return null;
 	}

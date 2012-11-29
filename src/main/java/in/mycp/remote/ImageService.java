@@ -19,12 +19,15 @@ import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
 import in.mycp.domain.ImageDescriptionP;
+import in.mycp.domain.Infra;
 import in.mycp.domain.User;
 import in.mycp.domain.Workflow;
 import in.mycp.utils.Commons;
 import in.mycp.workers.ImageWorker;
 
 import java.util.List;
+
+import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -212,6 +215,27 @@ public class ImageService {
 			log.error(e);// e.printStackTrace();
 		}
 	}
+		
+	@RemoteMethod
+	public List<ImageDescriptionP> findAll(Infra infra, int start, int max, String search) {
+		try {
+			User user = Commons.getCurrentUser();
+
+			if (user.getRole().getName()
+					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				return ImageDescriptionP.findAllImageDescriptionPs(infra, start, max,
+						search);
+			} else {
+				return ImageDescriptionP.findImageDescriptionPsByCompany(infra,
+						Company.findCompany(Commons.getCurrentSession()
+								.getCompanyId()), start, max, search)
+						.getResultList();
+			}
+		} catch (Exception e) {
+			log.error(e);// e.printStackTrace();
+		}
+		return null;
+	}// end of method findAll
 
 }// end of class ImageDescriptionPController
 
