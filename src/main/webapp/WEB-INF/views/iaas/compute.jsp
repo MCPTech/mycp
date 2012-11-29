@@ -68,6 +68,8 @@
 	var max = 17;
 	
 	function findAll_compute(p){
+		
+	
 		/* alert(p.length);
 		alert(p[0].imageId); */
 	//alert(dwr.util.toDescriptiveString(p,3));
