@@ -84,4 +84,7 @@
 		    </props>
 		</property>        
     </bean>
+    
+    <bean class="in.mycp.service.ApplicationContextService4Jobs">
+    </bean>
 </beans>

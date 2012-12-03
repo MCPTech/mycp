@@ -18,16 +18,21 @@ package in.mycp.remote;
 import in.mycp.domain.AccountLog;
 import in.mycp.domain.AccountLogTypeDTO;
 import in.mycp.domain.User;
+import in.mycp.service.WorkflowImpl4Jbpm;
 import in.mycp.utils.Commons;
+import in.mycp.web.MailDetailsDTO;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
+import org.jbpm.api.ProcessInstance;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,6 +59,9 @@ import org.joda.time.DateTime;
 public class AccountLogService {
 
 	private static final Logger log = Logger.getLogger(AccountLogService.class.getName());
+	
+	@Autowired
+	private WorkflowImpl4Jbpm workflowImpl4Jbpm;
 	
 	@RemoteMethod
 	public List<AccountLogTypeDTO> getAllAccountLogTypes(){
@@ -103,10 +111,21 @@ public class AccountLogService {
 		
 	/*
 	 * COMPUTE, IPADDRESS, VOLUME, SECURITYGROUP, KEYPAIR,IMAGE, SNAPSHOT - mail notification has to be sent
-	 * TODO mail send logic Gangadhar
 	 */
 	public void saveLogAndSendMail(String message,String task,int status,String emailId){
 		saveLog(message, task, status, emailId);
+		try{
+			MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
+			mailDetailsDTO.setTemplateName("RegularMailTemplate");
+        	mailDetailsDTO.setTo(emailId);
+        	mailDetailsDTO.setSubject(task);
+        	mailDetailsDTO.setBodyText(message);
+        	Map<String, Object> variables = new HashMap<String, Object>(); 
+		    variables.put("mailDetailsDTO", mailDetailsDTO);
+		    ProcessInstance instance =  workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
+		}catch(Exception e){
+			log.error(e.getMessage());
+		}
 	}//end saveLogAfterLogout
 	
 	public void saveLog(String message,String task,int status,String emailId){
