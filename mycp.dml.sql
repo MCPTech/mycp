@@ -121,30 +121,30 @@ commit;
 -- start infra changes for vmware - charu - 18 Nov 2012
 CREATE  TABLE `infra_type` (`id` INT NOT NULL AUTO_INCREMENT ,`name` VARCHAR(45) NULL ,`details` VARCHAR(45) NULL ,PRIMARY KEY (`id`) );
 ALTER TABLE `infra` ADD COLUMN `infraType` INT(11) NOT NULL  AFTER `syncstatus` ;
-INSERT INTO `mycp`.`infra_type` (`id`, `name`, `details`) VALUES ('1', 'Euca', 'Euca x');
-INSERT INTO `mycp`.`infra_type` (`id`, `name`, `details`) VALUES ('2', 'AWS', 'Amazon Web services');
-INSERT INTO `mycp`.`infra_type` (`id`, `name`, `details`) VALUES ('3', 'vcloud', 'vCloud Director 1.5');
-ALTER TABLE `mycp`.`infra` CHANGE COLUMN `infraType` `infraType` INT(11) NULL DEFAULT NULL  ;
-UPDATE `mycp`.`infra` SET `infraType`='1'
-ALTER TABLE `mycp`.`infra` ADD CONSTRAINT `fk_infra_to_infra_type `FOREIGN KEY (`infraType` )  REFERENCES `mycp`.`infra_type` (`id` ) , ADD INDEX `fk_infro_to_infra_type_idx` (`infraType` ASC) ;
-ALTER TABLE `mycp`.`infra` DROP FOREIGN KEY `fk_infra_to_infra_type` ;
+INSERT INTO `infra_type` (`id`, `name`, `details`) VALUES ('1', 'Euca', 'Euca x');
+INSERT INTO `infra_type` (`id`, `name`, `details`) VALUES ('2', 'AWS', 'Amazon Web services');
+INSERT INTO `infra_type` (`id`, `name`, `details`) VALUES ('3', 'vcloud', 'vCloud Director 1.5');
+ALTER TABLE `infra` CHANGE COLUMN `infraType` `infraType` INT(11) NULL DEFAULT NULL  ;
+UPDATE `infra` SET `infraType`='1'
+ALTER TABLE `infra` ADD CONSTRAINT `fk_infra_to_infra_type `FOREIGN KEY (`infraType` )  REFERENCES `infra_type` (`id` ) , ADD INDEX `fk_infro_to_infra_type_idx` (`infraType` ASC) ;
+ALTER TABLE `infra` DROP FOREIGN KEY `fk_infra_to_infra_type` ;
 
-ALTER TABLE `mycp`.`infra` CHANGE COLUMN `infraType` `infraType` INT(11) NOT NULL  ,  ADD CONSTRAINT `fk_infra_to_infra_type`  FOREIGN KEY (`infraType` )  REFERENCES `mycp`.`infra_type` (`id` )
+ALTER TABLE `infra` CHANGE COLUMN `infraType` `infraType` INT(11) NOT NULL  ,  ADD CONSTRAINT `fk_infra_to_infra_type`  FOREIGN KEY (`infraType` )  REFERENCES `infra_type` (`id` )
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
   
-  UPDATE `mycp`.`infra_type` SET `name`='VCLOUD' WHERE `id`='3';
+  UPDATE `infra_type` SET `name`='VCLOUD' WHERE `id`='3';
 
-UPDATE `mycp`.`infra_type` SET `name`='EUCA' WHERE `id`='1';
+UPDATE `infra_type` SET `name`='EUCA' WHERE `id`='1';
 
-ALTER TABLE `mycp`.`infra` ADD COLUMN `vcloud_account_name` VARCHAR(90) NULL DEFAULT NULL  AFTER `infraType` ;
+ALTER TABLE `infra` ADD COLUMN `vcloud_account_name` VARCHAR(90) NULL DEFAULT NULL  AFTER `infraType` ;
 
 
 
-ALTER TABLE `mycp`.`ip_permission_p` ADD COLUMN `description` VARCHAR(255) NULL DEFAULT NULL  AFTER `groupDescription` , ADD COLUMN `policy` VARCHAR(45) NULL DEFAULT NULL  AFTER `description` , ADD COLUMN `source_ip` VARCHAR(45) NULL DEFAULT NULL  AFTER `policy` , ADD COLUMN `source_port` INT(11) NULL DEFAULT NULL  AFTER `source_ip` , ADD COLUMN `destination_ip` VARCHAR(45) NULL DEFAULT NULL  AFTER `source_port` , ADD COLUMN `destination_port` INT(11) NULL DEFAULT NULL  AFTER `destination_ip` , ADD COLUMN `direction` VARCHAR(45) NULL DEFAULT NULL  AFTER `destination_port` ;
-ALTER TABLE `mycp`.`volume_info_p` CHANGE COLUMN `instanceId` `instanceId` VARCHAR(255) NULL DEFAULT NULL  ;
-ALTER TABLE `mycp`.`image_description_p` CHANGE COLUMN `imageId` `imageId` VARCHAR(255) NULL DEFAULT NULL  ;
-ALTER TABLE `mycp`.`instance_p` CHANGE COLUMN `instanceId` `instanceId` VARCHAR(255) NULL DEFAULT NULL  ;
+ALTER TABLE `ip_permission_p` ADD COLUMN `description` VARCHAR(255) NULL DEFAULT NULL  AFTER `groupDescription` , ADD COLUMN `policy` VARCHAR(45) NULL DEFAULT NULL  AFTER `description` , ADD COLUMN `source_ip` VARCHAR(45) NULL DEFAULT NULL  AFTER `policy` , ADD COLUMN `source_port` INT(11) NULL DEFAULT NULL  AFTER `source_ip` , ADD COLUMN `destination_ip` VARCHAR(45) NULL DEFAULT NULL  AFTER `source_port` , ADD COLUMN `destination_port` INT(11) NULL DEFAULT NULL  AFTER `destination_ip` , ADD COLUMN `direction` VARCHAR(45) NULL DEFAULT NULL  AFTER `destination_port` ;
+ALTER TABLE `volume_info_p` CHANGE COLUMN `instanceId` `instanceId` VARCHAR(255) NULL DEFAULT NULL  ;
+ALTER TABLE `image_description_p` CHANGE COLUMN `imageId` `imageId` VARCHAR(255) NULL DEFAULT NULL  ;
+ALTER TABLE `instance_p` CHANGE COLUMN `instanceId` `instanceId` VARCHAR(255) NULL DEFAULT NULL  ;
 
 -- end infra changes for vmware - charu - 18 Nov 2012
 
@@ -181,7 +181,7 @@ ALTER TABLE `department` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
 ALTER TABLE `project` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
 ALTER TABLE `user` ADD COLUMN `quota` INT(11) NULL DEFAULT 0 ;
 
-ALTER TABLE `mycp`.`user` DROP COLUMN `project` , DROP INDEX `fk_user_project` ;
+ALTER TABLE `user` DROP COLUMN `project` , DROP INDEX `fk_user_project` ;
 -- end quota & user-project relationship changes for  - gangu
 
 INSERT INTO `jbpm4_deployment` (`DBID_`, `TIMESTAMP_`, `STATE_`) VALUES ('80044', '0', 'active');
@@ -200,6 +200,7 @@ commit;
 
 -- charu end  - 28 nov 2012
 
-ALTER TABLE `mycp`.`instance_p` CHANGE COLUMN `imageId` `imageId` VARCHAR(255) NULL DEFAULT NULL  ;
+ALTER TABLE `instance_p` CHANGE COLUMN `imageId` `imageId` VARCHAR(255) NULL DEFAULT NULL  ;
 
 
+DELETE FROM `role` WHERE `id`='2';
