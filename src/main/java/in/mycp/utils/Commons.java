@@ -113,6 +113,7 @@ public class Commons {
 	public static String VOLUME_STATUS_INUSE = "in-use";
 	public static String VOLUME_STATUS_ATTACHED = "attached";
 	public static String VOLUME_STATUS_CREATING = "creating";
+	public static String VOLUME_STATUS_DELETING = "deleting";
 	public static String VOLUME_STATUS_DELETED = "deleted";
 	public static String VOLUME_STATUS_FAILED = "FAILED";
 

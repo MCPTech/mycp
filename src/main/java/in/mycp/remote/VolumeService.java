@@ -21,11 +21,13 @@ import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.AttachmentInfoP;
 import in.mycp.domain.Company;
+import in.mycp.domain.Infra;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.domain.VolumeInfoP;
 import in.mycp.utils.Commons;
+import in.mycp.workers.VmwareVolumeWorker;
 import in.mycp.workers.VolumeWorker;
 
 import java.util.Date;
@@ -47,11 +49,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 @RemoteProxy(name = "VolumeInfoP")
 public class VolumeService {
 
-	private static final Logger log = Logger.getLogger(VolumeService.class
-			.getName());
+	private static final Logger log = Logger.getLogger(VolumeService.class.getName());
 
 	@Autowired
 	VolumeWorker volumeWorker;
+
+	@Autowired
+	VmwareVolumeWorker vmwareVolumeWorker;
 
 	@Autowired
 	WorkflowService workflowService;
@@ -66,39 +70,26 @@ public class VolumeService {
 	public VolumeInfoP requestVolume(VolumeInfoP volume) {
 		try {
 
-			AssetType assetTypeVolume = AssetType.findAssetTypesByNameEquals(
-					"Volume").getSingleResult();
+			AssetType assetTypeVolume = AssetType.findAssetTypesByNameEquals("Volume").getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			long allAssetTotalCosts = reportService.getAllAssetCosts()
-					.getTotalCost();
+			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment().getCompany();
-			Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser,
-					volume.getProduct(), allAssetTotalCosts, company);
+			Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser, volume.getProduct(), allAssetTotalCosts, company);
 			asset.setProject(Project.findProject(volume.getProjectId()));
 			volume.setAsset(asset);
 			volume = volume.merge();
 			if (true == assetTypeVolume.getWorkflowEnabled()) {
-				Commons.createNewWorkflow(
-						workflowService
-								.createProcessInstance(Commons.PROCESS_DEFN.Volume_Request
-										+ ""), volume.getId(), asset
-								.getAssetType().getName());
+				Commons.createNewWorkflow(workflowService.createProcessInstance(Commons.PROCESS_DEFN.Volume_Request + ""), volume.getId(), asset.getAssetType().getName());
 				volume.setStatus(Commons.WORKFLOW_STATUS.PENDING_APPROVAL + "");
 				volume = volume.merge();
 
-				accountLogService.saveLog("Volume '"+volume.getName()+"' with ID " + volume.getId()
-						+ " requested, workflow started, pending approval.",
-						Commons.task_name.VOLUME.name(),
-						Commons.task_status.SUCCESS.ordinal(),
-						currentUser.getEmail());
+				accountLogService.saveLog("Volume '" + volume.getName() + "' with ID " + volume.getId() + " requested, workflow started, pending approval.",
+						Commons.task_name.VOLUME.name(), Commons.task_status.SUCCESS.ordinal(), currentUser.getEmail());
 
 			} else {
-				accountLogService.saveLog("Volume '"+volume.getName()+"' with ID " + volume.getId()
-						+ " requested, workflow approved automatically.",
-						Commons.task_name.VOLUME.name(),
-						Commons.task_status.SUCCESS.ordinal(),
-						currentUser.getEmail());
+				accountLogService.saveLog("Volume '" + volume.getName() + "' with ID " + volume.getId() + " requested, workflow approved automatically.",
+						Commons.task_name.VOLUME.name(), Commons.task_status.SUCCESS.ordinal(), currentUser.getEmail());
 				volume.setStatus(Commons.VOLUME_STATUS_CREATING + "");
 				volume = volume.merge();
 				workflowApproved(volume);
@@ -107,8 +98,7 @@ public class VolumeService {
 			log.info("end of requestVolume");
 			return volume;
 		} catch (Exception e) {
-			Commons.setSessionMsg("Error while Scheduling Volume create: "
-					+ e.getMessage());
+			Commons.setSessionMsg("Error while Scheduling Volume create: " + e.getMessage());
 			log.error(e);
 			e.printStackTrace();
 		}
@@ -127,10 +117,17 @@ public class VolumeService {
 	public void deleteVolume(int id) {
 		try {
 			VolumeInfoP volumeInfoP = VolumeInfoP.findVolumeInfoP(id);
-			Commons.setAssetEndTime(volumeInfoP.getAsset());
-			volumeWorker.deleteVolume(volumeInfoP.getAsset()
-					.getProductCatalog().getInfra(), volumeInfoP, Commons
-					.getCurrentUser().getEmail());
+			//Commons.setAssetEndTime(volumeInfoP.getAsset());
+			volumeInfoP.setStatus(Commons.VOLUME_STATUS_DELETING);
+			volumeInfoP.merge();
+			
+			Infra infra = volumeInfoP.getAsset().getProductCatalog().getInfra();
+			if (infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS || infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA) {
+				volumeWorker.deleteVolume(volumeInfoP.getAsset().getProductCatalog().getInfra(), volumeInfoP, Commons.getCurrentUser().getEmail());
+			} else if (infra.getInfraType().getId() == Commons.INFRA_TYPE_VCLOUD) {
+				vmwareVolumeWorker.deleteVolume(infra, volumeInfoP, Commons.getCurrentUser().getEmail());
+			}
+			
 			Commons.setSessionMsg("Scheduling Volume remove");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Volume remove");
@@ -145,10 +142,7 @@ public class VolumeService {
 			// volume = VolumeInfoP.findVolumeInfoP(volume.getId());
 			log.info("calling Worker for " + volume);
 			// TODO - whats a better way to find the infra object
-			volumeWorker.attachVolume(
-					VolumeInfoP.findVolumeInfoP(volume.getId()).getAsset()
-							.getProductCatalog().getInfra(), volume, Commons
-							.getCurrentUser().getEmail());
+			volumeWorker.attachVolume(VolumeInfoP.findVolumeInfoP(volume.getId()).getAsset().getProductCatalog().getInfra(), volume, Commons.getCurrentUser().getEmail());
 			log.info("scheduled Worker for " + volume);
 			Commons.setSessionMsg("Scheduling Volume attach");
 		} catch (Exception e) {
@@ -162,12 +156,9 @@ public class VolumeService {
 	public void detachVolume(int id) {
 		try {
 			VolumeInfoP volume = VolumeInfoP.findVolumeInfoP(id);
-			log.info("calling detachVolume Worker for " + volume.getSize()
-					+ ", " + volume.getSnapshotId() + ", " + volume.getZone());
-			volumeWorker.detachVolume(volume.getAsset().getProductCatalog()
-					.getInfra(), volume, Commons.getCurrentUser().getEmail());
-			log.info("scheduled detachVolume Worker for " + volume.getSize()
-					+ ", " + volume.getSnapshotId() + ", " + volume.getZone());
+			log.info("calling detachVolume Worker for " + volume.getSize() + ", " + volume.getSnapshotId() + ", " + volume.getZone());
+			volumeWorker.detachVolume(volume.getAsset().getProductCatalog().getInfra(), volume, Commons.getCurrentUser().getEmail());
+			log.info("scheduled detachVolume Worker for " + volume.getSize() + ", " + volume.getSnapshotId() + ", " + volume.getZone());
 			Commons.setSessionMsg("Scheduling Volume detach");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Volume detach");
@@ -178,12 +169,16 @@ public class VolumeService {
 	@RemoteMethod
 	public void createVolume(VolumeInfoP volume) {
 		try {
-			log.info("calling Worker for " + volume.getSize() + ", "
-					+ volume.getSnapshotId() + ", " + volume.getZone());
-			volumeWorker.createVolume(volume.getAsset().getProductCatalog()
-					.getInfra(), volume, Commons.getCurrentUser().getEmail());
-			log.info("scheduled Worker for " + volume.getSize() + ", "
-					+ volume.getSnapshotId() + ", " + volume.getZone());
+			log.info("calling Worker for " + volume.getSize() + ", " + volume.getSnapshotId() + ", " + volume.getZone());
+
+			Infra infra = volume.getAsset().getProductCatalog().getInfra();
+			if (infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS || infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA) {
+				volumeWorker.createVolume(volume.getAsset().getProductCatalog().getInfra(), volume, Commons.getCurrentUser().getEmail());
+			} else if (infra.getInfraType().getId() == Commons.INFRA_TYPE_VCLOUD) {
+				vmwareVolumeWorker.createAndAttachVolume(infra, volume, Commons.getCurrentUser().getEmail());
+			}
+
+			log.info("scheduled Worker for " + volume.getSize() + ", " + volume.getSnapshotId() + ", " + volume.getZone());
 		} catch (Exception e) {
 			log.error(e);// e.printStackTrace();
 		}
@@ -215,8 +210,7 @@ public class VolumeService {
 	public VolumeInfoP findById(int id) {
 		try {
 			VolumeInfoP instance = VolumeInfoP.findVolumeInfoP(id);
-			instance.setProduct(""
-					+ instance.getAsset().getProductCatalog().getId());
+			instance.setProduct("" + instance.getAsset().getProductCatalog().getId());
 			return instance;
 		} catch (Exception e) {
 			log.error(e);// e.printStackTrace();
@@ -228,13 +222,10 @@ public class VolumeService {
 	public List<VolumeInfoP> findAll4List() {
 		try {
 			User user = Commons.getCurrentUser();
-			if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			if (user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				return VolumeInfoP.findAllVolumeInfoPs();
 			} else {
-				return VolumeInfoP.findVolumeInfoPsByCompany(
-						Company.findCompany(Commons.getCurrentSession()
-								.getCompanyId()), 0, 100, "").getResultList();
+				return VolumeInfoP.findVolumeInfoPsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId()), 0, 100, "").getResultList();
 			}
 		} catch (Exception e) {
 			log.error(e);// e.printStackTrace();
@@ -248,14 +239,9 @@ public class VolumeService {
 
 			User user = Commons.getCurrentUser();
 			if (user.getRole().getName().equals(Commons.ROLE.ROLE_USER + "")) {
-				return VolumeInfoP.findVolumeInfoPsByUser(user, start, max,
-						search).getResultList();
-			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
-				return VolumeInfoP.findVolumeInfoPsByCompany(
-						Company.findCompany(Commons.getCurrentSession()
-								.getCompanyId()), start, max, search)
-						.getResultList();
+				return VolumeInfoP.findVolumeInfoPsByUser(user, start, max, search).getResultList();
+			} else if (user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "")) {
+				return VolumeInfoP.findVolumeInfoPsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId()), start, max, search).getResultList();
 			}
 			return VolumeInfoP.findAllVolumeInfoPs(start, max, search);
 		} catch (Exception e) {
@@ -265,41 +251,28 @@ public class VolumeService {
 	}// end of method findAll
 
 	@RemoteMethod
-	public List<VolumeInfoP> findAllWithAttachInfo(int start, int max,
-			String search) {
+	public List<VolumeInfoP> findAllWithAttachInfo(int start, int max, String search) {
 		try {
 			List<VolumeInfoP> volumes = null;
 			User user = Commons.getCurrentUser();
 			if (user.getRole().getName().equals(Commons.ROLE.ROLE_USER + "")) {
-				volumes = VolumeInfoP.findVolumeInfoPsByUser(user, start, max,
-						search).getResultList();
-			} else if (user.getRole().getName()
-					.equals(Commons.ROLE.ROLE_MANAGER + "")) {
-				volumes = VolumeInfoP.findVolumeInfoPsByCompany(
-						Company.findCompany(Commons.getCurrentSession()
-								.getCompanyId()), start, max, search)
-						.getResultList();
+				volumes = VolumeInfoP.findVolumeInfoPsByUser(user, start, max, search).getResultList();
+			} else if (user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "")) {
+				volumes = VolumeInfoP.findVolumeInfoPsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId()), start, max, search).getResultList();
 			} else {
 				volumes = VolumeInfoP.findAllVolumeInfoPs(start, max, search);
 			}
 
 			for (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
 				VolumeInfoP volumeInfoP = (VolumeInfoP) iterator.next();
-				if (volumeInfoP.getVolumeId() == null
-						|| volumeInfoP.getVolumeId().equals("")) {
+				if (volumeInfoP.getVolumeId() == null || volumeInfoP.getVolumeId().equals("")) {
 					continue;
 				}
-				List<AttachmentInfoP> attaches = AttachmentInfoP
-						.findAttachmentInfoPsByVolumeIdEquals(
-								volumeInfoP.getVolumeId()).getResultList();
+				List<AttachmentInfoP> attaches = AttachmentInfoP.findAttachmentInfoPsByVolumeIdEquals(volumeInfoP.getVolumeId()).getResultList();
 				if (attaches != null && attaches.size() > 0) {
-					for (Iterator iterator2 = attaches.iterator(); iterator2
-							.hasNext();) {
-						AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator2
-								.next();
-						volumeInfoP.setDetails(attachmentInfoP.getStatus()
-								+ " @ " + attachmentInfoP.getAttachTime()
-								+ " to " + attachmentInfoP.getInstanceId());
+					for (Iterator iterator2 = attaches.iterator(); iterator2.hasNext();) {
+						AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator2.next();
+						volumeInfoP.setDetails(attachmentInfoP.getStatus() + " @ " + attachmentInfoP.getAttachTime() + " to " + attachmentInfoP.getInstanceId());
 					}
 				}
 			}
@@ -313,16 +286,12 @@ public class VolumeService {
 
 	@RemoteMethod
 	public List<ProductCatalog> findProductType() {
-		if (Commons.getCurrentUser().getRole().getName()
-				.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-			return ProductCatalog.findProductCatalogsByProductTypeEquals(
-					Commons.ProductType.Volume.getName()).getResultList();
+		if (Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			return ProductCatalog.findProductCatalogsByProductTypeEquals(Commons.ProductType.Volume.getName()).getResultList();
 		} else {
 
-			return ProductCatalog.findProductCatalogsByProductTypeAndCompany(
-					Commons.ProductType.Volume.getName(),
-					Company.findCompany(Commons.getCurrentSession()
-							.getCompanyId())).getResultList();
+			return ProductCatalog.findProductCatalogsByProductTypeAndCompany(Commons.ProductType.Volume.getName(),
+					Company.findCompany(Commons.getCurrentSession().getCompanyId())).getResultList();
 		}
 
 	}
