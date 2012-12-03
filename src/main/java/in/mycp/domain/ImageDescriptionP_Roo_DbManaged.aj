@@ -6,6 +6,7 @@ package in.mycp.domain;
 import in.mycp.domain.Asset;
 import in.mycp.domain.BlockDeviceMappingP;
 import in.mycp.domain.ImageDescriptionP;
+import in.mycp.domain.InstanceP;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
@@ -16,6 +17,9 @@ privileged aspect ImageDescriptionP_Roo_DbManaged {
     
     @OneToMany(mappedBy = "imageDescription")
     private Set<BlockDeviceMappingP> ImageDescriptionP.blockDeviceMappingPs;
+    
+    @OneToMany(mappedBy = "image")
+    private Set<InstanceP> ImageDescriptionP.instancePs;
     
     @ManyToOne
     @JoinColumn(name = "asset", referencedColumnName = "id")
@@ -90,6 +94,14 @@ privileged aspect ImageDescriptionP_Roo_DbManaged {
     
     public void ImageDescriptionP.setBlockDeviceMappingPs(Set<BlockDeviceMappingP> blockDeviceMappingPs) {
         this.blockDeviceMappingPs = blockDeviceMappingPs;
+    }
+    
+    public Set<InstanceP> ImageDescriptionP.getInstancePs() {
+        return instancePs;
+    }
+    
+    public void ImageDescriptionP.setInstancePs(Set<InstanceP> instancePs) {
+        this.instancePs = instancePs;
     }
     
     public Asset ImageDescriptionP.getAsset() {

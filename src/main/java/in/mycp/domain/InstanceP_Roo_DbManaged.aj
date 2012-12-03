@@ -4,6 +4,7 @@
 package in.mycp.domain;
 
 import in.mycp.domain.Asset;
+import in.mycp.domain.ImageDescriptionP;
 import in.mycp.domain.InstanceBlockDeviceMappingP;
 import in.mycp.domain.InstanceP;
 import java.util.Date;
@@ -25,11 +26,12 @@ privileged aspect InstanceP_Roo_DbManaged {
     @JoinColumn(name = "asset", referencedColumnName = "id")
     private Asset InstanceP.asset;
     
+    @ManyToOne
+    @JoinColumn(name = "image", referencedColumnName = "id")
+    private ImageDescriptionP InstanceP.image;
+    
     @Column(name = "reservationDescription")
     private Integer InstanceP.reservationDescription;
-    
-    @Column(name = "imageId", length = 45)
-    private String InstanceP.imageId;
     
     @Column(name = "instanceId", length = 255)
     private String InstanceP.instanceId;
@@ -126,6 +128,21 @@ privileged aspect InstanceP_Roo_DbManaged {
     @Column(name = "groupName", length = 45)
     private String InstanceP.groupName;
     
+    @Column(name = "vcloud_cpu")
+    private Double InstanceP.vcloudCpu;
+    
+    @Column(name = "vcloud_ram_gb")
+    private Double InstanceP.vcloudRamGb;
+    
+    @Column(name = "vcloud_disk_gb")
+    private Double InstanceP.vcloudDiskGb;
+    
+    @Column(name = "vcloud_vm_href", length = 255)
+    private String InstanceP.vcloudVmHref;
+    
+    @Column(name = "vcloud_vapp_href", length = 255)
+    private String InstanceP.vcloudVappHref;
+    
     public Set<InstanceBlockDeviceMappingP> InstanceP.getInstanceBlockDeviceMappingPs() {
         return instanceBlockDeviceMappingPs;
     }
@@ -142,20 +159,20 @@ privileged aspect InstanceP_Roo_DbManaged {
         this.asset = asset;
     }
     
+    public ImageDescriptionP InstanceP.getImage() {
+        return image;
+    }
+    
+    public void InstanceP.setImage(ImageDescriptionP image) {
+        this.image = image;
+    }
+    
     public Integer InstanceP.getReservationDescription() {
         return reservationDescription;
     }
     
     public void InstanceP.setReservationDescription(Integer reservationDescription) {
         this.reservationDescription = reservationDescription;
-    }
-    
-    public String InstanceP.getImageId() {
-        return imageId;
-    }
-    
-    public void InstanceP.setImageId(String imageId) {
-        this.imageId = imageId;
     }
     
     public String InstanceP.getInstanceId() {
@@ -404,6 +421,46 @@ privileged aspect InstanceP_Roo_DbManaged {
     
     public void InstanceP.setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+    
+    public Double InstanceP.getVcloudCpu() {
+        return vcloudCpu;
+    }
+    
+    public void InstanceP.setVcloudCpu(Double vcloudCpu) {
+        this.vcloudCpu = vcloudCpu;
+    }
+    
+    public Double InstanceP.getVcloudRamGb() {
+        return vcloudRamGb;
+    }
+    
+    public void InstanceP.setVcloudRamGb(Double vcloudRamGb) {
+        this.vcloudRamGb = vcloudRamGb;
+    }
+    
+    public Double InstanceP.getVcloudDiskGb() {
+        return vcloudDiskGb;
+    }
+    
+    public void InstanceP.setVcloudDiskGb(Double vcloudDiskGb) {
+        this.vcloudDiskGb = vcloudDiskGb;
+    }
+    
+    public String InstanceP.getVcloudVmHref() {
+        return vcloudVmHref;
+    }
+    
+    public void InstanceP.setVcloudVmHref(String vcloudVmHref) {
+        this.vcloudVmHref = vcloudVmHref;
+    }
+    
+    public String InstanceP.getVcloudVappHref() {
+        return vcloudVappHref;
+    }
+    
+    public void InstanceP.setVcloudVappHref(String vcloudVappHref) {
+        this.vcloudVappHref = vcloudVappHref;
     }
     
 }

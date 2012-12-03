@@ -202,5 +202,42 @@ commit;
 
 ALTER TABLE `instance_p` CHANGE COLUMN `imageId` `imageId` VARCHAR(255) NULL DEFAULT NULL  ;
 
+-- charu start - 29 nov 2012
+
+ALTER TABLE `mycp`.`instance_p` 
+DROP COLUMN `imageId` , 
+ADD COLUMN `image` INT(11) NULL  AFTER `asset` , 
+ADD COLUMN `vcloud_cpu` INT(11) NULL  AFTER `image` , 
+ADD COLUMN `vcloud_ram_gb` INT(11) NULL  AFTER `vcloud_cpu` , 
+ADD COLUMN `vacloud_disk_gb` INT(11) NULL  AFTER `vcloud_ram_gb` ;
+
+ALTER TABLE `mycp`.`instance_p` 
+  ADD CONSTRAINT `fk_image_instancep`
+  FOREIGN KEY (`image` )
+  REFERENCES `mycp`.`image_description_p` (`id` )
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION
+, ADD INDEX `fk_image_instancep_idx` (`image` ASC) ;
+
+ALTER TABLE `mycp`.`instance_p` 
+CHANGE COLUMN `vacloud_disk_gb` `vcloud_disk_gb` INT(11) NULL DEFAULT NULL  ,
+ADD COLUMN `vcloud_vm_href` VARCHAR(255) NULL  AFTER `vcloud_disk_gb` ;
+
+ALTER TABLE `mycp`.`instance_p` 
+CHANGE COLUMN `vcloud_cpu` `vcloud_cpu` DOUBLE NULL DEFAULT NULL  , 
+CHANGE COLUMN `vcloud_ram_gb` `vcloud_ram_gb` DOUBLE NULL DEFAULT NULL  , 
+CHANGE COLUMN `vcloud_disk_gb` `vcloud_disk_gb` DOUBLE NULL DEFAULT NULL  ;
+
+ALTER TABLE `mycp`.`instance_p` 
+ADD COLUMN `vcloud_vapp_href` VARCHAR(255) NULL  AFTER `vcloud_vm_href` ;
+
+-- charu end - 29 nov 2012
 
 DELETE FROM `role` WHERE `id`='2';
+
+-- charu start - 03 dec 2012
+
+ALTER TABLE `mycp`.`volume_info_p` CHANGE COLUMN `volumeId` `volumeId` VARCHAR(255) NULL DEFAULT NULL  ;
+
+-- charu end - 03 dec 2012
+

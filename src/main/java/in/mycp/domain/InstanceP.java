@@ -103,7 +103,7 @@ public class InstanceP {
     }
 
     public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsByCompany(Company company) {
-        if (company == null) throw new IllegalArgumentException("The user argument is required");
+        if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<InstanceP> q = null;
         q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.asset.user.department.company = :company", InstanceP.class);
@@ -112,12 +112,23 @@ public class InstanceP {
     }
 
     public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsBy(Infra infra, Company company) {
-        if (company == null) throw new IllegalArgumentException("The user argument is required");
+        if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<InstanceP> q = null;
         q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", InstanceP.class);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
+        return q;
+    }
+
+    public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsBy(Infra infra, Company company, User user) {
+        if (company == null) throw new IllegalArgumentException("The company argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<InstanceP> q = null;
+        q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra and o.asset.user =:user", InstanceP.class);
+        q.setParameter("company", company);
+        q.setParameter("infra", infra);
+        q.setParameter("user", user);
         return q;
     }
 

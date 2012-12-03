@@ -25,7 +25,7 @@ privileged aspect VolumeInfoP_Roo_DbManaged {
     @JoinColumn(name = "asset", referencedColumnName = "id")
     private Asset VolumeInfoP.asset;
     
-    @Column(name = "volumeId", length = 45)
+    @Column(name = "volumeId", length = 255)
     private String VolumeInfoP.volumeId;
     
     @Column(name = "size")

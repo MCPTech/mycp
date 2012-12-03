@@ -21,7 +21,24 @@ import org.springframework.roo.addon.tostring.RooToString;
 public class ImageDescriptionP {
 
     @Transient
+    private String imageDesc;
+
+    @Transient
     private String instanceIdForImgCreation;
+
+    public String getImageDesc() {
+        if ((getImageId() != null && (getImageId().indexOf("emi") == 0 || getImageId().indexOf("ami") == 0))) {
+            return getImageLocation();
+        } else if ((getImageId() != null && (getImageId().indexOf("vcloud-") > -1 || getImageId().indexOf("vcloud") > -1))) {
+            return getName();
+        } else {
+            return getImageId() + " , " + getName() + " , " + getImageLocation();
+        }
+    }
+
+    public void setImageDesc(String imageDesc) {
+        this.imageDesc = imageDesc;
+    }
 
     public String getInstanceIdForImgCreation() {
         return instanceIdForImgCreation;

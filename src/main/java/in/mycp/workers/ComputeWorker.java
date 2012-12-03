@@ -328,7 +328,7 @@ public class ComputeWorker extends Worker {
 			for (Iterator iterator = instanceIds.iterator(); iterator.hasNext();) {
 				String instanceId = (String) iterator.next();
 
-				int SLEEP_TIME = 5000;
+				int SLEEP_TIME = 10000;
 				int preparationSleepTime = 0;
 				ReservationDescription reservationDescription = ec2
 						.describeInstances(
@@ -344,11 +344,11 @@ public class ComputeWorker extends Worker {
 				while (instanceEc2.isRunning() || instanceEc2.isShuttingDown()) {
 					runDuration = runDuration + INSTANCE_START_SLEEP_TIME;
 					if (runDuration > timeout) {
-						logger.info("Tried enough.Am bored, quitting.");
+						logger.info("Tried enough.Am bored, quitting, is this not and EBS backed instance?");
 						break;
 					}
 					try {
-						instanceP.setState(Commons.REQUEST_STATUS.SHUTTING_DOWN
+						instanceP.setState(Commons.REQUEST_STATUS.STOPPING
 								+ "");
 						instanceP.merge();
 						logger.info("Instance " + instanceEc2.getInstanceId()
@@ -369,14 +369,7 @@ public class ComputeWorker extends Worker {
 						+ instanceEc2.isRunning());
 
 				if (!instanceEc2.isRunning()) {
-					logger.info("EC2 instance is now running");
-					if (preparationSleepTime > 0) {
-						logger.info("Sleeping "
-								+ preparationSleepTime
-								+ "ms allowing instance services to start up properly.");
-						Thread.sleep(preparationSleepTime);
-						logger.info("Instance prepared - proceeding");
-					}
+					logger.info("EC2 instance is now stopped");
 					instanceP.setState(Commons.REQUEST_STATUS.STOPPED + "");
 					instanceP.merge();
 					accountLogService.saveLogAndSendMail(
@@ -389,6 +382,21 @@ public class ComputeWorker extends Worker {
 									+ instanceP.getName(),
 							Commons.task_name.COMPUTE.name(),
 							Commons.task_status.SUCCESS.ordinal(), userId);
+				}else{
+					logger.info("EC2 instance is still running");
+					instanceP.setState(Commons.REQUEST_STATUS.running + "");
+					instanceP.merge();
+					instanceP.getAsset().setEndTime(null);
+					accountLogService.saveLogAndSendMail(
+							"Complete: "
+									+ this.getClass().getName()
+									+ " : "
+									+ Thread.currentThread().getStackTrace()[1]
+											.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
+													.getMethodName().indexOf("_")) + " for "
+									+ instanceP.getName(),
+							Commons.task_name.COMPUTE.name(),
+							Commons.task_status.FAIL.ordinal(), userId);
 				}
 			}
 
@@ -464,9 +472,11 @@ public class ComputeWorker extends Worker {
 				}
 				Instance instanceEc2 = reservationDescription.getInstances()
 						.get(0);
-				InstanceP instanceP = InstanceP
+				/*InstanceP instanceP = InstanceP
 						.findInstancePsByInstanceIdEquals(instanceId)
-						.getSingleResult();
+						.getSingleResult();*/
+				InstanceP instanceP = InstanceP.findInstanceP(instancePId);
+				
 				int INSTANCE_START_SLEEP_TIME = 5000;
 				long timeout = INSTANCE_START_SLEEP_TIME * 100;
 				long runDuration = 0;
@@ -571,7 +581,8 @@ public class ComputeWorker extends Worker {
 
 		InstanceP instanceLocal = null;
 		try {
-			String imageName = instance.getImageId();
+			//String imageName = instance.getImageId();
+			String imageName = instance.getImage().getImageId();
 			String keypairName = instance.getKeyName();
 			String groupName = instance.getGroupName();
 			String instanceType = instance.getInstanceType();

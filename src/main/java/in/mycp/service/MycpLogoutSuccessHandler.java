@@ -25,14 +25,18 @@ public class MycpLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
 		setDefaultTargetUrl("/cloud-portal");
 		try {
+			//authentication object will be null when session has timed out
+			if(authentication !=null)
 			accountLogService.saveLog("User logged out",
 					Commons.task_name.LOGOUT.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					authentication.getName());
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
+			//e.printStackTrace();
 		}
 		super.onLogoutSuccess(request, response, authentication);
 
 	}
+	
 }

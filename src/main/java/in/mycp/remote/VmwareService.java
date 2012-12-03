@@ -25,13 +25,12 @@ import in.mycp.domain.ImageDescriptionP;
 import in.mycp.domain.Infra;
 import in.mycp.domain.InstanceP;
 import in.mycp.domain.IpPermissionP;
-import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
-import in.mycp.domain.SnapshotInfoP;
 import in.mycp.domain.User;
 import in.mycp.domain.VolumeInfoP;
 import in.mycp.utils.Commons;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,12 +82,8 @@ import com.vmware.vcloud.sdk.admin.AdminOrganization;
 import com.vmware.vcloud.sdk.constants.Version;
 import com.vmware.vcloud.sdk.constants.query.QueryRecordType;
 import com.vmware.vcloud.sdk.samples.FakeSSLSocketFactory;
-import com.xerox.amazonws.ec2.ImageDescription;
 import com.xerox.amazonws.ec2.KeyPairInfo;
-import com.xerox.amazonws.ec2.ReservationDescription;
-import com.xerox.amazonws.ec2.ReservationDescription.Instance;
 import com.xerox.amazonws.ec2.SnapshotInfo;
-import com.xerox.amazonws.ec2.VolumeInfo;
 
 /**
  * Remote service to be used by DWR for vmware setup,cleanup and sync
@@ -272,7 +267,7 @@ public class VmwareService {
 						}
 
 					} catch (Exception e) {
-						// logger.error(e.getMessage());//
+						logger.error(e.getMessage());
 						descriptionP = null;
 						e.printStackTrace();
 					}
@@ -316,7 +311,7 @@ public class VmwareService {
 														firewallRule.getSourceIp(), firewallRule.getSourcePort()).getSingleResult();
 											} catch (Exception e) {
 												//e.printStackTrace();
-												logger.info(e.getMessage());
+												logger.error(e.getMessage());
 											}
 
 											if (ipPermissionP != null) {
@@ -348,7 +343,8 @@ public class VmwareService {
 
 											descriptionP = descriptionP.merge();
 										}catch(Exception e){
-											logger.info(e.getMessage());
+											logger.error(e.getMessage());
+											//e.printStackTrace();
 										}
 
 									}//for (FirewallRuleType firewallRule : firewallService.getFirewallRule())
@@ -530,7 +526,7 @@ public class VmwareService {
 					addressInfoP = AddressInfoP.findAddressInfoPsBy(infra, extIp, company).getSingleResult();
 
 				} catch (Exception e) {
-					// logger.error(e.getMessage());//e.printStackTrace();
+					logger.error(e.getMessage());//e.printStackTrace();
 				}
 				if (addressInfoP == null) {
 					addressInfoP = new AddressInfoP();
@@ -639,7 +635,7 @@ public class VmwareService {
 							try {
 								volumeInfoP = VolumeInfoP.findVolumeInfoPsBy(infra, volId, company).getSingleResult();
 							} catch (Exception e) {
-								// logger.error(e.getMessage());//e.printStackTrace();
+								logger.error(e.getMessage());//e.printStackTrace();
 							}
 							if (volumeInfoP != null) {
 
@@ -665,7 +661,8 @@ public class VmwareService {
 						}
 					}
 				} catch (Exception e) {
-					logger.info(e.getMessage());
+					logger.error(e.getMessage());
+					
 					//e.printStackTrace();
 				}
 			}
@@ -751,7 +748,7 @@ public class VmwareService {
 						try {
 							imageDescriptionP = ImageDescriptionP.findImageDescriptionPsBy(infra,vappTemplate.getResource().getId(), company).getSingleResult();
 						} catch (Exception e) {
-							// logger.error(e.getMessage());//e.printStackTrace();
+							logger.error(e.getMessage());//e.printStackTrace();
 						}
 						if (imageDescriptionP != null) {
 	
@@ -879,11 +876,17 @@ public class VmwareService {
 				for (Iterator iterator2 = vms.iterator(); iterator2.hasNext(); ) {
 					try {
 						VM vm = (VM) iterator2.next();
-						String vmId = vm.getResource().getHref();
+						String vmId = vm.getResource().getId();
 						String vmName = vm.getResource().getName() +" ("+vapp.getResource().getName()+")";
 						boolean isDeployed = vm.isDeployed();
-						int noOfCpus = vm.getCpu().getNoOfCpus();
-						int memorySizeGB = vm.getMemory().getMemorySize().intValue()/1024;
+						//int noOfCpus = vm.getCpu().getNoOfCpus();
+						
+						double noOfCpus = vm.getCpu().getNoOfCpus();
+						double d1 = new BigDecimal(vm.getMemory().getMemorySize().toString()).doubleValue();
+						double d2 = new BigDecimal("1024").doubleValue();
+						
+						double memorySizeGB = d1/d2;
+						//int memorySizeGB = vm.getMemory().getMemorySize().intValue()/1024;
 						String vmStatus = vm.getVMStatus().name();
 						
 						logger.info("Name ="+vm.getResource().getName()+" isDeployed = " 
@@ -946,7 +949,7 @@ public class VmwareService {
 								}
 								
 								List<VirtualDisk> vdisks = vm.getDisks();
-								int diskSizeGB = 0;
+								double diskSizeGB = 0;
 								String instanceType="";
 								try {
 								for (Iterator iterator5 = vdisks.iterator(); iterator5.hasNext();) {
@@ -976,7 +979,9 @@ public class VmwareService {
 						}
 
 						if (instanceP != null) {
-
+							//while syncing , I cant get the image from tehvapp, so if the sync is working for an existing vapp inside mycp, keep the image relation.
+							instanceP.setImage(instanceP.getImage());
+							instanceP.setName(instanceP.getName());
 						} else {
 							instanceP = new InstanceP();
 							Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser, computeProduct);
@@ -987,7 +992,13 @@ public class VmwareService {
 						//TODO charu - get the href of vapp template here
 						//cant get this refer http://communities.vmware.com/message/2153649#2153649
 						
-						instanceP.setImageId(vapp.getResource().getName());
+						try {
+							//comment this off because of the the above reason for now
+							//instanceP.setImage(ImageDescriptionP.findImageDescriptionPsByImageIdEquals(vapp.getResource().getId()).getSingleResult());
+						
+						} catch (Exception e) {
+							logger.error(e.getMessage());
+						}
 						instanceP.setDnsName(ipAddress);
 						instanceP.setState(vmStatus);
 						instanceP.setKeyName("no_key_vmware");
@@ -1020,6 +1031,13 @@ public class VmwareService {
 
 						// instanceP.setReservationDescription(reservationDescriptionP);
 
+						instanceP.setVcloudVmHref(vm.getReference().getHref());
+						instanceP.setVcloudVappHref(vapp.getReference().getHref());
+						
+						instanceP.setVcloudCpu(noOfCpus);
+						instanceP.setVcloudRamGb(memorySizeGB);
+						instanceP.setVcloudDiskGb(diskSizeGB);
+						
 						instanceP = instanceP.merge();
 
 						
@@ -1048,6 +1066,11 @@ public class VmwareService {
 
 			for (Iterator iterator = insts.iterator(); iterator.hasNext();) {
 				InstanceP instanceP2 = (InstanceP) iterator.next();
+				//instances which are pending approval need not be compared.
+				if(instanceP2.getInstanceId() == null){
+					continue;
+				}
+				
 				try {
 					if (instanceP2.getState().equals(Commons.REQUEST_STATUS.STARTING + "")
 							&& (new Date().getTime() - instanceP2.getAsset().getStartTime().getTime() > (1000 * 60 * 60 * 3))) {
@@ -1058,11 +1081,20 @@ public class VmwareService {
 					
 					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
 						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER
+						
+						
 						if (instancesFromCloud.containsKey(instanceP2.getInstanceId())) {
 	
 						} else {
-							logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImageId()
+							try {
+								
+							logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImage().getImageId()
 									+ " in mycp since it does not have a corresponding entry in the cloud");
+							
+							} catch (Exception e) {
+								logger.error(e.getMessage());
+							}
+							
 							instanceP2.remove();
 						}
 					}
@@ -1080,357 +1112,7 @@ public class VmwareService {
 
 	}// end of sync
 
-	@Autowired
-	InstancePService instancePService;
-	/*
-	 * Not used as of now
-	 * 
-	 * @RemoteMethod public void syncDataFromMycp(Infra infra) { try { Date
-	 * start = new Date(); logger.info("Connect Start:" + new Date()); Jec2 ec2
-	 * = getNewJce2(infra);
-	 * 
-	 * List<String> params = new ArrayList<String>(); List<AddressInfo>
-	 * addressInfos = ec2.describeAddresses(params);
-	 * 
-	 * logger.info("Available addresses @ " + (new Date().getTime() -
-	 * start.getTime()) / 1000 + " S"); for (Iterator iterator =
-	 * addressInfos.iterator(); iterator.hasNext();) { AddressInfo addressInfo =
-	 * (AddressInfo) iterator.next(); logger.info(addressInfo.getInstanceId() +
-	 * "-----" + addressInfo.getPublicIp()); if (addressInfo.getInstanceId() ==
-	 * null || addressInfo.getInstanceId().startsWith("nobody")) { // do not
-	 * import free IPs continue; } AddressInfoP addressInfoP = null; try {
-	 * addressInfoP =
-	 * AddressInfoP.findAddressInfoPsByPublicIpEquals(infra,addressInfo
-	 * .getPublicIp()).getSingleResult();
-	 * addressInfoP.setInstanceId(addressInfo.getInstanceId());
-	 * addressInfoP.setPublicIp(addressInfo.getPublicIp()); addressInfoP =
-	 * addressInfoP.merge(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); } }
-	 * 
-	 * List<AddressInfoP> addresses = AddressInfoP.findAllAddressInfoPs(); for
-	 * (Iterator iterator = addresses.iterator(); iterator.hasNext();) {
-	 * AddressInfoP addressInfoP = (AddressInfoP) iterator.next(); try {
-	 * if(addressInfoP.getStatus().equals(Commons.ipaddress_STATUS.starting+"")
-	 * && (new Date().getTime() -
-	 * addressInfoP.getAsset().getStartTime().getTime() > (1000*60*60)) ){
-	 * addressInfoP
-	 * .getAsset().setEndTime(addressInfoP.getAsset().getStartTime());
-	 * addressInfoP.setStatus(Commons.ipaddress_STATUS.failed+"");
-	 * addressInfoP.merge(); } } catch (Exception e) { e.printStackTrace(); } }
-	 * 
-	 * params = new ArrayList<String>(); List<GroupDescription> groupDescs =
-	 * ec2.describeSecurityGroups(params);
-	 * logger.info("Available Security groups @" + (new Date().getTime() -
-	 * start.getTime()) / 1000 + " S"); for (Iterator iterator =
-	 * groupDescs.iterator(); iterator.hasNext();) { GroupDescription
-	 * groupDescription = (GroupDescription) iterator.next();
-	 * logger.info(groupDescription); GroupDescriptionP descriptionP = null; try
-	 * { descriptionP =
-	 * GroupDescriptionP.findGroupDescriptionPsByNameEquals(groupDescription
-	 * .getName()).getSingleResult(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); }
-	 * 
-	 * if (descriptionP != null) {
-	 * descriptionP.setDescripton(groupDescription.getDescription());
-	 * descriptionP.setOwner(groupDescription.getOwner()); descriptionP =
-	 * descriptionP.merge();
-	 * 
-	 * 
-	 * List<IpPermission> ipPermissions = groupDescription.getPermissions();
-	 * Set<IpPermissionP> ipPermissionPs = new HashSet<IpPermissionP>(); for
-	 * (Iterator iterator2 = ipPermissions.iterator(); iterator2.hasNext();) {
-	 * IpPermission ipPermission = (IpPermission) iterator2.next();
-	 * logger.info(ipPermission.getFromPort() + ipPermission.getProtocol() +
-	 * ipPermission.getToPort() + ipPermission.getIpRanges()); IpPermissionP
-	 * ipPermissionP = null; try { ipPermissionP = IpPermissionP.
-	 * findIpPermissionPsByGroupDescriptionAndProtocolEqualsAndFromPortEquals
-	 * (descriptionP, ipPermission.getProtocol(),
-	 * ipPermission.getFromPort()).getSingleResult(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); }
-	 * 
-	 * if (ipPermissionP != null) { List<String> cidrIps =
-	 * ipPermission.getIpRanges(); String cidrIps_str = ""; for (Iterator
-	 * iterator3 = cidrIps.iterator(); iterator3.hasNext();) { String string =
-	 * (String) iterator3.next(); cidrIps_str = cidrIps_str + string + ","; }
-	 * cidrIps_str = StringUtils.removeEnd(cidrIps_str, ","); List<String[]>
-	 * uidGroupPairs = ipPermission.getUidGroupPairs(); String uidGroupPairs_str
-	 * = ""; for (Iterator iterator3 = uidGroupPairs.iterator();
-	 * iterator3.hasNext();) { String[] strArray = (String[]) iterator3.next();
-	 * String strArray_str = ""; for (int i = 0; i < strArray.length; i++) {
-	 * strArray_str = strArray_str + strArray[i] + ","; } strArray_str =
-	 * StringUtils.removeEnd(strArray_str, ","); uidGroupPairs_str =
-	 * uidGroupPairs_str + strArray_str + ","; } uidGroupPairs_str =
-	 * StringUtils.removeEnd(uidGroupPairs_str, ",");
-	 * 
-	 * ipPermissionP.setCidrIps(cidrIps_str);
-	 * ipPermissionP.setUidGroupPairs(uidGroupPairs_str);
-	 * 
-	 * ipPermissionP.setFromPort(ipPermission.getFromPort());
-	 * ipPermissionP.setGroupDescription(descriptionP);
-	 * ipPermissionP.setProtocol(ipPermission.getProtocol());
-	 * ipPermissionP.setToPort(ipPermission.getToPort());
-	 * 
-	 * descriptionP = descriptionP.merge();
-	 * ipPermissionP.setGroupDescription(descriptionP); ipPermissionP =
-	 * ipPermissionP.merge(); if (descriptionP.getIpPermissionPs() != null) {
-	 * descriptionP.getIpPermissionPs().add(ipPermissionP); } else {
-	 * Set<IpPermissionP> ipPermissionPsNew = new HashSet<IpPermissionP>();
-	 * ipPermissionPsNew.add(ipPermissionP);
-	 * descriptionP.setIpPermissionPs(ipPermissionPsNew); }
-	 * 
-	 * descriptionP = descriptionP.merge(); }
-	 * 
-	 * } } //end of if
-	 * 
-	 * }// end of for groupDescs.iterator()
-	 * 
-	 * List<GroupDescriptionP> secGroups =
-	 * GroupDescriptionP.findAllGroupDescriptionPs(); for (Iterator
-	 * secGroupiterator = secGroups.iterator(); secGroupiterator.hasNext();) {
-	 * GroupDescriptionP groupDescriptionP = (GroupDescriptionP)
-	 * secGroupiterator.next(); try {
-	 * if(groupDescriptionP.getStatus().equals(Commons
-	 * .secgroup_STATUS.starting+"") && (new Date().getTime() -
-	 * groupDescriptionP.getAsset().getStartTime().getTime() > (1000*60*60)) ){
-	 * groupDescriptionP
-	 * .getAsset().setEndTime(groupDescriptionP.getAsset().getStartTime());
-	 * groupDescriptionP.setStatus(Commons.secgroup_STATUS.failed+"");
-	 * groupDescriptionP.merge(); } } catch (Exception e) { e.printStackTrace();
-	 * } }
-	 * 
-	 * params = new ArrayList<String>(); List<VolumeInfo> volumes =
-	 * ec2.describeVolumes(params); logger.info("Available Volumes"); for
-	 * (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
-	 * VolumeInfo volumeInfo = (VolumeInfo) iterator.next();
-	 * logger.info(volumeInfo.getSize() + volumeInfo.getVolumeId() +
-	 * volumeInfo.getCreateTime().getTime()); VolumeInfoP volumeInfoP = null;
-	 * try { volumeInfoP =
-	 * VolumeInfoP.findVolumeInfoPsByVolumeIdEquals(volumeInfo
-	 * .getVolumeId()).getSingleResult(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); } if (volumeInfoP !=
-	 * null) { volumeInfoP.setSize(Integer.parseInt(volumeInfo.getSize()));
-	 * volumeInfoP.setVolumeId(volumeInfo.getVolumeId());
-	 * volumeInfoP.setCreateTime(volumeInfo.getCreateTime().getTime());
-	 * volumeInfoP.setZone(volumeInfo.getZone());
-	 * volumeInfoP.setStatus(volumeInfo.getStatus());
-	 * volumeInfoP.setSnapshotId(volumeInfo.getSnapshotId()); volumeInfoP =
-	 * volumeInfoP.merge();
-	 * 
-	 * List<AttachmentInfoP> existingAttachments =
-	 * AttachmentInfoP.findAttachmentInfoPsByVolumeIdEquals
-	 * (volumeInfoP.getVolumeId()) .getResultList();
-	 * 
-	 * if (existingAttachments != null) { for (Iterator iterator2 =
-	 * existingAttachments.iterator(); iterator2.hasNext();) { AttachmentInfoP
-	 * attachmentInfoP = (AttachmentInfoP) iterator2.next();
-	 * attachmentInfoP.remove(); } }
-	 * 
-	 * List<AttachmentInfo> attachments = volumeInfo.getAttachmentInfo();
-	 * Set<AttachmentInfoP> attachments4Store = new HashSet<AttachmentInfoP>();
-	 * if (attachments != null && attachments.size() > 0) { for (Iterator
-	 * iterator2 = attachments.iterator(); iterator2.hasNext();) {
-	 * AttachmentInfo attachmentInfo = (AttachmentInfo) iterator2.next();
-	 * AttachmentInfoP attachmentInfoP = new AttachmentInfoP();
-	 * attachmentInfoP.setAttachTime(attachmentInfo.getAttachTime().getTime());
-	 * attachmentInfoP.setDevice(attachmentInfo.getDevice());
-	 * attachmentInfoP.setInstanceId(attachmentInfo.getInstanceId());
-	 * attachmentInfoP.setVolumeId(attachmentInfo.getVolumeId());
-	 * attachmentInfoP.setStatus(attachmentInfo.getStatus());
-	 * attachmentInfoP.setVolumeInfo(volumeInfoP); attachmentInfoP =
-	 * attachmentInfoP.merge(); attachments4Store.add(attachmentInfoP); } }
-	 * 
-	 * volumeInfoP.setAttachmentInfoPs(attachments4Store); volumeInfoP =
-	 * volumeInfoP.merge(); }//if volume !=null }// end of for
-	 * volumes.iterator()
-	 * 
-	 * 
-	 * List<VolumeInfoP> vols = VolumeInfoP.findAllVolumeInfoPs(); for (Iterator
-	 * volIterator = vols.iterator(); volIterator.hasNext();) { VolumeInfoP
-	 * volumeInfo2 = (VolumeInfoP) volIterator.next(); try {
-	 * if(volumeInfo2.getStatus().equals(Commons.VOLUME_STATUS_CREATING) && (new
-	 * Date().getTime() - volumeInfo2.getAsset().getStartTime().getTime() >
-	 * (1000*60*60)) ){
-	 * volumeInfo2.getAsset().setEndTime(volumeInfo2.getAsset().getStartTime());
-	 * volumeInfo2.setStatus(Commons.VOLUME_STATUS_FAILED); volumeInfo2.merge();
-	 * } } catch (Exception e) { e.printStackTrace(); }
-	 * 
-	 * }
-	 * 
-	 * 
-	 * 
-	 * params = new ArrayList<String>(); List<SnapshotInfo> snapshots =
-	 * ec2.describeSnapshots(params); logger.info("Available Snapshots"); for
-	 * (Iterator iterator = snapshots.iterator(); iterator.hasNext();) {
-	 * SnapshotInfo snapshotInfo = (SnapshotInfo) iterator.next();
-	 * logger.info(snapshotInfo.getDescription() + snapshotInfo.getProgress() +
-	 * snapshotInfo.getStatus() + snapshotInfo.getVolumeId() +
-	 * snapshotInfo.getStartTime().getTime()); SnapshotInfoP snapshotInfoP =
-	 * null; try { snapshotInfoP =
-	 * SnapshotInfoP.findSnapshotInfoPsBySnapshotIdEquals
-	 * (snapshotInfo.getSnapshotId()).getSingleResult(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); }
-	 * 
-	 * if (snapshotInfoP != null) {
-	 * snapshotInfoP.setDescription(snapshotInfo.getDescription());
-	 * snapshotInfoP.setProgress(snapshotInfo.getProgress());
-	 * snapshotInfoP.setVolumeId(snapshotInfo.getVolumeId());
-	 * snapshotInfoP.setStartTime(snapshotInfo.getStartTime().getTime());
-	 * snapshotInfoP.setSnapshotId(snapshotInfo.getSnapshotId());
-	 * snapshotInfoP.setStatus(snapshotInfo.getStatus());
-	 * snapshotInfoP.setOwnerId(snapshotInfo.getOwnerId());
-	 * snapshotInfoP.setVolumeSize(snapshotInfo.getVolumeSize());
-	 * snapshotInfoP.setOwnerAlias(snapshotInfo.getOwnerAlias()); snapshotInfoP
-	 * = snapshotInfoP.merge(); } }// end of for snapshots.iterator()
-	 * 
-	 * List<SnapshotInfoP> snaps = SnapshotInfoP.findAllSnapshotInfoPs(); for
-	 * (Iterator iterator = snaps.iterator(); iterator.hasNext();) {
-	 * SnapshotInfoP snapshotInfoP = (SnapshotInfoP) iterator.next(); try {
-	 * 
-	 * if(snapshotInfoP.getStatus().equals(Commons.SNAPSHOT_STATUS.pending+"")
-	 * && (new Date().getTime() -
-	 * snapshotInfoP.getAsset().getStartTime().getTime() > (1000*60*60*3)) ){
-	 * snapshotInfoP
-	 * .getAsset().setEndTime(snapshotInfoP.getAsset().getStartTime());
-	 * snapshotInfoP.setStatus(Commons.SNAPSHOT_STATUS.inactive+"");
-	 * snapshotInfoP.merge(); } } catch (Exception e) { e.printStackTrace(); } }
-	 * 
-	 * List<ImageDescription> images = ec2.describeImages(params);
-	 * logger.info("Available Images"); for (ImageDescription img : images) { if
-	 * (img.getImageState().equals("available")) { logger.info(img.getImageId()
-	 * + "\t" + img.getImageLocation() + "\t" + img.getImageOwnerId());
-	 * ImageDescriptionP imageDescriptionP = null; try { imageDescriptionP =
-	 * ImageDescriptionP
-	 * .findImageDescriptionPsByImageIdEquals(img.getImageId()).
-	 * getSingleResult(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); } if (imageDescriptionP
-	 * != null) { imageDescriptionP.setImageId(img.getImageId());
-	 * imageDescriptionP.setImageLocation(img.getImageLocation());
-	 * imageDescriptionP.setImageOwnerId(img.getImageOwnerId());
-	 * imageDescriptionP.setImageState(img.getImageState());
-	 * imageDescriptionP.setIsPublic(img.isPublic()); List<String> prodCodes =
-	 * img.getProductCodes(); String prodCodes_str = ""; for (Iterator iterator
-	 * = prodCodes.iterator(); iterator.hasNext();) { String prodCode = (String)
-	 * iterator.next(); prodCodes_str = prodCodes_str + prodCode + ","; }
-	 * prodCodes_str = StringUtils.removeEnd(prodCodes_str, ",");
-	 * imageDescriptionP.setProductCodes(prodCodes_str);
-	 * imageDescriptionP.setArchitecture(img.getArchitecture());
-	 * imageDescriptionP.setImageType(img.getImageType());
-	 * imageDescriptionP.setKernelId(img.getKernelId());
-	 * imageDescriptionP.setRamdiskId(img.getRamdiskId());
-	 * imageDescriptionP.setPlatform(img.getPlatform());
-	 * imageDescriptionP.setReason(img.getReason());
-	 * imageDescriptionP.setImageOwnerAlias(img.getImageOwnerAlias());
-	 * 
-	 * imageDescriptionP.setName(img.getName());
-	 * imageDescriptionP.setDescription(img.getDescription());
-	 * imageDescriptionP.setRootDeviceType(img.getRootDeviceType());
-	 * imageDescriptionP.setRootDeviceName(img.getRootDeviceName());
-	 * imageDescriptionP.setVirtualizationType(img.getVirtualizationType());
-	 * 
-	 * imageDescriptionP = imageDescriptionP.merge(); } } }// end of for
-	 * ImageDescription img : images
-	 * 
-	 * params = new ArrayList<String>(); List<ReservationDescription> instances
-	 * = ec2.describeInstances(params); logger.info("Instances"); String
-	 * instanceId = ""; SimpleDateFormat formatter = new
-	 * SimpleDateFormat("yyyy-MM-dd-hh.mm.ss"); Date now = new Date(); for
-	 * (ReservationDescription res : instances) { logger.info(res.getOwner() +
-	 * "\t" + res.getReservationId()); if (res.getInstances() != null) { for
-	 * (Instance inst : res.getInstances()) { Date then =
-	 * inst.getLaunchTime().getTime(); long timediff = now.getTime() -
-	 * then.getTime(); long hours = timediff / (1000 * 60 * 60);
-	 * logger.info("\t" + inst.getImageId() + "\t" + inst.getDnsName() + "\t" +
-	 * inst.getState() + "\t" + inst.getKeyName() + "\t" +
-	 * formatter.format(then) + "\t(H)" + hours + "\t" +
-	 * inst.getInstanceType().getTypeId() + inst.getPlatform());
-	 * 
-	 * InstanceP instanceP = null; try { instanceP =
-	 * InstanceP.findInstancePsByInstanceIdEquals
-	 * (inst.getInstanceId()).getSingleResult(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); }
-	 * 
-	 * if (instanceP != null) {
-	 * 
-	 * instanceP.setInstanceId(inst.getInstanceId());
-	 * instanceP.setImageId(inst.getImageId());
-	 * instanceP.setDnsName(inst.getDnsName());
-	 * instanceP.setState(inst.getState());
-	 * instanceP.setKeyName(inst.getKeyName());
-	 * instanceP.setInstanceType(inst.getInstanceType().getTypeId());
-	 * instanceP.setPlatform(inst.getPlatform());
-	 * instanceP.setPrivateDnsName(inst.getPrivateDnsName());
-	 * instanceP.setReason(inst.getReason());
-	 * instanceP.setLaunchIndex(inst.getLaunchIndex());
-	 * 
-	 * List<String> prodCodes = inst.getProductCodes(); String prodCodes_str =
-	 * ""; for (Iterator iterator = prodCodes.iterator(); iterator.hasNext();) {
-	 * String prodCode = (String) iterator.next(); prodCodes_str = prodCodes_str
-	 * + prodCode + ","; } prodCodes_str = StringUtils.removeEnd(prodCodes_str,
-	 * ",");
-	 * 
-	 * instanceP.setProductCodes(prodCodes_str);
-	 * instanceP.setLaunchTime(inst.getLaunchTime().getTime());
-	 * instanceP.setAvailabilityZone(inst.getAvailabilityZone());
-	 * instanceP.setKernelId(inst.getKernelId());
-	 * instanceP.setRamdiskId(inst.getRamdiskId());
-	 * instanceP.setStateCode(inst.getStateCode());
-	 * instanceP.setSubnetId(inst.getSubnetId());
-	 * instanceP.setVpcId(inst.getVpcId());
-	 * instanceP.setPrivateIpAddress(inst.getPrivateIpAddress());
-	 * instanceP.setIpAddress(inst.getIpAddress());
-	 * instanceP.setArchitecture(inst.getArchitecture());
-	 * instanceP.setRootDeviceType(inst.getRootDeviceType());
-	 * instanceP.setRootDeviceName(inst.getRootDeviceName());
-	 * instanceP.setInstanceLifecycle(inst.getInstanceLifecycle());
-	 * instanceP.setSpotInstanceRequestId(inst.getSpotInstanceRequestId());
-	 * instanceP.setVirtualizationType(inst.getVirtualizationType()); instanceP
-	 * = instanceP.merge(); } } } }// end of ReservationDescription res :
-	 * instances
-	 * 
-	 * List<InstanceP> insts = InstanceP.findAllInstancePs(); for (Iterator
-	 * iterator = insts.iterator(); iterator.hasNext();) { InstanceP instanceP2
-	 * = (InstanceP) iterator.next(); try {
-	 * if(instanceP2.getState().equals(Commons.REQUEST_STATUS.STARTING+"") &&
-	 * (new Date().getTime() - instanceP2.getAsset().getStartTime().getTime() >
-	 * (1000*60*60*3)) ){
-	 * instanceP2.getAsset().setEndTime(instanceP2.getAsset().getStartTime());
-	 * instanceP2.setState(Commons.REQUEST_STATUS.FAILED+"");
-	 * instanceP2.merge(); } } catch (Exception e) { e.printStackTrace(); } }
-	 * 
-	 * 
-	 * 
-	 * List<KeyPairInfo> info = ec2.describeKeyPairs(new String[] {});
-	 * logger.info("keypair list"); for (KeyPairInfo keypairinfo : info) {
-	 * logger.info("keypair : " + keypairinfo.getKeyName() + ", " +
-	 * keypairinfo.getKeyFingerprint()); KeyPairInfoP keyPairInfoP = null; try {
-	 * keyPairInfoP =
-	 * KeyPairInfoP.findKeyPairInfoPsByKeyNameEquals(keypairinfo.getKeyName
-	 * ()).getSingleResult(); } catch (Exception e) {
-	 * logger.error(e.getMessage());e.printStackTrace(); }
-	 * 
-	 * if (keyPairInfoP != null) {
-	 * keyPairInfoP.setKeyName(keypairinfo.getKeyName());
-	 * keyPairInfoP.setKeyFingerprint(keypairinfo.getKeyFingerprint());
-	 * keyPairInfoP.setKeyMaterial(keypairinfo.getKeyMaterial()); keyPairInfoP =
-	 * keyPairInfoP.merge(); } }// end of for KeyPairInfo i : info)
-	 * 
-	 * 
-	 * List<KeyPairInfoP> keys = KeyPairInfoP.findAllKeyPairInfoPs(); for
-	 * (Iterator iterator = keys.iterator(); iterator.hasNext();) { KeyPairInfoP
-	 * keyPairInfoP = (KeyPairInfoP) iterator.next(); try {
-	 * if(keyPairInfoP.getStatus().equals(Commons.keypair_STATUS.starting+"") &&
-	 * (new Date().getTime() - keyPairInfoP.getAsset().getStartTime().getTime()
-	 * > (1000*60*60*3)) ){
-	 * keyPairInfoP.getAsset().setEndTime(keyPairInfoP.getAsset
-	 * ().getStartTime());
-	 * keyPairInfoP.setStatus(Commons.keypair_STATUS.failed+"");
-	 * keyPairInfoP.merge(); } } catch (Exception e) { e.printStackTrace(); } }
-	 * 
-	 * } catch (Exception e) { logger.error(e.getMessage());e.printStackTrace();
-	 * }
-	 * 
-	 * }// end of sync
-	 */
+	
 
 }// end of class
 

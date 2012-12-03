@@ -12,6 +12,10 @@
  * The mask defaults to dateFormat.masks.default.
  */
 
+	var INFRA_TYPE_EUCA=1;
+	var INFRA_TYPE_AWS=2;
+	var INFRA_TYPE_VCLOUD=3;
+	
 var dateFormat = function () {
 	var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
 		timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,

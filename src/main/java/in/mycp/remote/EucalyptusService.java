@@ -1458,7 +1458,12 @@ public class EucalyptusService {
 						}
 
 						instanceP.setInstanceId(inst.getInstanceId());
-						instanceP.setImageId(inst.getImageId());
+						try{
+						instanceP.setImage(ImageDescriptionP.findImageDescriptionPsByImageIdEquals(inst.getImageId()).getSingleResult());
+						}catch(Exception e){
+							logger.error(e.getMessage());
+							//e.printStackTrace();
+						}
 						instanceP.setDnsName(inst.getDnsName());
 						instanceP.setState(inst.getState());
 						instanceP.setKeyName(inst.getKeyName());
@@ -1535,10 +1540,10 @@ public class EucalyptusService {
 					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
 						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER
 						if (instancesFromCloud.containsKey(instanceP2.getInstanceId())
-								&& instancesFromCloud.get(instanceP2.getInstanceId()).getImageId().equals(instanceP2.getImageId())) {
+								&& instancesFromCloud.get(instanceP2.getInstanceId()).getImageId().equals(instanceP2.getImage().getImageId())) {
 	
 						} else {
-							logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImageId()
+							logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImage().getImageId()
 									+ " in mycp since it does not have a corresponding entry in the cloud");
 							instanceP2.remove();
 						}
