@@ -17,6 +17,7 @@ package in.mycp.remote;
 
 import in.mycp.domain.AvailabilityZoneP;
 import in.mycp.domain.Company;
+import in.mycp.domain.Infra;
 import in.mycp.utils.Commons;
 
 import java.util.ArrayList;
@@ -55,34 +56,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 					return AvailabilityZoneP.findAllAvailabilityZonePsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId()));
 				}
 				
-				
-				
-				/*List<Infra> is = null;
-				if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
-					is =  Infra.findAllInfras();
-				}else{
-					is =  Infra.findInfrasByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId())).getResultList();
-				}
-				StringBuffer simplecheck =new StringBuffer();
-				for (Iterator iterator = is.iterator(); iterator.hasNext();) {
-					Infra infra = (Infra) iterator.next();
-					
-					if(simplecheck.indexOf(infra.getZone())<0){
-						AvailabilityZoneP a = new AvailabilityZoneP();
-						a.setName(infra.getZone());
-						
-						az.add(a);
-						simplecheck.append(infra.getZone());
-					}
-				}*/
-				
-			//	return AvailabilityZoneP.findAllAvailabilityZonePs();
-				//return az;
 			} catch (Exception e) {
 				log.error(e.getMessage());e.printStackTrace();
 			}
 			return null;
 		}// end of method findAll
+		
+		@RemoteMethod
+		public List<AvailabilityZoneP> findBy(Infra infra) {
+			try {
+				List<AvailabilityZoneP> az= new ArrayList<AvailabilityZoneP>();
+				
+				if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
+					return AvailabilityZoneP.findAllAvailabilityZonePsByInfra(infra);
+				}else{
+					return AvailabilityZoneP.findAllAvailabilityZonePsBy(infra,Company.findCompany(Commons.getCurrentSession().getCompanyId()));
+				}
+				
+			} catch (Exception e) {
+				log.error(e.getMessage());e.printStackTrace();
+			}
+			return null;
+		}// end of method findAll
+		
 		
 		@RemoteMethod
 		public AvailabilityZoneP saveOrUpdate(AvailabilityZoneP instance) {

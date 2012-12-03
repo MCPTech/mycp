@@ -17,12 +17,15 @@ package in.mycp.workers;
 
 import in.mycp.domain.AddressInfoP;
 import in.mycp.domain.AssetType;
+import in.mycp.domain.ImageDescriptionP;
 import in.mycp.domain.Infra;
 import in.mycp.domain.InstanceP;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.remote.AccountLogService;
 import in.mycp.utils.Commons;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,7 +84,7 @@ public class VmwareComputeWorker extends Worker {
 	@Autowired
 	AccountLogService accountLogService;
 
-	protected static Logger logger = Logger.getLogger(ComputeWorker.class);
+	protected static Logger logger = Logger.getLogger(VmwareComputeWorker.class);
 
 	@Async
 	public void restartCompute(final Infra infra, final int instancePId,
@@ -102,15 +105,17 @@ public class VmwareComputeWorker extends Worker {
 			
 		VcloudClient vcloudClient = getVcloudClient(infra);
 		InstanceP currentCompute = InstanceP.findInstanceP(instancePId);
-		String instanceHref = currentCompute.getInstanceId();
+		String instanceHref = currentCompute.getVcloudVappHref();
 		ReferenceType vappRefType = new ReferenceType();
 		vappRefType.setHref(instanceHref);
 		Vapp vapp = Vapp.getVappByReference(vcloudClient, vappRefType);
+		
 			
 			currentCompute.setState(Commons.REQUEST_STATUS.RESTARTING+ "");
 			currentCompute = currentCompute.merge();
-				
-		vapp.reboot().waitForTask(-1);
+			//reboot does nto work	
+		//vapp.reboot().waitForTask(-1);
+			vapp.reset().waitForTask(-1);
 
 			if(Vapp.getVappByReference(vcloudClient, vapp.getReference()).getVappStatus() == VappStatus.POWERED_ON){
 				currentCompute.setState(Commons.REQUEST_STATUS.running+ "");
@@ -145,7 +150,8 @@ public class VmwareComputeWorker extends Worker {
 			
 
 		} catch (Exception e) {
-			logger.error(e.getMessage());// e.printStackTrace();
+			logger.error(e.getMessage());
+			e.printStackTrace();
 			accountLogService
 					.saveLog(
 							"Error in "
@@ -179,20 +185,20 @@ public class VmwareComputeWorker extends Worker {
 					Commons.task_status.SUCCESS.ordinal(), userId);
 			
 			VcloudClient vcloudClient = getVcloudClient(infra);
-			InstanceP currentCompute = InstanceP.findInstanceP(instancePId);
-			String instanceHref = currentCompute.getInstanceId();
+			instanceP = InstanceP.findInstanceP(instancePId);
+			String instanceHref = instanceP.getVcloudVappHref();
 			ReferenceType vappRefType = new ReferenceType();
 			vappRefType.setHref(instanceHref);
 			Vapp vapp = Vapp.getVappByReference(vcloudClient, vappRefType);
 				
-				currentCompute.setState(Commons.REQUEST_STATUS.STARTING+ "");
-				currentCompute = currentCompute.merge();
+			instanceP.setState(Commons.REQUEST_STATUS.STARTING+ "");
+			instanceP = instanceP.merge();
 			
 			vapp.deploy(true, 0, false).waitForTask(-1);
 
 			if(Vapp.getVappByReference(vcloudClient, vapp.getReference()).getVappStatus() == VappStatus.POWERED_ON){
-				currentCompute.setState(Commons.REQUEST_STATUS.running+ "");
-				currentCompute = currentCompute.merge();
+				instanceP.setState(Commons.REQUEST_STATUS.running+ "");
+				instanceP = instanceP.merge();
 			
 
 					accountLogService.saveLogAndSendMail(
@@ -224,7 +230,8 @@ public class VmwareComputeWorker extends Worker {
 			
 
 		} catch (Exception e) {
-			logger.error(e.getMessage());// e.printStackTrace();
+			logger.error(e.getMessage());
+			e.printStackTrace();
 
 			accountLogService
 					.saveLog(
@@ -272,17 +279,17 @@ public class VmwareComputeWorker extends Worker {
 
 
 			VcloudClient vcloudClient = getVcloudClient(infra);
-			InstanceP currentCompute = InstanceP.findInstanceP(instancePId);
-			String instanceHref = currentCompute.getInstanceId();
+			instanceP = InstanceP.findInstanceP(instancePId);
+			String instanceHref = instanceP.getVcloudVappHref();
 			ReferenceType vappRefType = new ReferenceType();
 			vappRefType.setHref(instanceHref);
 			Vapp vapp = Vapp.getVappByReference(vcloudClient, vappRefType);
 				
-				currentCompute.setState(Commons.REQUEST_STATUS.SHUTTING_DOWN+ "");
-				currentCompute = currentCompute.merge();
-			
-				vapp.undeploy(UndeployPowerActionType.SHUTDOWN).waitForTask(-1);
-			
+			instanceP.setState(Commons.REQUEST_STATUS.STOPPING+ "");
+			instanceP = instanceP.merge();
+				
+				Vapp.getVappByReference(vcloudClient, vapp.getReference()).undeploy(UndeployPowerActionType.POWEROFF).waitForTask(-1);
+				
 			if(Vapp.getVappByReference(vcloudClient, vapp.getReference()).getVappStatus() == VappStatus.POWERED_OFF){
 			
 					instanceP.setState(Commons.REQUEST_STATUS.STOPPED + "");
@@ -301,7 +308,8 @@ public class VmwareComputeWorker extends Worker {
 			
 
 		} catch (Exception e) {
-			logger.error(e.getMessage());// e.printStackTrace();
+			logger.error(e.getMessage());
+			e.printStackTrace();
 
 			accountLogService
 					.saveLog(
@@ -334,7 +342,7 @@ public class VmwareComputeWorker extends Worker {
 		try {
 
 			logger.info("terminateCompute " + infra.getCompany().getName()
-					+ " instance : " + instancePId);
+					+ " instance : " + instancePId+" for infra "+infra.getName());
 			accountLogService.saveLog(
 					"Started: "
 							+ this.getClass().getName()
@@ -347,7 +355,11 @@ public class VmwareComputeWorker extends Worker {
 			
 			VcloudClient vcloudClient = getVcloudClient(infra);
 			InstanceP currentCompute = InstanceP.findInstanceP(instancePId);
-			String instanceHref = currentCompute.getInstanceId();
+			
+			String instanceHref = currentCompute.getVcloudVappHref();
+			if(instanceHref == null){
+				throw new Exception("Looks like the vappRef is null, if this is an imported vapp, please delete it manually at the cloud");
+			}
 			ReferenceType vappRefType = new ReferenceType();
 			vappRefType.setHref(instanceHref);
 			Vapp vapp = Vapp.getVappByReference(vcloudClient, vappRefType);
@@ -357,16 +369,26 @@ public class VmwareComputeWorker extends Worker {
 			currentCompute.merge();
 			
 				try {
-					vapp.undeploy(UndeployPowerActionType.SHUTDOWN).waitForTask(-1);
+					Vapp.getVappByReference(vcloudClient, vapp.getReference()).undeploy(UndeployPowerActionType.POWEROFF).waitForTask(-1);
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error(e.getMessage());
+					logger.info("is this already shutdown?, will try to delete.");
+				//e.printStackTrace();
 				}
+				
+				
+				logger.info("*****************************************  Vapp.getVappByReference(vcloudClient, vapp.getReference()).getVappStatus().toString() = "+Vapp.getVappByReference(vcloudClient, vapp.getReference()).getVappStatus().toString());
 				
 				try {
 					Vapp.getVappByReference(vcloudClient, vapp.getReference()).delete().waitForTask(-1);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				} catch (Exception e) {logger.error(e.getMessage());
+				e.printStackTrace();}
+				
+				
+				
+				
+				
+				
 				//test whether you can get access to this vapp, if not then delete is successfull.
 				
 				try {
@@ -374,12 +396,15 @@ public class VmwareComputeWorker extends Worker {
 						logger.info("Still not deleted "+vapp.getReference().getName());
 					}
 				} catch (VCloudException e) {
+					//e.printStackTrace();
+					logger.info(e.getMessage());
 					if (e.getMessage()!=null && e.getMessage().contains("No access to entity")){
 						
+						System.out.println("instancePId = "+instancePId);
 					
-				InstanceP instanceP = InstanceP
-						.findInstancePsByInstanceIdEquals(instancePId+"")
-						.getSingleResult();
+				InstanceP instanceP = InstanceP.findInstanceP(instancePId);
+						/*.findInstancePsByInstanceIdEquals(instancePId+"")
+						.getSingleResult();*/
 				
 					instanceP.setState(Commons.REQUEST_STATUS.TERMINATED + "");
 					instanceP.merge();
@@ -412,7 +437,8 @@ public class VmwareComputeWorker extends Worker {
 			}
 
 		} catch (Exception e) {
-			logger.error(e.getMessage()); // e.printStackTrace();
+			logger.error(e.getMessage()); 
+			e.printStackTrace();
 
 			accountLogService
 					.saveLog(
@@ -448,9 +474,9 @@ public class VmwareComputeWorker extends Worker {
 		try {
 			VcloudClient vcloudClient = getVcloudClient(infra);
 			
-			String vappTemplateHref =instance.getImageId();
-			String vappName = instance.getName()+"_VAPP";
-			String vmNameLocal =instance.getName()+"_VM";
+			String vappTemplateHref =instance.getImage().getImageLocation();
+			String vappName = instance.getName();
+			String vmNameLocal =instance.getName();
 			//String orgName ="mycloudportal";
 			String vAppNetworkName=instance.getGroupName();
 			String fenceMode="bridged";
@@ -465,9 +491,9 @@ public class VmwareComputeWorker extends Worker {
 			String groupName = instance.getGroupName();
 			String instanceType = instance.getInstanceType();*/
 
-			logger.info("Launching " + infra.getCompany().getName()
+			logger.info("Launching for comapny " + infra.getCompany().getName()
 					+ " instance " + instance.getId() + " for image: "
-					+ vappTemplate.getResource().getName() +" with ID "+vappTemplate.getResource().getId());
+					+ vappTemplate.getResource().getName() +" with ID "+vappTemplate.getResource().getId()+" for infra "+infra.getName());
 			accountLogService.saveLog(
 					"Started: "
 							+ this.getClass().getName()
@@ -509,7 +535,7 @@ public class VmwareComputeWorker extends Worker {
 			sections.add(new ObjectFactory().createNetworkConfigSection(networkConfigSectionType));
 
 			InstantiateVAppTemplateParamsType instVappTemplParamsType = new InstantiateVAppTemplateParamsType();
-			System.out.println("vappName = "+vappName);
+			
 			instVappTemplParamsType.setName(vappName);
 			instVappTemplParamsType.setSource(vappTemplate.getReference());
 			
@@ -522,7 +548,7 @@ public class VmwareComputeWorker extends Worker {
 			
 			instanceLocal = InstanceP.findInstanceP(instance.getId());
 			
-			instanceLocal.setInstanceId(newVapp.getResource().getHref());
+			instanceLocal.setInstanceId(newVapp.getResource().getId());
 			instanceLocal.setLaunchTime(new Date());
 			instanceLocal.setState(Commons.REQUEST_STATUS.STARTING + "");
 			instanceLocal = instanceLocal.merge();
@@ -539,7 +565,8 @@ public class VmwareComputeWorker extends Worker {
 						task.waitForTask(10000);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error(e.getMessage());
+					//e.printStackTrace();
 				}
 			}//end while
 
@@ -562,16 +589,20 @@ public class VmwareComputeWorker extends Worker {
 	          }
 	        
 	          String ipAddress ="";
-	          
+	        
+	          newVapp = Vapp.getVappByReference(vcloudClient, newVapp.getReference());
 			List<VM> vms = newVapp.getChildrenVms();
 			for (Iterator iterator2 = vms.iterator(); iterator2.hasNext(); ) {
 				try {
 					VM vm = (VM) iterator2.next();
-					String vmId = vm.getResource().getHref();
+					String vmId = vm.getResource().getId();
 					String vmName = vm.getResource().getName() +" ("+newVapp.getResource().getName()+")";
 					boolean isDeployed = vm.isDeployed();
-					int noOfCpus = vm.getCpu().getNoOfCpus();
-					int memorySizeGB = vm.getMemory().getMemorySize().intValue()/1024;
+					double noOfCpus = vm.getCpu().getNoOfCpus();
+					double d1 = new BigDecimal(vm.getMemory().getMemorySize().toString()).doubleValue();
+					double d2 = new BigDecimal("1024").doubleValue();
+					
+					double memorySizeGB = d1/d2;
 					String vmStatus = vm.getVMStatus().name();
 					
 					logger.info("Name ="+vm.getResource().getName()+" isDeployed = " 
@@ -582,17 +613,25 @@ public class VmwareComputeWorker extends Worker {
 							HashMap<Integer, String>  ipAddreses = vm.getIpAddressesById();
 									Set<Integer> keys = ipAddreses.keySet();
 							for (Iterator iterator25 = keys.iterator(); iterator25.hasNext();) {
-								Integer integer = (Integer) iterator25.next();
-								System.out.println("ipAddreses.get(integer) "+ipAddreses.get(integer));
-								ipAddress=ipAddress+ipAddreses.get(integer)+",";
+								try {
+									Integer integer = (Integer) iterator25.next();
+									logger.info("ipAddreses.get(integer) "+ipAddreses.get(integer));
+									ipAddress=ipAddress+ipAddreses.get(integer)+",";
+								} catch (Exception e) {
+									logger.error(e.getMessage());
+								}
 							}
 							
 						ipAddress = StringUtils.removeEnd(ipAddress, ",");
 							
 							List<VirtualNetworkCard> cards = vm.getNetworkCards();
 							for (Iterator iterator3 = cards.iterator(); iterator3.hasNext();) {
-								VirtualNetworkCard virtualNetworkCard = (VirtualNetworkCard) iterator3.next();
-								System.out.println("virtualNetworkCard.getIpAddress() = "+virtualNetworkCard.getIpAddress());
+								try {
+									VirtualNetworkCard virtualNetworkCard = (VirtualNetworkCard) iterator3.next();
+									logger.info("virtualNetworkCard.getIpAddress() = "+virtualNetworkCard.getIpAddress());
+								} catch (Exception e) {
+									logger.error(e.getMessage());
+								}
 							}
 							
 							String platformVendor = "";
@@ -600,12 +639,13 @@ public class VmwareComputeWorker extends Worker {
 							
 							try {
 								if(vm.getPlatformSection() !=null){
-									System.out.println("vm.getPlatformSection().getVendor() = "+vm.getPlatformSection().getVendor().getValue());
-									System.out.println("vm.getPlatformSection().getVersion() = "+vm.getPlatformSection().getVersion().getValue());
+									logger.info("vm.getPlatformSection().getVendor() = "+vm.getPlatformSection().getVendor().getValue());
+									logger.info("vm.getPlatformSection().getVersion() = "+vm.getPlatformSection().getVersion().getValue());
 									platformVendor = vm.getPlatformSection().getVendor().getValue();
 									platformVersion = vm.getPlatformSection().getVersion().getValue();
 								}	
 							} catch (Exception e) {
+								logger.error(e.getMessage());
 								//e.printStackTrace();
 							}
 							
@@ -613,17 +653,18 @@ public class VmwareComputeWorker extends Worker {
 							String osVersion ="";
 							try {
 								if(vm.getOperatingSystemSection() !=null){
-									System.out.println("vm.getOperatingSystemSection().getDescription() = "+vm.getOperatingSystemSection().getDescription().getValue());
-									System.out.println("vm.getOperatingSystemSection().getVersion() = "+vm.getOperatingSystemSection().getVersion());
+									logger.info("vm.getOperatingSystemSection().getDescription() = "+vm.getOperatingSystemSection().getDescription().getValue());
+									logger.info("vm.getOperatingSystemSection().getVersion() = "+vm.getOperatingSystemSection().getVersion());
 									osName=vm.getOperatingSystemSection().getDescription().getValue();
 									osVersion = vm.getOperatingSystemSection().getVersion();
 								}	
 							} catch (Exception e) {
+								logger.error(e.getMessage());
 								//e.printStackTrace();
 							}
 							
 							List<VirtualDisk> vdisks = vm.getDisks();
-							int diskSizeGB = 0;
+							double diskSizeGB = 0;
 							String instanceType="";
 							try {
 							for (Iterator iterator5 = vdisks.iterator(); iterator5.hasNext();) {
@@ -636,13 +677,25 @@ public class VmwareComputeWorker extends Worker {
 							}
 							
 							} catch (Exception e) {
+								logger.error(e.getMessage());
+								//e.printStackTrace();
 								// TODO: handle exception
 							}	
 							instanceType = "vCloud (RAM "+memorySizeGB+" GB, CPU "+noOfCpus+" , HD "+diskSizeGB+" GB)";
 							
 							
-							instanceLocal.setImageId(newVapp.getResource().getName());
+							instanceLocal.setImage(instance.getImage());
 							instanceLocal.setDnsName(ipAddress);
+							instanceLocal.setIpAddress(ipAddress);
+							instanceLocal.setPrivateIpAddress(ipAddress);
+							
+							instanceLocal.setVcloudVmHref(vm.getReference().getHref());
+							instanceLocal.setVcloudVappHref(newVapp.getReference().getHref());
+							
+							instanceLocal.setVcloudCpu(noOfCpus);
+							instanceLocal.setVcloudRamGb(memorySizeGB);
+							instanceLocal.setVcloudDiskGb(diskSizeGB);
+							
 							instanceLocal.setState(vmStatus);
 							instanceLocal.setKeyName("no_key_vmware");
 							instanceLocal.setInstanceType(instanceType);
@@ -650,8 +703,8 @@ public class VmwareComputeWorker extends Worker {
 							instanceLocal.setPrivateDnsName(ipAddress);
 							instanceLocal.setLaunchTime(vappCreationDate);
 							instanceLocal.setStateCode(vmStatus);
-							instanceLocal.setPrivateIpAddress(ipAddress);
-							instanceLocal.setIpAddress(ipAddress);
+							
+							
 							instanceLocal.setArchitecture(osName);
 							instanceLocal.setVirtualizationType(platformVendor);
 							instanceLocal.setState(Commons.REQUEST_STATUS.running + "");

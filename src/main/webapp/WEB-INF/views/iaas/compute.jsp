@@ -120,7 +120,6 @@
 			var state = '';
 			if(p[i].state !=null)
 				{state = p[i].state;}
-			
 			var actions =
 				'<img class="clickimg" title="Edit" alt="Edit" src=/images/edit.png onclick=edit_compute('+p[i].id+')>&nbsp; '+
                 '<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>'
@@ -130,11 +129,28 @@
 				//Euca 2.0 does not impl stop and reboot
 				//actions='<img alt="Edit" src=../images/stop.png onclick=stop_compute('+p[i].id+')>&nbsp; '+
                 //'<img alt="Edit" src=../images/restart.png onclick=restart_compute('+p[i].id+')>&nbsp; '+
-                actions='<img class="clickimg" title="terminate" alt="terminate" src=/images/terminate.png onclick=terminate_compute('+p[i].id+')>&nbsp; ';
+				if(p[i].instanceType,p[i].asset.productCatalog.infra.infraType.id == INFRA_TYPE_VCLOUD){
+					actions='<img class="clickimg" title="terminate" alt="terminate" src=/images/terminate.png onclick=terminate_compute('+p[i].id+')>&nbsp; '+
+	                '<img class="clickimg" title="stop" alt="stop" src=/images/stop.png onclick=stop_compute('+p[i].id+')>&nbsp; '
+	                +'<img class="clickimg" title="restart" alt="restart" src=/images/restart.png onclick=restart_compute('+p[i].id+')>&nbsp; ';	
+				}else{
+					actions='<img class="clickimg" title="terminate" alt="terminate" src=/images/terminate.png onclick=terminate_compute('+p[i].id+')>&nbsp; ';
+				}
+                
+                
                 //'<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>';
 			}else if('STOPPED' == state  || 'POWERED_OFF' == state){
-				actions='<img class="clickimg" title="start" alt="start" src=/images/start.png onclick=start_compute('+p[i].id+')>&nbsp; '+
-				'<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>';
+				
+				state='<img  title="Stopped" alt="Stopped" src=../images/waiting.png>&nbsp;';
+				if(p[i].instanceType,p[i].asset.productCatalog.infra.infraType.id == INFRA_TYPE_VCLOUD){
+					actions='<img class="clickimg" title="start" alt="start" src=/images/start.png onclick=start_compute('+p[i].id+')>&nbsp; '+
+					'<img class="clickimg" title="terminate" alt="terminate" src=/images/terminate.png onclick=terminate_compute('+p[i].id+')>&nbsp; ';	
+				}else{
+					actions='<img class="clickimg" title="terminate" alt="terminate" src=/images/terminate.png onclick=terminate_compute('+p[i].id+')>&nbsp; ';
+					
+				}
+			
+				
 			}else if('TERMINATED' == state || 'terminated' == state){
 				state='<img  title="Terminated" alt="Terminated" src=/images/terminated.png>&nbsp;'; 
 				actions =
@@ -146,7 +162,8 @@
 				state='<img class="clickimg" title="Pending Approval" alt="Pending Approval" src=/images/pending.png>&nbsp;';
 				 actions =
 		                '<img class="clickimg" title="Delete" alt="Delete" src=/images/deny.png onclick=remove_compute('+p[i].id+')>'
-			}else if('STARTING' == state || 'pending' == state){
+			}else if('STARTING' == state || 'pending' == state || 'RESTARTING' == state || 'STOPPING' == state || 'TERMINATING' == state){
+				
 				state='<img  title="Starting" alt="Starting" src=/images/preloader.gif>&nbsp;';
 				actions='';
 			}else if('FAILED' == state ){
@@ -161,6 +178,7 @@
 			//	if('STARTING' == state || 'RESTARTING' == state || 
 			//  'TERMINATING' == state  || 'SHUTTING_DOWN' == state){
 				//disable all actions here
+				state='<img title="Unknown" alt="Unknown" src=/images/unknown.png>&nbsp;';
 				actions ='<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>'
 			}
                 
@@ -168,7 +186,14 @@
 			try{
 				projName = p[i].asset.project.name;
 			}catch(e){}
-			oTable.fnAddData( [start+i+1,p[i].name, projName, p[i].instanceId, p[i].imageId, p[i].dnsName,
+			
+			var imageName = '';
+			try{
+				imageName = p[i].image.name;
+			}catch(e){}
+			
+			
+			oTable.fnAddData( [start+i+1,p[i].name, projName, p[i].instanceId, imageName, p[i].dnsName,
 			                   p[i].keyName,p[i].groupName, p[i].platform, state,
 			                   p[i].instanceType,p[i].asset.productCatalog.infra.name,
 			                   actions ] );
@@ -261,14 +286,16 @@ $(function(){
 		
 function submitForm_compute(f){
 	
-	var instancep = {  id:viewed_compute,name:null, reason:null, imageId:null, instanceType:null, keyName:null,groupName:null,product:null, projectId:null };
+	var instancep = {  id:viewed_compute,name:null, reason:null, image:{}, instanceType:null, keyName:null,groupName:null,product:null, projectId:null };
 	  dwr.util.getValues(instancep);
+	  instancep.image.id= dwr.util.getValue("image");
+	  
 	  /*var imageStr = dwr.util.getValue("imageId");
 	  if(imageStr.indexOf(',')>0){
 		  instancep.imageId=imageStr.substring(0,imageStr.indexOf(','));  
 	  } */
 	  
-	  instancep.imageId = dwr.util.getValue("imageId");
+	 // instancep.imageId = dwr.util.getValue("imageId");
 	  
 	  
 	  if(viewed_compute == -1){
@@ -288,7 +315,7 @@ function submitForm_compute(f){
 }
 
 function cancelForm_compute(f){
-	var instancep = {  id:null,name:null, reason:null, imageId:null, instanceType:null, keyName:null,groupName:null,product:null};
+	var instancep = {  id:null,name:null, reason:null, image:{}, instanceType:null, keyName:null,groupName:null,product:null};
 	  dwr.util.setValues(instancep);
 	  viewed_compute = -1;
 	  disablePopup_compute();
@@ -305,7 +332,8 @@ function afterEdit_compute(p){
 	dwr.util.setValues(instancep);
 	dwr.util.setValue('keyName',p.keyName);
 	dwr.util.setValue('product',p.product.id);
-	dwr.util.setValue('imageId',p.imageId);
+	dwr.util.setValue('image',p.image.id);
+	
 	dwr.util.setValue('groupName',p.groupName);
 	
 	//keyName product imageId groupName
@@ -438,7 +466,7 @@ function afterSave_compute(){
 								  </tr>
 								</table>
 								
-								<table style="width: 65%;" id="otherFields" cellpadding="5" cellspacing="5"></table>
+								<table style="width: 100%;" id="otherFields" cellpadding="5" cellspacing="5"></table>
 								</p>
 							</form>
 						</div>
@@ -451,18 +479,18 @@ function afterSave_compute(){
 		var productCatId = parseInt($("#product").val());
 		$("#otherFields").html('');
 		ProductService.findById(productCatId, function(s){
-			if(s.infra.infraType.id == 1 || s.infra.infraType.id == 2){
+			if(s.infra.infraType.id == INFRA_TYPE_EUCA || s.infra.infraType.id == INFRA_TYPE_AWS){
 				tabEle = '<tr><td style=\"width: 50%;\">Name : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"61\" maxlength=\"90\" class=\"required\"><\/td>  <\/tr>'
 					+'<tr><td style=\"width: 50%;\">Reason : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"reason\" id=\"reason\" maxlength=\"90\" size=\"61\"><\/td>  <\/tr>'
-					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><input type=\"text\" id=\"imageId\" size=\"61\" class=\"required\">\n<\/td>  <\/tr>' 
+					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><select id=\"image\" name=\"image\" style=\"width: 385px;\" class=\"required\"></select>\n<\/td>  <\/tr>' 
 					+'<tr><td style=\"width: 50%;\">Type : <\/td><td style=\"width: 50%;\"><select id=\"instanceType\" name=\"instanceType\" style=\"width: 385px;\" class=\"required\"><option value=\"m1.small\">m1.small<\/option><option value=\"m1.large\">m1.large<\/option><option value=\"m1.xlarge\">m1.xlarge<\/option><option value=\"c1.medium\">c1.medium <\/option><option value=\"c1.xlarge\">c1.xlarge<\/option>\n<\/select>\n<\/td>  <\/tr>'
 					+'<tr><td style=\"width: 50%;\">Key : <\/td><td style=\"width: 50%;\"><select id=\"keyName\" name=\"keyName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
 					+'<tr><td style=\"width: 50%;\">Security Group : <\/td><td style=\"width: 50%;\"><select id=\"groupName\" name=\"groupName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td><\/tr>'
 					+'<tr><td style=\"width: 50%;\">project : <\/td><td style=\"width: 50%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
 					+'<tr><td style=\"width: 50%;\"><\/td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_compute_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_compute(this.form);return false;\">Cancel<\/button><\/div><\/td>  <\/tr>';
-			}else if(s.infra.infraType.id == 3){
+			}else if(s.infra.infraType.id == INFRA_TYPE_VCLOUD){
 				tabEle = '<tr><td style=\"width: 50%;\">Name : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"61\" maxlength=\"90\" class=\"required\"><\/td>  <\/tr>'
-					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><input type=\"text\" id=\"imageId\" size=\"61\" class=\"required\">\n<\/td>  <\/tr>' 
+					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><select id=\"image\" name=\"image\" style=\"width:385px;\" class=\"required\"></select>\n<\/td>  <\/tr>' 
 					+'<tr><td style=\"width: 50%;\">Security Group : <\/td><td style=\"width: 50%;\"><select id=\"groupName\" name=\"groupName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td><\/tr>'
 					+'<tr><td style=\"width: 50%;\">project : <\/td><td style=\"width: 50%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
 					+'<tr><td style=\"width: 50%;\"><\/td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_compute_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_compute(this.form);return false;\">Cancel<\/button><\/div><\/td>  <\/tr>';
@@ -506,7 +534,14 @@ function afterSave_compute(){
 				});
 			});
 			
-			jQuery('#imageId').autocomplete({
+			var text2Search = dwr.util.getValue("SearchField");
+			ImageDescriptionP.findAll(s.infra, 0,100,text2Search,function(p){
+				dwr.util.removeAllOptions('image');
+				dwr.util.addOptions('image', p, 'id', 'imageDesc');
+				//dwr.util.setValue(id, sel);
+			});
+			
+			/* jQuery('#imageId').autocomplete({
 			    source : function(request, response) {
 			    	var text2Search = $('#imageId').val() ;
 			    	ImageDescriptionP.findAll(s.infra, 0,100,text2Search,  function(data) {
@@ -518,7 +553,7 @@ function afterSave_compute(){
 			            
 			        });
 			    }
-			});
+			}); */
 		});
 	} );
 </script>
