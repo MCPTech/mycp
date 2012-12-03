@@ -13,7 +13,7 @@
 <table align="center" width="95%" ><!-- just for border -->
 <tr><td>
 	  						
-							<table align="center" width="100%"  id="resourceUsage" >
+							<table align="center" width="100%"  id="resourceUsage">
 							<thead>
 								<tr style="background-color: black;color: white;">
 									<td>Type</td>
@@ -53,8 +53,8 @@ while( deptHashKeys.hasMoreElements() ) {
 		totalCost = totalCost+asset.getCost();
 %>
 							<tr >
-								<td></td>
-								<td><%=asset.getAssetType().getName() %> - <%=asset.getAssetDetails() %> - <%=asset.getAssetType().getName() %></td>
+								<td><%=asset.getAssetType().getName() %></td>
+								<td width="40%"><%=asset.getAssetDetails() %></td>
 								<td><%=asset.getUser().getEmail()%></td>
 								<td><%=formatter.format(asset.getStartTime()) %></td>
 								<td><%

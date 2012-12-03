@@ -69,7 +69,10 @@ public class VolumeService {
 	@RemoteMethod
 	public VolumeInfoP requestVolume(VolumeInfoP volume) {
 		try {
-
+		
+			
+/*
+<<<<<<< HEAD
 			AssetType assetTypeVolume = AssetType.findAssetTypesByNameEquals("Volume").getSingleResult();
 			User currentUser = Commons.getCurrentUser();
 			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
@@ -81,6 +84,24 @@ public class VolumeService {
 			volume = volume.merge();
 			if (true == assetTypeVolume.getWorkflowEnabled()) {
 				Commons.createNewWorkflow(workflowService.createProcessInstance(Commons.PROCESS_DEFN.Volume_Request + ""), volume.getId(), asset.getAssetType().getName());
+=======*/
+			AssetType assetType = AssetType.findAssetTypesByNameEquals(
+					"Volume").getSingleResult();
+			User currentUser = Commons.getCurrentUser();
+			
+			currentUser = User.findUser(currentUser.getId());
+			Company company = currentUser.getDepartment().getCompany();
+			Asset asset = Commons.getNewAsset(assetType, currentUser,volume.getProduct(), reportService,company);
+			asset.setProject(Project.findProject(volume.getProjectId()));
+			volume.setAsset(asset);
+			volume = volume.merge();
+			if (true == assetType.getWorkflowEnabled()) {
+				Commons.createNewWorkflow(
+						workflowService
+								.createProcessInstance(Commons.PROCESS_DEFN.Volume_Request
+										+ ""), volume.getId(), asset
+								.getAssetType().getName());
+//>>>>>>> origin/development
 				volume.setStatus(Commons.WORKFLOW_STATUS.PENDING_APPROVAL + "");
 				volume = volume.merge();
 

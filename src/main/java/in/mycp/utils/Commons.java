@@ -19,10 +19,13 @@ import in.mycp.domain.AccountLog;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
+import in.mycp.domain.Department;
 import in.mycp.domain.ProductCatalog;
+import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.domain.Workflow;
 import in.mycp.domain.AccountLogTypeDTO;
+import in.mycp.remote.ReportService;
 import in.mycp.web.MycpSession;
 
 import java.lang.reflect.Field;
@@ -150,6 +153,8 @@ public class Commons {
 	
 	public static String QUOTA_EXCEED_MSG = "Quota Exceeded.";
 	
+	public static String QUOTA_ABOVETO_EXCEED_MSG = "Quota Above Exceed.";
+	
 	public static int PRIVATE_CLOUD_EDITION_ENABLED=1;
 	public static int HOSTED_EDITION_ENABLED=2;
 	public static int SERVICE_PROVIDER_EDITION_ENABLED=3;
@@ -173,14 +178,44 @@ public class Commons {
 		return fieldList;
 	}
 
-	public static Asset getNewAsset(AssetType at, User currentUser, String productCatalogId, long allAssetTotalCosts, Company company) throws Exception {
+	public static Asset getNewAsset(AssetType at, User currentUser, String productCatalogId, ReportService reportService , Company company) throws Exception {
+		currentUser = User.findUser(currentUser.getId());
+		Department department = currentUser.getDepartment();
+		long companyAssetCost = reportService.getAllAssetCosts("company", company.getId()).getTotalCost();
+		if(company.getQuota()>0){
+			if( company.getQuota()-companyAssetCost <= company.getMinBal() ){
+				throw new Exception("Company "+Commons.QUOTA_EXCEED_MSG);
+			}
+		}
+		long userAssetCost = reportService.getAllAssetCosts("user", currentUser.getId()).getTotalCost();
+		if(currentUser.getQuota()<=userAssetCost)
+			throw new Exception("User "+Commons.QUOTA_EXCEED_MSG);
+		long deptAssetCost = reportService.getAllAssetCosts("department", department.getId()).getTotalCost();
+		if(department.getQuota()<=deptAssetCost)
+			throw new Exception("Department "+Commons.QUOTA_EXCEED_MSG);
+		Set<Project> stProjects = department.getProjects();
+		for (Project project : stProjects) {
+			long projAssetCost = reportService.getAllAssetCosts("project", project.getId()).getTotalCost();
+			if(project.getQuota()<=projAssetCost)
+				throw new Exception("Project "+Commons.QUOTA_EXCEED_MSG);
+		}
+		/*long minQuota = Math.round(0.1 * currentUser.getQuota());
+		if(currentUser.getQuota()>0 && currentUser.getQuota()-userAssetCost <= minQuota)
+			throw new Exception("User "+Commons.QUOTA_EXCEED_MSG);
+		long deptAssetCost = reportService.getAllAssetCosts("department", department.getId()).getTotalCost();
+		minQuota = Math.round(0.1 * department.getQuota());
+		if(department.getQuota()>0 && (department.getQuota()-deptAssetCost <= minQuota))
+			throw new Exception("Department "+Commons.QUOTA_EXCEED_MSG);
+		Set<Project> stProjects = department.getProjects();
+		for (Project project : stProjects) {
+			long projAssetCost = reportService.getAllAssetCosts("project", project.getId()).getTotalCost();
+			minQuota = Math.round(0.1 * project.getQuota());
+			if(project.getQuota()>0 && (project.getQuota()-projAssetCost <= minQuota))
+				throw new Exception("Project "+Commons.QUOTA_EXCEED_MSG);
+		}*/
+		
 		Asset asset = new Asset();
 		asset.setActive(true);
-		
-		System.out.println(company);
-		if(company.getQuota()>0 && (company.getQuota()-allAssetTotalCosts <= company.getMinBal())){
-			throw new Exception(QUOTA_EXCEED_MSG);
-		}
 		asset.setStartTime(new Date());
 		asset.setAssetType(at);
 		asset.setDetails("from mycp");

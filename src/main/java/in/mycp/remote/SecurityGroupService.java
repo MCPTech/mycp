@@ -112,7 +112,7 @@ public class SecurityGroupService {
 				}
 			}
 
-			AssetType assetTypeSecurityGroup = AssetType
+			AssetType assetType = AssetType
 					.findAssetTypesByNameEquals(
 							Commons.ASSET_TYPE.SecurityGroup + "")
 					.getSingleResult();
@@ -121,17 +121,14 @@ public class SecurityGroupService {
 						.getId());
 			} else {
 				User currentUser = Commons.getCurrentUser();
-				long allAssetTotalCosts = reportService.getAllAssetCosts()
-						.getTotalCost();
+				
 				currentUser = User.findUser(currentUser.getId());
 				Company company = currentUser.getDepartment().getCompany();
-				Asset asset = Commons.getNewAsset(assetTypeSecurityGroup,
-						currentUser, instance.getProduct(), allAssetTotalCosts,
-						company);
+				Asset asset = Commons.getNewAsset(assetType, currentUser,instance.getProduct(), reportService,company);
 				asset.setProject(Project.findProject(instance.getProjectId()));
 				instance.setAsset(asset);
 
-				if (true == assetTypeSecurityGroup.getWorkflowEnabled()) {
+				if (true == assetType.getWorkflowEnabled()) {
 					instance.setStatus(Commons.WORKFLOW_STATUS.PENDING_APPROVAL
 							+ "");
 					instance = instance.merge();
@@ -143,7 +140,7 @@ public class SecurityGroupService {
 							workflowService
 									.createProcessInstance(Commons.PROCESS_DEFN.SecGroup_Request
 											+ ""), instance.getId(),
-							assetTypeSecurityGroup.getName());
+							assetType.getName());
 
 				} else {
 					

@@ -27,6 +27,22 @@ import org.directwebremoting.annotations.DataTransferObject;
 @DataTransferObject
 public class DashboardDTO {
 
+	@Override
+	public String toString() {
+		return "DashboardDTO [instanceCount=" + instanceCount + ", volCount="
+				+ volCount + ", keyPairCount=" + keyPairCount
+				+ ", snapshotCount=" + snapshotCount + ", ipCount=" + ipCount
+				+ ", secGroupCount=" + secGroupCount + ", imageCount="
+				+ imageCount + ", cloudName=" + cloudName + ", accounts="
+				+ accounts + ", departments=" + departments + ", projects="
+				+ projects + ", users=" + users + ", clouds=" + clouds
+				+ ", products=" + products + ", computeCost=" + computeCost
+				+ ", volumeCost=" + volumeCost + ", ipaddressCost="
+				+ ipaddressCost + ", secgroupCost=" + secgroupCost
+				+ ", snapshotCost=" + snapshotCost + ", imageCost=" + imageCost
+				+ ", keyCost=" + keyCost + ", totalCost=" + totalCost
+				+ ", currency=" + currency + "]";
+	}
 	int instanceCount = 0;
 	int volCount = 0;
 	int keyPairCount = 0;

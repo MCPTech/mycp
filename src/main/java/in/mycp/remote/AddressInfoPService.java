@@ -78,8 +78,7 @@ public class AddressInfoPService {
 					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment().getCompany();
-			Asset asset = Commons.getNewAsset(assetType, currentUser,
-					productId, allAssetTotalCosts, company);
+			Asset asset = Commons.getNewAsset(assetType, currentUser,instance.getProduct(), reportService,company);
 			asset.setProject(Project.findProject(projectId));
 			asset.setActive(false);
 			instance.setAsset(asset);

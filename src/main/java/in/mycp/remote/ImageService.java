@@ -157,22 +157,19 @@ public class ImageService {
 		try {
 			String instanceIdForImgCreation = instance
 					.getInstanceIdForImgCreation();
-			AssetType assetTypeImageDescription = AssetType
+			AssetType assetType = AssetType
 					.findAssetTypesByNameEquals(
 							"" + Commons.ASSET_TYPE.ComputeImage)
 					.getSingleResult();
 			User currentUser = Commons.getCurrentUser();
 
-			long allAssetTotalCosts = reportService.getAllAssetCosts()
-					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment()
 					.getCompany();
-			Asset asset = Commons.getNewAsset(assetTypeImageDescription,
-					currentUser, "", allAssetTotalCosts, company);
+			Asset asset = Commons.getNewAsset(assetType, currentUser,"", reportService,company);
 			instance.setAsset(asset);
 			instance = instance.merge();
-			if (true == assetTypeImageDescription.getWorkflowEnabled()) {
+			if (true == assetType.getWorkflowEnabled()) {
 
 				accountLogService.saveLog("Image '"+instance.getName()+"' with ID " + instance.getId()
 						+ " requested, workflow started, pending approval.",

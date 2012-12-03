@@ -65,6 +65,13 @@ public class ProjectService {
 					Commons.task_name.PROJECT.name(),
 					Commons.task_status.SUCCESS.ordinal(), Commons
 							.getCurrentUser().getEmail());
+			if(instance.getId()>0){
+				Project project = findById(instance.getId());
+				if(project.getQuota().intValue() != instance.getQuota().intValue()){
+					accountLogService.saveLogAndSendMail("Project '"+instance.getName()+"' Quota updated from '"+project.getQuota()+"' to '"+instance.getQuota()+"'", "Project '"+instance.getName()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+				}
+			}
+			
 			return instance.merge();
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();

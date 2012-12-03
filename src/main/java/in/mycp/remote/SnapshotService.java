@@ -126,20 +126,18 @@ public class SnapshotService {
 	public SnapshotInfoP requestSnapshot(SnapshotInfoP snapshotInfoP) {
 		try {
 
-			AssetType assetTypeSnapshot = AssetType.findAssetTypesByNameEquals(
+			AssetType assetType = AssetType.findAssetTypesByNameEquals(
 					"" + Commons.ASSET_TYPE.VolumeSnapshot).getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			long allAssetTotalCosts = reportService.getAllAssetCosts()
-					.getTotalCost();
+			
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment().getCompany();
-			Asset asset = Commons.getNewAsset(assetTypeSnapshot, currentUser,
-					snapshotInfoP.getProduct(), allAssetTotalCosts, company);
+			Asset asset = Commons.getNewAsset(assetType, currentUser,snapshotInfoP.getProduct(), reportService,company);
 			asset.setProject(Project.findProject(snapshotInfoP.getProjectId()));
 			snapshotInfoP.setAsset(asset);
 			snapshotInfoP = snapshotInfoP.merge();
 			VolumeInfoP volumeInfoP = volumeService.findById( Integer.parseInt(snapshotInfoP.getVolumeId()) );
-			if (true == assetTypeSnapshot.getWorkflowEnabled()) {
+			if (true == assetType.getWorkflowEnabled()) {
 				accountLogService
 						.saveLogAndSendMail(
 								"Snapshot for volume '"+volumeInfoP.getName()+"("+volumeInfoP.getId()+")' with ID "
