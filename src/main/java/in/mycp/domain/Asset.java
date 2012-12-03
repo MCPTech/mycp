@@ -4,6 +4,8 @@ import java.util.Date;
 import javax.persistence.EntityManager;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.roo.addon.dbre.RooDbManaged;
 import org.springframework.roo.addon.javabean.RooJavaBean;
@@ -108,7 +110,8 @@ public class Asset {
     }
 
     public String getAssetDetails() {
-        return assetDetails;
+    	return StringUtils.replace(assetDetails, "null", "");
+        //return assetDetails;
     }
 
     public void setAssetDetails(String assetDetails) {

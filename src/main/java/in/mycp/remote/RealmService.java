@@ -23,7 +23,6 @@ import in.mycp.utils.Commons;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 
@@ -89,16 +87,16 @@ public class RealmService {
 			User localUser = User.findUser(instance.getId());
 			if (localUser == null) {
 				instance.setRegistereddate(new Date());
-				//instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
+				instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
 			} else {
 				if(localUser.getRegistereddate() != null)
 					instance.setRegistereddate(localUser.getRegistereddate());
 				else
 					instance.setRegistereddate(new Date());
 				instance.setLoggedInDate(localUser.getLoggedInDate());
-				/*if (!localUser.getPassword().equals(instance.getPassword())) {
+				if (!localUser.getPassword().equals(instance.getPassword())) {
 					instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
-				}*/
+				}
 			}
 			/*String[] ignoreProperties = new String[]{"id", "password", "registereddate", "loggedInDate"};
 			BeanUtils.copyProperties(instance, localUser, ignoreProperties);*/
@@ -111,6 +109,12 @@ public class RealmService {
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
 			
+			if(instance.getId()>0){
+				User user = findById(instance.getId());
+				if(user.getQuota().intValue() != instance.getQuota().intValue()){
+					accountLogService.saveLogAndSendMail("User '"+instance.getEmail()+"' Quota updated from '"+user.getQuota()+"' to '"+instance.getQuota()+"'", "User '"+instance.getEmail()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+				}
+			}
 			return instance.merge();
 		} catch (Exception e) {
 			log.error(e.getMessage());//e.printStackTrace();

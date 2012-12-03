@@ -50,8 +50,8 @@ while( deptHashKeys.hasMoreElements() ) {
 		totalCost = totalCost+asset.getCost();
 %>
 							<tr >
-								<td></td>
-								<td><%=asset.getAssetType().getName() %> - <%=asset.getAssetDetails() %></td>
+								<td><%=asset.getAssetType().getName() %></td>
+								<td width="40%"><%=asset.getAssetDetails() %></td>
 								<td><%=asset.getUser().getEmail()%></td>
 								<td><%=formatter.format(asset.getStartTime()) %></td>
 								<td><%if(asset.getEndTime() !=null){

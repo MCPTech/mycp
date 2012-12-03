@@ -17,12 +17,7 @@ package in.mycp.remote;
 
 import in.mycp.domain.Company;
 import in.mycp.domain.Department;
-import in.mycp.domain.InstanceP;
-import in.mycp.domain.Manager;
-import in.mycp.domain.Quota;
-import in.mycp.domain.User;
 import in.mycp.utils.Commons;
-import in.mycp.web.MycpSession;
 
 import java.util.List;
 
@@ -59,7 +54,12 @@ public class DepartmentService {
 					Commons.task_name.DEPARTMENT.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
-			
+			if(instance.getId()>0){
+				Department department = findById(instance.getId());
+				if(department.getQuota().intValue() != instance.getQuota().intValue()){
+					accountLogService.saveLogAndSendMail("Department '"+instance.getName()+"' Quota updated from '"+department.getQuota()+"' to '"+instance.getQuota()+"'", "Department '"+instance.getName()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+				}
+			}
 			return instance.merge();
 		} catch (Exception e) {
 			//e.printStackTrace();

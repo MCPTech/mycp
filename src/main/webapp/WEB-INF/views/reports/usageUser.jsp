@@ -13,7 +13,7 @@
 <table align="center" width="95%" ><!-- just for border -->
 <tr><td>
 	  						
-							<table  align="center" width="100%"  id="resourceUsage" >
+							<table  align="center" width="100%"  id="resourceUsage" border="0">
 							<thead>
 								<tr style="background-color: black;color: white;">
 									
@@ -50,11 +50,11 @@ while( userHashKeys.hasMoreElements() ) {
 		Asset asset = (Asset) iterator.next();
 		totalCost = totalCost+asset.getCost();
 		String projName = "";
-		try{projName = asset.getUser().getProject().getName();}catch(Exception e){}
+		try{projName = asset.getProject().getName();}catch(Exception e){}
 %>
 							<tr>
-								<td></td>
-								<td><%=asset.getAssetType().getName() %> - <%=asset.getAssetDetails() %></td>
+								<td><%=asset.getAssetType().getName() %></td>
+								<td width="40%"><%=asset.getAssetDetails() %></td>
 								<td><%=projName %></td>
 								<td><%=formatter.format( asset.getStartTime()) %></td>
 								<td><%

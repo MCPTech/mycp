@@ -19,6 +19,7 @@ import in.mycp.domain.AddressInfoP;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
+import in.mycp.domain.Department;
 import in.mycp.domain.Infra;
 import in.mycp.domain.InstanceP;
 import in.mycp.domain.ProductCatalog;
@@ -91,20 +92,20 @@ public class InstancePService {
 			//System.out.println(instance.getImageId());
 			
 			User currentUser = Commons.getCurrentUser();
-			AssetType assetTypeComputeInstance = AssetType.findAssetTypesByNameEquals(Commons.ASSET_TYPE.ComputeInstance + "")
-					.getSingleResult();
-
-			long allAssetTotalCosts = reportService.getAllAssetCosts().getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
-			Company company = currentUser.getDepartment().getCompany();
-			Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser,instance.getProduct(), allAssetTotalCosts,company);
+			Department department = currentUser.getDepartment();
+			Company company = department.getCompany();
+			AssetType assetType = AssetType.findAssetTypesByNameEquals(Commons.ASSET_TYPE.ComputeInstance + "")
+					.getSingleResult();
+			
+			Asset asset = Commons.getNewAsset(assetType, currentUser,instance.getProduct(), reportService,company);
 			asset.setProject(Project.findProject(instance.getProjectId()));
 			instance.setAsset(asset);
 			instance = instance.merge();
 			Set<InstanceP> instances = new HashSet<InstanceP>();
 			instances.add(instance);
 
-			if (true == assetTypeComputeInstance.getWorkflowEnabled()) {
+			if (true == assetType.getWorkflowEnabled()) {
 				Commons.createNewWorkflow(workflowService.createProcessInstance(Commons.PROCESS_DEFN.Compute_Request
 						+ ""), instance.getId(), asset.getAssetType().getName());
 				instance.setState(Commons.WORKFLOW_STATUS.PENDING_APPROVAL + "");
@@ -126,7 +127,7 @@ public class InstancePService {
 			e.printStackTrace();
 			Commons.setSessionMsg("Error while requestCompute Instance "+instance.getName()
 					+"<br> Reason: "+e.getMessage());
-			accountLogService.saveLogAndSendMail("Error in Compute '"+instance.getName()+"' request with ID "+instance.getId()+", "+e.getMessage(), Commons.task_name.COMPUTE.name(), 
+			accountLogService.saveLogAndSendMail("Error in Compute '"+instance.getName()+"' request with ID "+(instance.getId()!=null?instance.getId():0)+", "+e.getMessage(), Commons.task_name.COMPUTE.name(), 
 					Commons.task_status.FAIL.ordinal(),Commons.getCurrentUser().getEmail());
 		}
 	}// end of requestCompute(InstanceP

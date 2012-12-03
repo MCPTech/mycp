@@ -66,19 +66,17 @@ public class VolumeService {
 	public VolumeInfoP requestVolume(VolumeInfoP volume) {
 		try {
 
-			AssetType assetTypeVolume = AssetType.findAssetTypesByNameEquals(
+			AssetType assetType = AssetType.findAssetTypesByNameEquals(
 					"Volume").getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			long allAssetTotalCosts = reportService.getAllAssetCosts()
-					.getTotalCost();
+			
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment().getCompany();
-			Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser,
-					volume.getProduct(), allAssetTotalCosts, company);
+			Asset asset = Commons.getNewAsset(assetType, currentUser,volume.getProduct(), reportService,company);
 			asset.setProject(Project.findProject(volume.getProjectId()));
 			volume.setAsset(asset);
 			volume = volume.merge();
-			if (true == assetTypeVolume.getWorkflowEnabled()) {
+			if (true == assetType.getWorkflowEnabled()) {
 				Commons.createNewWorkflow(
 						workflowService
 								.createProcessInstance(Commons.PROCESS_DEFN.Volume_Request

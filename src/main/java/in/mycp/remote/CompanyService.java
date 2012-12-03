@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -36,6 +37,9 @@ import org.directwebremoting.annotations.RemoteProxy;
 public class CompanyService {
 
 	private static final Logger log = Logger.getLogger(CompanyService.class.getName());
+	
+	@Autowired
+	AccountLogService accountLogService;
 
 	@RemoteMethod
 	public void save(Company instance) {
@@ -50,6 +54,12 @@ public class CompanyService {
 	@RemoteMethod
 	public Company saveOrUpdate(Company instance) {
 		try {
+			if(instance.getId()>0){
+				Company company = findById(instance.getId());
+				if(company.getQuota().intValue() != instance.getQuota().intValue()){
+					accountLogService.saveLogAndSendMail("Company '"+instance.getName()+"' Quota updated from '"+company.getQuota()+"' to '"+instance.getQuota()+"'", "Company '"+instance.getName()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+				}
+			}
 			return instance.merge();
 		} catch (Exception e) {
 			//e.printStackTrace();

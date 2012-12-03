@@ -30,6 +30,7 @@ import in.mycp.domain.VolumeInfoP;
 import in.mycp.utils.Commons;
 import in.mycp.web.DashboardDTO;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -225,6 +226,117 @@ public class ReportService {
 		return null;
 
 	}// end of method findAll
+	
+	/**
+	 * generalized method to get the asset costs for company/dept/project/user
+	 * @param classFullName
+	 * @param id
+	 * @return
+	 * @author Gangadhar JN
+	 */
+	@RemoteMethod
+	public DashboardDTO getAllAssetCosts(String level, int id) {
+		Date start = new Date();
+		try {
+			List<Asset> assets2return = new ArrayList<Asset>();
+			DashboardDTO dto = new DashboardDTO();
+			boolean active = true;
+			List<AssetType> allAssetTypes = AssetType.findAllAssetTypes();
+			for (Iterator iterator = allAssetTypes.iterator(); iterator.hasNext();) {
+				try {
+					AssetType assetType = (AssetType) iterator.next();
+					//if asset is not billable then skip from getting the costs
+					Boolean billable = assetType.getBillable();
+					if (!billable) {continue;}
+					String strAssetType = assetType.getName();
+					List<Asset> assets = (List<Asset>)findAssets4Report(level, id, assetType, billable, active);
+					
+					if (strAssetType.equals("" + Commons.ASSET_TYPE.ComputeImage)) {
+						// do nothing since we are not able to create imgaes on the fly now in euca
+						dto.setImageCost(0);
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.ComputeInstance)) {
+						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							Asset asset = (Asset) iterator2.next();
+							dto.setComputeCost(dto.getComputeCost() + getAssetCost(asset));
+						}
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.IpAddress)) {
+						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							Asset asset = (Asset) iterator2.next();
+							dto.setIpaddressCost(dto.getIpaddressCost() + getAssetCost(asset));
+						}
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.IpPermission)) {
+
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.KeyPair)) {
+						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							Asset asset = (Asset) iterator2.next();
+							dto.setKeyCost(dto.getKeyCost() + getAssetCost(asset));
+						}
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.SecurityGroup)) {
+						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							Asset asset = (Asset) iterator2.next();
+							dto.setSecgroupCost(dto.getSecgroupCost() + getAssetCost(asset));
+						}
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.Volume)) {
+						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							Asset asset = (Asset) iterator2.next();
+							dto.setVolumeCost(dto.getVolumeCost() + getAssetCost(asset));
+						}
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.VolumeSnapshot)) {
+						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							Asset asset = (Asset) iterator2.next();
+							dto.setSnapshotCost(dto.getSnapshotCost() + getAssetCost(asset));
+						}
+					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.addressInfo)) {
+						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							Asset asset = (Asset) iterator2.next();
+							dto.setIpaddressCost(dto.getIpaddressCost() + getAssetCost(asset));
+						}
+					} else {
+						log.error("Which asset does this workflow belong?");
+						// throw new
+						// Exception("Which asset does this workflow belong?");
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage());// e.printStackTrace();
+				}
+			}
+
+			Date end = new Date();
+			long timeTaken = end.getTime() - start.getTime();
+			log.debug("timeTaken (s) = " + timeTaken / 1000);
+
+			return dto;
+
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+
+		return null;
+
+	}// end of method findAll
+	
+	/**
+	 * 
+	 * @param level
+	 * @param id
+	 * @param assetType
+	 * @param billable
+	 * @param active
+	 * @return
+	 * @author Gangadhar JN
+	 */
+	private List<Asset> findAssets4Report(String level, int id, AssetType assetType, boolean billable, boolean active){
+		if(level.equalsIgnoreCase("company"))
+			return Asset.findAssets4Report4Company(id, assetType, billable, active).getResultList();
+		else if(level.equalsIgnoreCase("department"))
+			return Asset.findAssets4Report4Department(id, assetType, billable, active).getResultList();
+		else if(level.equalsIgnoreCase("project"))
+			return Asset.findAssets4Report4Project(id, assetType, billable, active).getResultList();
+		else if(level.equalsIgnoreCase("user"))
+			return Asset.findAssets4Report4User(id, assetType, billable, active).getResultList();
+		else return null;
+	}
 
 	@RemoteMethod
 	public DashboardDTO getAllAssetCosts() {

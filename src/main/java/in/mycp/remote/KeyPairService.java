@@ -100,22 +100,19 @@ public class KeyPairService {
 				}
 			}
 
-			AssetType assetTypeKeyPair = AssetType.findAssetTypesByNameEquals(
+			AssetType assetType = AssetType.findAssetTypesByNameEquals(
 					"KeyPair").getSingleResult();
 			if (instance.getId() != null && instance.getId() > 0) {
 			} else {
 				User currentUser = Commons.getCurrentUser();
 				currentUser = User.findUser(currentUser.getId());
-				long allAssetTotalCosts = reportService.getAllAssetCosts()
-						.getTotalCost();
+				
 				Company company = currentUser.getDepartment().getCompany();
-				Asset asset = Commons.getNewAsset(assetTypeKeyPair,
-						currentUser, instance.getProduct(), allAssetTotalCosts,
-						company);
+				Asset asset = Commons.getNewAsset(assetType, currentUser,instance.getProduct(), reportService,company);
 				asset.setProject(Project.findProject(instance.getProjectId()));
 				instance.setAsset(asset);
 				instance = instance.merge();
-				if (true == assetTypeKeyPair.getWorkflowEnabled()) {
+				if (true == assetType.getWorkflowEnabled()) {
 
 					accountLogService
 							.saveLogAndSendMail(
