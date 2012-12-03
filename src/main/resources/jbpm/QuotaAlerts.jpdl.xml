@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process name="QuotaExceedCheck" xmlns="http://jbpm.org/4.4/jpdl">
+  <start>
+    <transition to="Quotacheck" />
+  </start>
+  <state name="Quotacheck">
+    <on event="timeout">
+      <timer duedate="10 minutes" repeat="10 seconds" />
+      <event-listener class="in.mycp.service.ApplicationContextService4Jobs" />
+    </on>
+    <transition name="go on" to="next step"/>
+  </state>
+  <state name="next step"/>
+</process>
