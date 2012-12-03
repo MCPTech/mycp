@@ -5,6 +5,8 @@
 <script type='text/javascript' src='/dwr/interface/ZoneService.js'></script>
 <script type='text/javascript' src='/dwr/interface/InstanceP.js'></script>
 <script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
+<script type='text/javascript' src='/dwr/interface/ProductService.js'></script>
+
 
 <script type="text/javascript">
 /***************************/
@@ -101,40 +103,45 @@
 			
 			var actions=
 				'<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_volume('+p[i].id+')>&nbsp;&nbsp;'+
-            	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_volume('+p[i].id+')>';
+            	'<img class="clickimg" title="Delete" alt="Delete" src=../images/deny.png onclick=delete_volume('+p[i].id+')>';
             	
             	if('available'==p[i].status){
             		p[i].status='<img title="available" alt="available" src=/images/available.png>&nbsp;';
             		
             		actions=
-	            		'<img class="clickimg" title="Remove" alt="Remove" src=../images/remove.png onclick=delete_volume('+p[i].id+')>&nbsp;&nbsp;'+
+	            		'<img class="clickimg" title="Remove" alt="Remove" src=../images/remove.png onclick=remove_volume('+p[i].id+')>&nbsp;&nbsp;'+
 	    				'<img class="clickimg" title="Attach" alt="Attach" src=../images/attach.png onclick=selectAttach_volume('+p[i].id+')>&nbsp;&nbsp;';
                 	
             	}else if('in-use'==p[i].status ||
             			'attached'==p[i].status){
             		p[i].status='<img  title="in-use" alt="in-use" src=/images/running.png>&nbsp;';
-            		
-            		actions=
-            			'<img class="clickimg" title="Detach" alt="Detach" src=../images/detach.png onclick=detach_volume('+p[i].id+')>&nbsp;&nbsp;';
+            		if(p[i].instanceType,p[i].asset.productCatalog.infra.infraType.id == INFRA_TYPE_VCLOUD){
+            			actions=
+                			'<img class="clickimg" title="Remove" alt="Remove" src=../images/remove.png onclick=remove_volume('+p[i].id+')>&nbsp;&nbsp;';
+            		}else{
+            			actions=
+                			'<img class="clickimg" title="Detach" alt="Detach" src=../images/detach.png onclick=detach_volume('+p[i].id+')>&nbsp;&nbsp;';	
+            		}
+            				
             	}else if('deleted'==p[i].status){
             		p[i].status='<img  title="deleted" alt="deleted" src=/images/terminated.png>&nbsp;';
             		actions=
-                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_volume('+p[i].id+')>';
-            	}else if('creating'==p[i].status){
+                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=delete_volume('+p[i].id+')>';
+            	}else if('creating'==p[i].status || 'deleting'==p[i].status){
             		p[i].status='<img  title="Starting" alt="Starting" src=/images/preloader.gif>&nbsp;';
             		actions='';
             	}else if('PENDING_APPROVAL' == p[i].status && p[i].volumeId == null){
             		p[i].status='<img title="Pending Approval" alt="Pending Approval" src=/images/pending.png>&nbsp;';
             		actions=
-                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_volume('+p[i].id+')>';
+                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=delete_volume('+p[i].id+')>';
             	}else if('FAILED' == p[i].status){
             		p[i].status='<img title="failed" alt="failed" src=/images/failed.png>&nbsp;';
             		actions=
-                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_volume('+p[i].id+')>';
+                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=delete_volume('+p[i].id+')>';
             	}else if('APPROVAL_REJECTED' == p[i].status){
             		p[i].status='<img title="Approval Rejected" alt="Approval Rejected" src=/images/rejected.png>&nbsp;';
             		actions=
-                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=remove_volume('+p[i].id+')>';
+                    	'<img class="clickimg" title="Delete" alt="Remove" src=../images/deny.png onclick=delete_volume('+p[i].id+')>';
             	}
             	
             	
@@ -219,12 +226,23 @@ $(function(){
 				//dwr.util.setValue(id, sel);
 			});
 			
-			VolumeInfoP.findProductType(function(p){
+			/* VolumeInfoP.findProductType(function(p){
 				//alert(dwr.util.toDescriptiveString(p,3));
   				dwr.util.removeAllOptions('product');
   				dwr.util.addOptions('product', p,'id','name');
   				//dwr.util.setValue(id, sel);
+  			}); */
+			
+			VolumeInfoP.findProductType(function(p){
+				//alert(dwr.util.toDescriptiveString(p,3));
+  				dwr.util.removeAllOptions('product');
+  				dwr.util.addOptions('product', {'-1':'Please Select'});
+  				dwr.util.addOptions('product', p, 'id', function(p) {
+  					return p.name;
+  				});
+  				//dwr.util.setValue(id, sel);
   			});
+			
 			
 			InstanceP.findAll(0,100,'',function(p){
 				//alert(dwr.util.toDescriptiveString(p,3));
@@ -249,6 +267,13 @@ $(function(){
 				 }
 				});
 			
+			$("#thisform_vcloud").validate({
+				 submitHandler: function(form) {
+					 submitForm_vcloud(form);
+					 return false;
+				 }
+				});
+			
 			ProjectService.findAll(function(p){
 				dwr.util.removeAllOptions('projectId');
 				//dwr.util.addOptions('project', p, 'id', 'name');
@@ -262,9 +287,10 @@ $(function(){
 		
 	function submitForm_volume(f){
 		CommonService.getSessionMsg(function(p){   $.sticky(p);  });
-		var volumeinfop = {  id:viewed_volume,name:null, size:null, zone:null,product:null, projectId:null };
+		var volumeinfop = {  id:viewed_volume,name:null, size:null, zone:null,product:null, projectId:null,instanceId:null };
 		  dwr.util.getValues(volumeinfop);
 		  volumeinfop.projectId=dwr.util.getValue("projectId");
+		  volumeinfop.instanceId=dwr.util.getValue("instanceId");
 		  volumeinfop.zone=dwr.util.getValue("zone");
 		  if(viewed_volume == -1){
 			  volumeinfop.id  = null; 
@@ -292,6 +318,22 @@ $(function(){
 		  viewed_volume=-1;
 	}
 	
+	function submitForm_vcloud(f){
+		var volumeinfop = {  id:viewed_volume,volumeId:null, device:null, instanceId:null, projectId:null };
+		  dwr.util.getValues(volumeinfop);
+		  //volumeinfop.zone=dwr.util.getValue("zone");
+		  if(viewed_volume == -1){
+			  volumeinfop.id  = null; 
+		  }
+		  dwr.engine.beginBatch();
+		  VolumeInfoP.attachVolume(volumeinfop,afterSave_volume_attach);
+		 	//Permission.findById(3);
+		 // Permission.findAll(); 
+		  dwr.engine.endBatch();
+		  disablePopup_volume($("#popupContact_vcloud"),$("#backgroundPopup_vcloud"));
+		  viewed_volume=-1;
+	}
+	
 	
 	function cancelForm_volume_attach(f){
 		
@@ -299,6 +341,14 @@ $(function(){
 		  dwr.util.setValues(volumeinfop);
 		  viewed_volume = -1;
 		  disablePopup_volume($("#popupContact_volume_attach"),$("#backgroundPopup_volume_attach"));
+	}
+	
+function cancelForm_vcloud(f){
+		
+		var volumeinfop = {  id:null,name:null, size:null, instanceId:null};
+		  dwr.util.setValues(volumeinfop);
+		  viewed_volume = -1;
+		  disablePopup_volume($("#popupContact_vcloud"),$("#backgroundPopup_vcloud"));
 	}
 	
 	function cancelForm_volume(f){
@@ -332,12 +382,24 @@ $(function(){
 		 
 	}
 	
+	function afterSelect_vcloud(p){
+		//alert(dwr.util.toDescriptiveString(p,3));
+		var volumeinfop = eval(p);
+		viewed_volume=p.id;
+		
+		centerPopup_volume($("#popupContact_vcloud"),$("#backgroundPopup_vcloud"));
+		loadPopup_volume($("#popupContact_vcloud"),$("#backgroundPopup_vcloud"));
+		dwr.util.setValues(volumeinfop);
+		dwr.util.setValue('product',volumeinfop.instanceId);
+		 
+	}
+	
 	
 	function edit_volume(id){
 		VolumeInfoP.findById(id,afterEdit_volume);
 	}
 	
-	function remove_volume(id){
+	function delete_volume(id){
 		if(!disp_confirm('Volume')){
 			return false;
 		}
@@ -356,13 +418,19 @@ $(function(){
 		$.sticky('<b>Volume scheduled to be attached.</b><p>');
 		}
 	
-	function delete_volume(id){
+	function afterSave_vcloud(){
+		viewed_volume = -1;
+		$("#popupbutton_volumelist").click();
+		$.sticky('<b>Volume scheduled to be attached.</b><p>');
+		}
+	
+	function remove_volume(id){
 		dwr.engine.beginBatch();
-		VolumeInfoP.deleteVolume(id,afterDelete_volume);
+		VolumeInfoP.deleteVolume(id,afterremove_volume);
 		dwr.engine.endBatch();
 	}
 	
-	function afterDelete_volume(){
+	function afterremove_volume(){
 		viewed_volume = -1;
 		$("#popupbutton_volumelist").click();
 		$.sticky('<b>Volume scheduled to be removed.</b><p>');
@@ -446,40 +514,11 @@ $(function(){
 							    	</td>
 								  </tr>
 								  
-								  <tr>
-								    <td style="width: 50%;">Name : </td>
-								    <td style="width: 50%;"><input type="text" name="name" id="name" size="30" class="required"></td>
-								  </tr>
-								  <tr>
-								    <td style="width: 50%;">Size(GB) : </td>
-								    <td style="width: 50%;"><input type="text" name="size" id="size" size="30" class="required number"></td>
-								  </tr>
 								  
-								  <tr>
-								    <td style="width: 50%;">Zone : </td>
-								    <td style="width: 50%;"> 
-								    <select id="zone" name="zone" style="width: 205px;" class="required">
-							    	</select></td>
-								  </tr>
-								   
-								  <tr>
-								    <td style="width: 20%;">project : </td>
-								    <td style="width: 80%;">
-								    <select id="projectId" name="projectId" style="width: 205px;" class="required">
-							    	</select>
-							    	</td>
-								  </tr>
-								  <tr>
-								    <td style="width: 50%;"></td>
-								    <td style="width: 50%;">
-								    <br><br>
-										<div class="demo" id="popupbutton_volume_create">
-											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
-											<button onclick="cancelForm_volume(this.form);return false;">Cancel</button>
-										</div>
-									</td>
-								  </tr>
 								</table>
+								
+								<table style="width: 100%;" id="otherFields" cellpadding="5" cellspacing="5"></table>
+								
 								</p>
 							</form>
 						</div>
@@ -523,4 +562,96 @@ $(function(){
 							</form>
 						</div>
 		<div id="backgroundPopup_volume_attach" class="backgroundPopup" ></div>
+		
+		<div id="popupContact_vcloud" class="popupContact" >
+							<a  onclick="cancelForm_vcloud();return false;" class="popupContactClose" style="cursor: pointer; text-decoration:none;">X</a>
+							<h1>Volume Attach</h1>
+							<form class="cmxform" id="thisform_attach" method="post" name="thisform_attach">
+								<p id="contactArea_volume" class="contactArea" >
+								<input type="hidden" id="id" name="id">
+								<table style="width: 100%;">
+								  <tr>
+								    <td style="width: 50%;">Name : </td>
+								    <td style="width: 50%;"><input type="text" name="name" id="name" size="30" class="required" ></td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;">Size (GB) : </td>
+								    <td style="width: 50%;"><input type="text" name="size" id="size" size="30" class="required"></td>
+								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">Instance : </td>
+								    <td style="width: 50%;"> 
+									    <select id="instanceId" name="instanceId" style="width: 205px;" class="required">
+								    	</select>
+							    	</td>
+								  </tr>
+								  <tr>
+								    <td style="width: 50%;"></td>
+								    <td style="width: 50%;">
+								    <br><br>
+										<div class="demo" id="popupbutton_volume_create">
+											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
+										<button onclick="cancelForm_vcloud(this.form);return false;">Cancel</button>
+										</div>
+									</td>
+								  </tr>
+								</table>
+								</p>
+							</form>
+						</div>
+		<div id="backgroundPopup_vcloud" class="backgroundPopup" ></div>
 	</div>				
+	
+	
+<script>
+	$("#product").change(function(){
+		var tabEle = '';
+		var productCatId = parseInt($("#product").val());
+		$("#otherFields").html('');
+		ProductService.findById(productCatId, function(s){
+			if(s.infra.infraType.id == INFRA_TYPE_EUCA || s.infra.infraType.id == INFRA_TYPE_AWS){
+				tabEle =
+					'<tr><td style=\"width: 50%;\">Name : </td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"30\" class=\"required\"></td></tr>'+
+					'<tr><td style=\"width: 50%;\">Size(GB) : </td><td style=\"width: 50%;\"><input type=\"text\" name=\"size\" id=\"size\" size=\"30\" class=\"required number\"></td></tr>'+
+					'<tr><td style=\"width: 50%;\">Zone : </td><td style=\"width: 50%;\"><select id=\"zone\" name=\"zone\" style=\"width: 205px;\" class=\"required\"></select></td></tr>'+
+					'<tr><td style=\"width: 20%;\">project : </td><td style=\"width: 80%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 205px;\" class=\"required\"></select></td></tr>'+
+					'<tr><td style=\"width: 50%;\"></td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_volume_create\">'+
+					'<input class=\"submit\" type=\"submit\" value=\"Save\"/>&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_volume(this.form);return false;">Cancel</button>'+
+					'</div></td></tr>';
+					
+			}else if(s.infra.infraType.id == INFRA_TYPE_VCLOUD){
+				tabEle =
+					'<tr><td style=\"width: 50%;\">Name : </td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"30\" class=\"required\"></td></tr>'+
+					'<tr><td style=\"width: 50%;\">Size(GB) : </td><td style=\"width: 50%;\"><input type=\"text\" name=\"size\" id=\"size\" size=\"30\" class=\"required number\"></td></tr>'+
+					'<tr><td style=\"width: 50%;\">Instance : </td><td style=\"width: 50%;\"><select id=\"instanceId\" name=\"instanceId\" style=\"width: 205px;\" class=\"required\"></select></td></tr>'+
+					
+					'<tr><td style=\"width: 20%;\">project : </td><td style=\"width: 80%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 205px;\" class=\"required\"></select></td></tr>'+
+					'<tr><td style=\"width: 50%;\"></td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_vcloud_volume_create\">'+
+					'<input class=\"submit\" type=\"submit\" value=\"Save\"/>&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_volume(this.form);return false;">Cancel</button>'+
+					'</div></td></tr>';
+			} 
+			$("#otherFields").html(tabEle);
+			
+			ProjectService.findAll(function(p){
+				dwr.util.removeAllOptions('projectId');
+				dwr.util.addOptions('projectId', p, 'id', function(p) {
+					return p.name+' @ '+p.department.name;
+				});
+			});
+			
+			InstanceP.findInstances4VolAttachBy(s.infra,function(p){
+				dwr.util.removeAllOptions('instanceId');
+				dwr.util.addOptions('instanceId', p, 'instanceId', function(p) {
+					return p.name+' '+p.instanceId+' '+p.dnsName;
+				});
+			});
+			
+			ZoneService.findBy(s.infra,function(p){
+				dwr.util.removeAllOptions('zone');
+				dwr.util.addOptions('zone', p, 'name', 'name');
+			});
+			
+		});
+	} );
+</script>
