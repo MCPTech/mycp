@@ -1,3 +1,7 @@
 /*.roo
 /target/
 /STATUS
+.classpath
+.project
+/.externalToolBuilders/
+/.settings/
