@@ -121,7 +121,6 @@ public class Commons {
 	public static String VOLUME_STATUS_FAILED = "FAILED";
 
 	public static int ROLE_USER_INTVAL = 0;
-	public static int ROLE_ADMIN_INTVAL = 3;
 	public static int ROLE_MANAGER_INTVAL = 6;
 	public static int ROLE_SUPERADMIN_INTVAL = 9;
 	

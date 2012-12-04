@@ -31,7 +31,7 @@ privileged aspect Infra_Roo_DbManaged {
     private Company Infra.company;
     
     @ManyToOne
-    @JoinColumn(name = "infraType", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "infraType", referencedColumnName = "id")
     private InfraType Infra.infraType;
     
     @Column(name = "accessId", length = 90)

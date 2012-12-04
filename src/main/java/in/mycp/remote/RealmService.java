@@ -98,12 +98,8 @@ public class RealmService {
 					instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
 				}
 			}
-			/*String[] ignoreProperties = new String[]{"id", "password", "registereddate", "loggedInDate"};
-			BeanUtils.copyProperties(instance, localUser, ignoreProperties);*/
-			//instance.setProject(Project.findProject(instance.getProject().getId()));
-			//instance.setManager(Manager.findManager(instance.getManager().getId()));
-			//instance.setQuota(Quota.findQuota(instance.getQuota().getId()));
-			// ShaPasswordEncoder passEncoder = new ShaPasswordEncoder(256);
+			localUser.clear();
+
 			accountLogService.saveLog("User " + instance.getEmail()+" created, ",
 					Commons.task_name.USER.name(),
 					Commons.task_status.SUCCESS.ordinal(),

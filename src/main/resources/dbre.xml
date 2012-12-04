@@ -55,10 +55,6 @@
         <column name="endTime" primaryKey="false" required="false" scale="0" size="19" type="93,DATETIME"/>
         <column name="startRate" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="project" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <foreign-key foreignTable="project" name="fk_Asset_Project" onDelete="none" onUpdate="none">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="project"/>
-        </foreign-key>
         <foreign-key foreignTable="asset_type" name="fk_Asset_Asset_Type1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="assetType"/>
@@ -66,6 +62,10 @@
         <foreign-key foreignTable="product_catalog" name="fk_Asset_Product_Catalog1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="productCatalog"/>
+        </foreign-key>
+        <foreign-key foreignTable="project" name="fk_Asset_Project" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project"/>
         </foreign-key>
         <foreign-key foreignTable="user" name="fk_Asset_User1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
@@ -294,6 +294,10 @@
             <option key="exported" value="true"/>
             <reference foreign="imageDescription" local="id"/>
         </foreign-key>
+        <foreign-key foreignTable="instance_p" name="fk_image_instancep" onDelete="none" onUpdate="none">
+            <option key="exported" value="true"/>
+            <reference foreign="image" local="id"/>
+        </foreign-key>
         <unique name="PRIMARY">
             <unique-column name="id"/>
         </unique>
@@ -318,7 +322,7 @@
         <column name="syncInProgress" primaryKey="false" required="false" scale="0" size="0" type="-7,BIT"/>
         <column name="zone" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="syncstatus" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <column name="infraType" primaryKey="false" required="true" scale="0" size="10" type="4,INT"/>
+        <column name="infraType" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="vcloud_account_name" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <foreign-key foreignTable="company" name="fk_infra_company1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
@@ -383,7 +387,6 @@
     <table name="instance_p">
         <column name="id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
         <column name="reservationDescription" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <column name="imageId" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="instanceId" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="privateDnsName" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="dnsName" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
@@ -416,9 +419,19 @@
         <column name="name" primaryKey="false" required="false" scale="0" size="90" type="12,VARCHAR"/>
         <column name="groupName" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="asset" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <column name="image" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
+        <column name="vcloud_cpu" primaryKey="false" required="false" scale="0" size="22" type="8,DOUBLE"/>
+        <column name="vcloud_ram_gb" primaryKey="false" required="false" scale="0" size="22" type="8,DOUBLE"/>
+        <column name="vcloud_disk_gb" primaryKey="false" required="false" scale="0" size="22" type="8,DOUBLE"/>
+        <column name="vcloud_vm_href" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
+        <column name="vcloud_vapp_href" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <foreign-key foreignTable="asset" name="fk_asset_instancep" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="asset"/>
+        </foreign-key>
+        <foreign-key foreignTable="image_description_p" name="fk_image_instancep" onDelete="none" onUpdate="none">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="image"/>
         </foreign-key>
         <foreign-key foreignTable="instance_block_device_mapping_p" name="fk_InstanceBlockDeviceMapping_Instance1" onDelete="none" onUpdate="none">
             <option key="exported" value="true"/>
@@ -432,6 +445,9 @@
         </index>
         <index name="fk_asset_instancep">
             <index-column name="asset"/>
+        </index>
+        <index name="fk_image_instancep_idx">
+            <index-column name="image"/>
         </index>
     </table>
     <table name="ip_address_p">
@@ -572,7 +588,7 @@
             <option key="exported" value="true"/>
             <reference foreign="project" local="id"/>
         </foreign-key>
-        <foreign-key foreignTable="user_project" name="FK_PROJECT_ID" onDelete="none" onUpdate="none">
+        <foreign-key foreignTable="user_project" name="FK_PROJECT_ID" onDelete="none" onUpdate="cascade">
             <option key="exported" value="true"/>
             <reference foreign="project_id" local="id"/>
         </foreign-key>
@@ -687,7 +703,7 @@
             <option key="exported" value="true"/>
             <reference foreign="user" local="id"/>
         </foreign-key>
-        <foreign-key foreignTable="user_project" name="FK_USER_ID" onDelete="cascade" onUpdate="cascade">
+        <foreign-key foreignTable="user_project" name="FK_USER_ID" onDelete="none" onUpdate="cascade">
             <option key="exported" value="true"/>
             <reference foreign="user_id" local="id"/>
         </foreign-key>
@@ -711,13 +727,13 @@
     <table name="user_project">
         <column name="user_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
         <column name="project_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
-        <foreign-key foreignTable="project" name="FK_PROJECT_ID" onDelete="none" onUpdate="none">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="project_id"/>
-        </foreign-key>
-        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="cascade" onUpdate="cascade">
+        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="none" onUpdate="cascade">
             <option key="exported" value="false"/>
             <reference foreign="id" local="user_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="project" name="FK_PROJECT_ID" onDelete="none" onUpdate="cascade">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="project_id"/>
         </foreign-key>
         <unique name="PRIMARY">
             <unique-column name="user_id"/>
@@ -729,7 +745,7 @@
     </table>
     <table name="volume_info_p">
         <column name="id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
-        <column name="volumeId" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="volumeId" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
         <column name="size" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
         <column name="snapshotId" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="zone" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>

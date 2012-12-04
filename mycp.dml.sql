@@ -156,8 +156,8 @@ CREATE TABLE `user_project` (
   `project_id` int(11) NOT NULL,
   PRIMARY KEY (`user_id`,`project_id`),
   KEY `FK_PROJECT_ID` (`project_id`),
-  CONSTRAINT `FK_PROJECT_ID` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
-  CONSTRAINT `FK_USER_ID` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `FK_USER_ID` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  CONSTRAINT `FK_PROJECT_ID` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
 ) ;
 
 insert into user_project(user_id, project_id)  (select id, project from user where email <> 'superadmin@mycloudportal.in');

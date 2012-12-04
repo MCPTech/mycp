@@ -14,10 +14,10 @@
         <logout logout-url="/resources/j_spring_security_logout" success-handler-ref="mycplogoutSuccessHandler"/>
         
         <!-- Configure these elements to secure URIs in your application -->
-        <intercept-url pattern="/config/**" access="hasRole('ROLE_ADMIN')" />
-        <intercept-url pattern="/workflow/**" access="hasRole('ROLE_ADMIN')" />
-        <intercept-url pattern="/enterprise/**" access="hasRole('ROLE_ADMIN')" />
-         <intercept-url pattern="/realm/**" access="hasRole('ROLE_ADMIN')" />
+        <intercept-url pattern="/config/**" access="hasRole('ROLE_MANAGER')" />
+        <intercept-url pattern="/workflow/**" access="hasRole('ROLE_MANAGER')" />
+        <intercept-url pattern="/enterprise/**" access="hasRole('ROLE_MANAGER')" />
+         <intercept-url pattern="/realm/**" access="hasRole('ROLE_MANAGER')" />
         <intercept-url pattern="/iaas/**" access="hasRole('ROLE_USER')" />
         <intercept-url pattern="/reports/**" access="hasRole('ROLE_USER')" />
         <intercept-url pattern="/cost/**" access="hasRole('ROLE_USER')" />
