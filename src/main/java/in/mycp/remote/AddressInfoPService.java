@@ -19,11 +19,13 @@ import in.mycp.domain.AddressInfoP;
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
+import in.mycp.domain.Infra;
 import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 import in.mycp.workers.IpAddressWorker;
+import in.mycp.workers.VmwareIpAddressWorker;
 
 import java.util.List;
 
@@ -46,6 +48,10 @@ public class AddressInfoPService {
 
 	@Autowired
 	IpAddressWorker ipAddressWorker;
+	
+	@Autowired
+	VmwareIpAddressWorker vmwareIpAddressWorker;
+	
 
 	@Autowired
 	WorkflowService workflowService;
@@ -70,6 +76,7 @@ public class AddressInfoPService {
 			}
 			String productId = instance.getProduct();
 			int projectId = instance.getProjectId();
+			
 			instance = instance.merge();
 			AssetType assetType = AssetType.findAssetTypesByNameEquals(
 					"" + Commons.ASSET_TYPE.IpAddress).getSingleResult();
@@ -78,7 +85,7 @@ public class AddressInfoPService {
 					.getTotalCost();
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment().getCompany();
-			Asset asset = Commons.getNewAsset(assetType, currentUser,instance.getProduct(), reportService,company);
+			Asset asset = Commons.getNewAsset(assetType, currentUser,productId, reportService,company);
 			asset.setProject(Project.findProject(projectId));
 			asset.setActive(false);
 			instance.setAsset(asset);
@@ -119,7 +126,7 @@ public class AddressInfoPService {
 			Commons.setSessionMsg("Ip Address saved");
 			return instance;
 		} catch (Exception e) {
-			// e.printStackTrace();
+			 e.printStackTrace();
 			Commons.setSessionMsg("Error while saving Instance "
 					+ instance.getName() + "<br> Reason: " + e.getMessage());
 			log.error(e);
@@ -178,6 +185,7 @@ public class AddressInfoPService {
 
 			User user = Commons.getCurrentUser();
 			List<AddressInfoP> allAddresses = null;
+			
 			if (user.getRole().getName().equals(Commons.ROLE.ROLE_USER + "")) {
 				allAddresses = AddressInfoP.findAddressInfoPsByUser(user,
 						start, max, search).getResultList();
@@ -191,6 +199,7 @@ public class AddressInfoPService {
 				allAddresses = AddressInfoP.findAllAddressInfoPs(start, max,
 						search);
 			}
+			
 
 			return allAddresses;
 		} catch (Exception e) {
@@ -207,18 +216,24 @@ public class AddressInfoPService {
 			log.info(instance.getInstanceId() + "   " + instance.getPublicIp());
 			String orig_instanceIdFromJS = instance.getInstanceId();
 			String orig_publicIpFromJS = instance.getPublicIp();
-			instance = AddressInfoP.findAddressInfoPsByInstanceIdLike(
-					instance.getInstanceId()).getSingleResult();
-
+			instance = AddressInfoP.findAddressInfoP(instance.getId());
+			instance.setStatus(Commons.ipaddress_STATUS.associating+"");
+			instance = instance.merge();
 			// setit back to clean instance ID because it is in format
 			// 'i-595E09AE (eucalyptus)'
 			instance.setInstanceId(orig_instanceIdFromJS);
 			instance.setPublicIp(orig_publicIpFromJS);
+			
+			Infra infra = instance.getAsset().getProductCatalog().getInfra();
+			if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
+					|| infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+				ipAddressWorker.associateAddress(infra, instance, Commons
+								.getCurrentUser().getEmail());
+			}else{
+				vmwareIpAddressWorker.associateAddress(infra, instance, Commons.getCurrentUser().getEmail());
+			}
 
-			ipAddressWorker.associateAddress(
-					AddressInfoP.findAddressInfoP(instance.getId()).getAsset()
-							.getProductCatalog().getInfra(), instance, Commons
-							.getCurrentUser().getEmail());
+			
 			Commons.setSessionMsg("Scheduling Ip Address association");
 			// AddressInfoP.findAddressInfoP(id).remove();
 		} catch (Exception e) {
@@ -232,10 +247,19 @@ public class AddressInfoPService {
 	public void disassociateAddress(int id) {
 		try {
 			AddressInfoP instance = AddressInfoP.findAddressInfoP(id);
-			ipAddressWorker.disassociateAddress(
-					AddressInfoP.findAddressInfoP(instance.getId()).getAsset()
-							.getProductCatalog().getInfra(), instance, Commons
-							.getCurrentUser().getEmail());
+			instance.setStatus(Commons.ipaddress_STATUS.disassociating+"");
+			instance = instance.merge();
+			Infra infra = instance.getAsset().getProductCatalog().getInfra();
+			if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
+					|| infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+				ipAddressWorker.disassociateAddress(
+						infra, instance, Commons
+								.getCurrentUser().getEmail());
+			}else{
+				vmwareIpAddressWorker.disassociateAddress(infra, instance, Commons.getCurrentUser().getEmail());
+			}
+			
+			
 			Commons.setSessionMsg("Scheduling Ip Address disassociation");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Ip Address disassociation");
@@ -251,10 +275,20 @@ public class AddressInfoPService {
 			AddressInfoP adressInfoP = AddressInfoP.findAddressInfoP(id);
 			log.info("Calling allocate address for Workflow approved for "
 					+ adressInfoP.getId() + " " + adressInfoP.getName());
-			ipAddressWorker.allocateAddress(
-					AddressInfoP.findAddressInfoP(adressInfoP.getId())
-							.getAsset().getProductCatalog().getInfra(),
-					adressInfoP, Commons.getCurrentUser().getEmail());
+			adressInfoP.setStatus(Commons.ipaddress_STATUS.allocating+"");
+			adressInfoP = adressInfoP.merge();
+			
+			Infra infra = adressInfoP.getAsset().getProductCatalog().getInfra();
+			if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
+					|| infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+				ipAddressWorker.allocateAddress(infra,
+						adressInfoP, Commons.getCurrentUser().getEmail());
+			}else{
+				vmwareIpAddressWorker.allocateAddress(infra, adressInfoP, Commons.getCurrentUser().getEmail());
+			}
+			
+			
+			
 			Commons.setSessionMsg("Scheduling Ip Address allocate");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Ip Address allocate");
@@ -268,11 +302,23 @@ public class AddressInfoPService {
 		try {
 			AddressInfoP adressInfoP = AddressInfoP.findAddressInfoP(id);
 			log.info("releasing IP adress " + adressInfoP.getPublicIp());
+			adressInfoP.setStatus(Commons.ipaddress_STATUS.releasing+"");
+			adressInfoP = adressInfoP.merge();
+			
 			if (adressInfoP.getInstanceId() != null
 					&& adressInfoP.getInstanceId().startsWith("available")) {
-				ipAddressWorker.releaseAddress(adressInfoP.getAsset()
-						.getProductCatalog().getInfra(), adressInfoP, Commons
-						.getCurrentUser().getEmail());
+				
+				Infra infra = adressInfoP.getAsset().getProductCatalog().getInfra();
+				if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
+						|| infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+					ipAddressWorker.releaseAddress(infra, adressInfoP, Commons
+							.getCurrentUser().getEmail());
+					
+				}else{
+					vmwareIpAddressWorker.releaseAddress(infra, adressInfoP, Commons.getCurrentUser().getEmail());
+				}
+				
+				
 			} else {
 				log.error("Cant release addresses not marked as available.");
 			}

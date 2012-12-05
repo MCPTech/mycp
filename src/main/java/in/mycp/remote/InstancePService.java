@@ -187,6 +187,20 @@ public class InstancePService {
 		String instanceName = instance.getName();
 		try {
 			//terminateCompute(id);
+			
+			
+				List<AddressInfoP> addresses = AddressInfoP.findAddressInfoPsByPublicIpEquals(instance.getIpAddress()).getResultList();
+				for (Iterator iterator = addresses.iterator(); iterator.hasNext(); ) {
+					try {
+						AddressInfoP addressInfoP = (AddressInfoP) iterator.next();
+						addressInfoP.remove();
+					} catch (Exception e) {
+						log.error("Error while trying to remove the associated IP address of Instance "+instance.getName()+" with ID "+instance.getInstanceId());
+						// TODO: handle exception
+					}
+				}
+			
+			
 			instance.remove();
 			Commons.setSessionMsg("Removed Instance "+id);
 			accountLogService.saveLog("Compute instance '"+instanceName+"' removed with ID "+id, Commons.task_name.COMPUTE.name(), Commons.task_status.SUCCESS.ordinal()
@@ -265,10 +279,20 @@ public class InstancePService {
 	}// end of method findAll
 
 	@RemoteMethod
-	public List<InstanceP> findAll4Attach() {
+	public List<InstanceP> findAll4Attach(AddressInfoP a) {
 		try {
 			// return InstanceP.findAllInstancePs();
-			List<InstanceP> instances = InstanceP.findAllInstancePs();
+			AddressInfoP aLocal = AddressInfoP.findAddressInfoP(a.getId());
+			Infra infra = aLocal.getAsset().getProductCatalog().getInfra();
+			List<InstanceP> instances = null;
+			
+			if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
+				instances =  InstanceP.findInstancePsByInfra(infra).getResultList();
+			}else if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
+				instances =  InstanceP.findInstancePsBy(infra, Company.findCompany(Commons.getCurrentSession().getCompanyId())).getResultList();
+			}else if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_USER+"")){
+				instances =  InstanceP.findInstancePsBy(infra, Company.findCompany(Commons.getCurrentSession().getCompanyId()), Commons.getCurrentUser()).getResultList();
+			}
 			List<InstanceP> instances2return = new ArrayList<InstanceP>();
 			for (Iterator iterator = instances.iterator(); iterator.hasNext();) {
 				InstanceP instanceP = (InstanceP) iterator.next();

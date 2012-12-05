@@ -322,13 +322,14 @@ public class VmwareService {
 											
 
 											ipPermissionP.setProtocol(getPrototcolAsString(firewallRule.getProtocols()));
-											ipPermissionP.setDescription(firewallRule.getDescription());
-											ipPermissionP.setPolicy(firewallRule.getPolicy());
-											ipPermissionP.setSourceIp(firewallRule.getSourceIp());
-											ipPermissionP.setSourcePort(firewallRule.getSourcePort());
-											ipPermissionP.setDestinationIp(firewallRule.getDestinationIp());
-											ipPermissionP.setDestinationPort(firewallRule.getPort());
-											ipPermissionP.setDirection(firewallRule.getDirection());
+											ipPermissionP.setVcloudName(firewallRule.getDescription());
+											ipPermissionP.setVcloudPolicy(firewallRule.getPolicy());
+											ipPermissionP.setVcloudSourceIp(firewallRule.getSourceIp());
+											ipPermissionP.setVcloudSourcePort(firewallRule.getSourcePort());
+											ipPermissionP.setVcloudDestinationIp(firewallRule.getDestinationIp());
+											ipPermissionP.setVcloudDestinationPort(firewallRule.getPort());
+											ipPermissionP.setVcloudDirection(firewallRule.getDirection());
+											ipPermissionP.setVcloudEnabled(firewallRule.isIsEnabled());
 											
 											descriptionP = descriptionP.merge();
 											ipPermissionP.setGroupDescription(descriptionP);
@@ -502,7 +503,7 @@ public class VmwareService {
 			}
 			
 
-			logger.info("Available addresses @ " + (new Date().getTime() - start.getTime()) / 1000 + " S");
+			logger.info("Importing available addresses. start @ " + (new Date().getTime() - start.getTime()) / 1000 + " S");
 			Enumeration<String> extIps = externalIps.keys();
 			while (extIps.hasMoreElements()) {
 				String extIp = (String) extIps.nextElement();
@@ -955,7 +956,7 @@ public class VmwareService {
 								for (Iterator iterator5 = vdisks.iterator(); iterator5.hasNext();) {
 									VirtualDisk virtualDisk = (VirtualDisk) iterator5.next();
 									if (virtualDisk.isHardDisk()) {
-										System.out.println("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
+										logger.info("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
 												+ virtualDisk.getHardDiskBusType() + " , virtualDisk.getHardDiskSize() = " + virtualDisk.getHardDiskSize());
 										diskSizeGB = diskSizeGB +(virtualDisk.getHardDiskSize().intValue()/1024);
 									}

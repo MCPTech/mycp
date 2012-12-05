@@ -17,12 +17,14 @@ package in.mycp.workers;
 
 import in.mycp.domain.Asset;
 import in.mycp.domain.Infra;
+import in.mycp.utils.Commons;
 
 import java.util.Date;
 import java.util.logging.Level;
 
 import org.jasypt.util.text.BasicTextEncryptor;
 
+import com.vmware.vcloud.api.rest.schema.FirewallRuleProtocols;
 import com.vmware.vcloud.sdk.VcloudClient;
 import com.vmware.vcloud.sdk.constants.Version;
 import com.vmware.vcloud.sdk.samples.FakeSSLSocketFactory;
@@ -78,7 +80,60 @@ public class Worker {
 		return null;
 	} 
 	
-  
+	
+	public String getPrototcolAsString(FirewallRuleProtocols firewallRule){
+		if(firewallRule.isAny()){
+			return Commons.PROTOCOL_TYPE_ANY;
+		}else if(firewallRule.isTcp() && !firewallRule.isIcmp() && !firewallRule.isUdp()){
+			return Commons.PROTOCOL_TYPE_TCP;
+		}else if(!firewallRule.isTcp() && firewallRule.isIcmp() && !firewallRule.isUdp()){
+			return Commons.PROTOCOL_TYPE_ICMP;
+		}else if(!firewallRule.isTcp() && !firewallRule.isIcmp() && firewallRule.isUdp()){
+			return Commons.PROTOCOL_TYPE_UDP;
+		}else if(firewallRule.isTcp() && firewallRule.isIcmp() && !firewallRule.isUdp()){
+			return Commons.PROTOCOL_TYPE_TCP_ICMP;
+		}else if(firewallRule.isTcp() && !firewallRule.isIcmp() && firewallRule.isUdp()){
+			return Commons.PROTOCOL_TYPE_TCP_UDP;
+		}else if(!firewallRule.isTcp() && firewallRule.isIcmp() && firewallRule.isUdp()){
+			return Commons.PROTOCOL_TYPE_UDP_ICMP;
+		}else {
+			return "";
+		}
+	}//getPrototcolAsString
+	
+  public FirewallRuleProtocols getFirewallRuleProtocols(String protocol){
+	  FirewallRuleProtocols frp = new FirewallRuleProtocols();
+	  
+	  if(Commons.PROTOCOL_TYPE_ANY.equals(protocol)){
+		  frp.setAny(true);
+		  return frp;
+	  }else if(Commons.PROTOCOL_TYPE_TCP.equals(protocol)){
+		  frp.setTcp(true);
+		  return frp;
+	  }else if(Commons.PROTOCOL_TYPE_ICMP.equals(protocol)){
+		  frp.setIcmp(true);
+		  return frp;
+	  }else if(Commons.PROTOCOL_TYPE_UDP.equals(protocol)){
+		  frp.setUdp(true);
+		  return frp;
+	  }else if(Commons.PROTOCOL_TYPE_TCP_ICMP.equals(protocol)){
+		  frp.setTcp(true);
+		  frp.setIcmp(true);
+		  return frp;
+	  }else if(Commons.PROTOCOL_TYPE_TCP_UDP.equals(protocol)){
+		  frp.setTcp(true);
+		  frp.setUdp(true);
+		  return frp;
+	  }else if(Commons.PROTOCOL_TYPE_UDP_ICMP.equals(protocol)){
+		  frp.setUdp(true);
+		  frp.setIcmp(true);
+		  return frp;
+	  }else {
+		  return null;
+	  }
+	  
+  }
+	
 	public void setAssetEndTime(Asset a){
 		//Asset a = instanceLocal.getAsset();
 		a.setEndTime(new Date());

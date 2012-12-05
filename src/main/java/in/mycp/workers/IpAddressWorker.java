@@ -53,8 +53,7 @@ public class IpAddressWorker extends Worker {
 	protected static Logger logger = Logger.getLogger(IpAddressWorker.class);
 
 	@Async
-	public void allocateAddress(final Infra infra,
-			final AddressInfoP addressInfoP, final String userId) {
+	public void allocateAddress(final Infra infra, final AddressInfoP addressInfoP, final String userId) {
 		try {
 			Jec2 ec2 = getNewJce2(infra);
 			String newIpAddress = null;
@@ -63,20 +62,16 @@ public class IpAddressWorker extends Worker {
 					"Started : "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
-							.name(), Commons.task_status.SUCCESS.ordinal(),
-					userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 			try {
 				newIpAddress = ec2.allocateAddress();
 				logger.info("got new Address " + newIpAddress);
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 				if (e.getMessage().indexOf("Permission denied while") > -1) {
-					throw new Exception(
-							"Permission denied while trying to get address");
+					throw new Exception("Permission denied while trying to get address");
 				} else if (e.getMessage().indexOf("Number of retries exceeded") > -1) {
 					throw new Exception("No Connectivity to Cloud");
 				}
@@ -84,8 +79,7 @@ public class IpAddressWorker extends Worker {
 
 			AddressInfoP addressInfoPLocal = null;
 			try {
-				addressInfoPLocal = AddressInfoP.findAddressInfoP(addressInfoP
-						.getId());
+				addressInfoPLocal = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
@@ -100,21 +94,15 @@ public class IpAddressWorker extends Worker {
 					throw new Exception("Got bored, Quitting.");
 				}
 				now = now + START_SLEEP_TIME;
-				logger.info("Ipaddress " + newIpAddress
-						+ " still getting created; sleeping "
-						+ START_SLEEP_TIME + "ms");
+				logger.info("Ipaddress " + newIpAddress + " still getting created; sleeping " + START_SLEEP_TIME + "ms");
 				Thread.sleep(START_SLEEP_TIME);
 				try {
 					// address_str =
 					// ec2.describeAddresses(Collections.singletonList(newIpAddress)).get(0).getPublicIp();
-					List<AddressInfo> adrsses = ec2
-							.describeAddresses(new ArrayList<String>());
-					for (Iterator iterator = adrsses.iterator(); iterator
-							.hasNext();) {
+					List<AddressInfo> adrsses = ec2.describeAddresses(new ArrayList<String>());
+					for (Iterator iterator = adrsses.iterator(); iterator.hasNext();) {
 						AddressInfo addressInfo = (AddressInfo) iterator.next();
-						if (newIpAddress.equals(addressInfo.getPublicIp())
-								&& addressInfo.getInstanceId().startsWith(
-										"available")) {
+						if (newIpAddress.equals(addressInfo.getPublicIp()) && addressInfo.getInstanceId().startsWith("available")) {
 							// euca logic
 							address_str = addressInfo.getPublicIp();
 							break;
@@ -133,39 +121,32 @@ public class IpAddressWorker extends Worker {
 			if (address_str.equals(newIpAddress)) {
 				addressInfoPLocal.setInstanceId("available");
 				addressInfoPLocal.setPublicIp(newIpAddress);
-				addressInfoPLocal.setStatus(Commons.ipaddress_STATUS.available
-						+ "");
+				addressInfoPLocal.setStatus(Commons.ipaddress_STATUS.available + "");
 				addressInfoPLocal = addressInfoPLocal.merge();
 
 				setAssetStartTime(addressInfoPLocal.getAsset());
 
-				accountLogService.saveLogAndSendMail("Completed : "+
-						this.getClass().getName()
-								+ " : "
-								+ Thread.currentThread().getStackTrace()[1]
-										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getName(),
-						Commons.task_name.IPADDRESS.name(),
-						Commons.task_status.SUCCESS.ordinal(), userId);
+				accountLogService.saveLogAndSendMail("Completed : "
+						+ this.getClass().getName()
+						+ " : "
+						+ Thread.currentThread().getStackTrace()[1].getMethodName()
+								.subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+						Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
 			}
 
 		} catch (Exception e) {
-			logger.error(e);// e.printStackTrace();
+			logger.error(e);
+			e.printStackTrace();
 			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName() + ", " + e.getMessage(),
-					Commons.task_name.IPADDRESS.name(),
-					Commons.task_status.FAIL.ordinal(), userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName() + ", " + e.getMessage(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.FAIL.ordinal(), userId);
 			try {
-				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP
-						.getId());
+				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 				a.setStatus(Commons.ipaddress_STATUS.failed + "");
 				a = a.merge();
 				setAssetEndTime(a.getAsset());
@@ -178,20 +159,16 @@ public class IpAddressWorker extends Worker {
 	}// end allocateAddress
 
 	@Async
-	public void releaseAddress(final Infra infra,
-			final AddressInfoP addressInfoP, final String userId) {
+	public void releaseAddress(final Infra infra, final AddressInfoP addressInfoP, final String userId) {
 
 		try {
 			accountLogService.saveLog(
 					"Started : "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
-							.name(), Commons.task_status.SUCCESS.ordinal(),
-					userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
 			Jec2 ec2 = getNewJce2(infra);
 			String ipToMatch = addressInfoP.getPublicIp();
@@ -200,10 +177,8 @@ public class IpAddressWorker extends Worker {
 				ec2.releaseAddress(addressInfoP.getPublicIp());
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
-				if (e.getMessage().indexOf(
-						"Permission denied while trying to release address") > -1) {
-					throw new Exception(
-							"Permission denied while trying to release address");
+				if (e.getMessage().indexOf("Permission denied while trying to release address") > -1) {
+					throw new Exception("Permission denied while trying to release address");
 				} else if (e.getMessage().indexOf("Number of retries exceeded") > -1) {
 					throw new Exception("No Connectivity to Cloud");
 				}
@@ -211,9 +186,7 @@ public class IpAddressWorker extends Worker {
 
 			AddressInfoP addressInfoPLocal = null;
 			try {
-				addressInfoPLocal = AddressInfoP
-						.findAddressInfoPsByPublicIpEquals(
-								addressInfoP.getPublicIp()).getSingleResult();
+				addressInfoPLocal = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
@@ -228,13 +201,10 @@ public class IpAddressWorker extends Worker {
 				}
 				now = now + START_SLEEP_TIME;
 				try {
-					List<AddressInfo> adrsses = ec2
-							.describeAddresses(new ArrayList<String>());
-					for (Iterator iterator = adrsses.iterator(); iterator
-							.hasNext();) {
+					List<AddressInfo> adrsses = ec2.describeAddresses(new ArrayList<String>());
+					for (Iterator iterator = adrsses.iterator(); iterator.hasNext();) {
 						AddressInfo addressInfo = (AddressInfo) iterator.next();
-						if (ipToMatch.equals(addressInfo.getPublicIp())
-								&& addressInfo.getInstanceId().equals("nobody")) {
+						if (ipToMatch.equals(addressInfo.getPublicIp()) && addressInfo.getInstanceId().equals("nobody")) {
 							// euca logic
 							addressInfoLocal = null;
 							break;
@@ -242,9 +212,7 @@ public class IpAddressWorker extends Worker {
 
 					}
 
-					logger.info("Ipaddress " + addressInfoP.getPublicIp()
-							+ " still getting released; sleeping "
-							+ START_SLEEP_TIME + "ms");
+					logger.info("Ipaddress " + addressInfoP.getPublicIp() + " still getting released; sleeping " + START_SLEEP_TIME + "ms");
 					Thread.sleep(START_SLEEP_TIME);
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
@@ -256,46 +224,30 @@ public class IpAddressWorker extends Worker {
 				}
 			}
 
-			if (addressInfoLocal == null) {
-				// addressInfoPLocal.remove();
-				/*
-				 * addressInfoPLocal.setInstanceId("nobody");
-				 * addressInfoPLocal.setStatus
-				 * (Commons.ipaddress_STATUS.free+"");
-				 * addressInfoPLocal.setReason("Released this address on "+new
-				 * Date()); addressInfoPLocal.merge();
-				 */
-
+			if (addressInfoLocal == null && addressInfoPLocal!=null) {
 				setAssetEndTime(addressInfoPLocal.getAsset());
-
-				accountLogService.saveLogAndSendMail("Completed : "+
-						this.getClass().getName()
-								+ " : "
-								+ Thread.currentThread().getStackTrace()[1]
-										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getName(),
-						Commons.task_name.IPADDRESS.name(),
-						Commons.task_status.SUCCESS.ordinal(), userId);
+				accountLogService.saveLogAndSendMail("Completed : "
+						+ this.getClass().getName()
+						+ " : "
+						+ Thread.currentThread().getStackTrace()[1].getMethodName()
+								.subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+						Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
 				addressInfoPLocal.remove();
 			}
 
 		} catch (Exception e) {
-			logger.error(e);// e.printStackTrace();
+			logger.error(e);
+			e.printStackTrace();
 			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName() + ", " + e.getMessage(),
-					Commons.task_name.IPADDRESS.name(),
-					Commons.task_status.FAIL.ordinal(), userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName() + ", " + e.getMessage(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.FAIL.ordinal(), userId);
 			try {
-				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP
-						.getId());
+				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 				a.setStatus(Commons.ipaddress_STATUS.failed + "");
 				a = a.merge();
 				setAssetEndTime(a.getAsset());
@@ -307,28 +259,21 @@ public class IpAddressWorker extends Worker {
 	}// end of releaseAddress
 
 	@Async
-	public void associateAddress(final Infra infra,
-			final AddressInfoP addressInfoP, final String userId) {
+	public void associateAddress(final Infra infra, final AddressInfoP addressInfoP, final String userId) {
 		try {
 			accountLogService.saveLog(
 					"Started : "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
-							.name(), Commons.task_status.SUCCESS.ordinal(),
-					userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
 			Jec2 ec2 = getNewJce2(infra);
 
 			try {
-				logger.info("associateAddress address "
-						+ addressInfoP.getPublicIp() + " to instance "
-						+ addressInfoP.getInstanceId());
-				ec2.associateAddress(addressInfoP.getInstanceId(),
-						addressInfoP.getPublicIp());
+				logger.info("associateAddress address " + addressInfoP.getPublicIp() + " to instance " + addressInfoP.getInstanceId());
+				ec2.associateAddress(addressInfoP.getInstanceId(), addressInfoP.getPublicIp());
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 				if (e.getMessage().indexOf("Permission denied while") > -1) {
@@ -339,32 +284,26 @@ public class IpAddressWorker extends Worker {
 			}
 			String instanceIdOrig = addressInfoP.getInstanceId();
 			if (StringUtils.contains(instanceIdOrig, " ")) {
-				instanceIdOrig = StringUtils.substringBefore(instanceIdOrig,
-						" ");
+				instanceIdOrig = StringUtils.substringBefore(instanceIdOrig, " ");
 			}
 
 			InstanceP orig_compute = null;
 			try {
-				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(
-						instanceIdOrig).getSingleResult();
+				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(instanceIdOrig).getSingleResult();
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
 
 			AddressInfoP addressInfoP4PublicIp = null;
 			try {
-				addressInfoP4PublicIp = AddressInfoP
-						.findAddressInfoPsByPublicIpEquals(
-								addressInfoP.getPublicIp()).getSingleResult();
+				addressInfoP4PublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(addressInfoP.getPublicIp()).getSingleResult();
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
 
 			AddressInfoP addressInfoP4InstanceId = null;
 			try {
-				addressInfoP4InstanceId = AddressInfoP
-						.findAddressInfoPsByInstanceIdLike(instanceIdOrig)
-						.getSingleResult();
+				addressInfoP4InstanceId = AddressInfoP.findAddressInfoPsByInstanceIdLike(instanceIdOrig).getSingleResult();
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
@@ -382,20 +321,13 @@ public class IpAddressWorker extends Worker {
 				try {
 
 					List<String> params = new ArrayList<String>();
-					List<ReservationDescription> instances = ec2
-							.describeInstances(params);
+					List<ReservationDescription> instances = ec2.describeInstances(params);
 					for (ReservationDescription res : instances) {
 						if (res.getInstances() != null) {
 							HashSet<InstanceP> instancesP = new HashSet<InstanceP>();
 							for (Instance inst : res.getInstances()) {
-								logger.info(inst.getInstanceId() + " "
-										+ orig_compute.getInstanceId() + " "
-										+ inst.getDnsName() + " "
-										+ addressInfoP.getPublicIp());
-								if (inst.getInstanceId().equals(
-										orig_compute.getInstanceId())
-										&& inst.getDnsName().equals(
-												addressInfoP.getPublicIp())) {
+								logger.info(inst.getInstanceId() + " " + orig_compute.getInstanceId() + " " + inst.getDnsName()+ " " + inst.getIpAddress()  + " " + addressInfoP.getPublicIp());
+								if (inst.getInstanceId().equals(orig_compute.getInstanceId()) && inst.getIpAddress().equals(addressInfoP.getPublicIp())) {
 									match = true;
 									break outer;
 								}
@@ -404,9 +336,7 @@ public class IpAddressWorker extends Worker {
 						}// if (res.getInstances() != null) {
 					}// for (ReservationDescription res : instances) {
 
-					logger.info("Ipaddress " + addressInfoP.getPublicIp()
-							+ " getting associated; sleeping "
-							+ START_SLEEP_TIME + "ms");
+					logger.info("Ipaddress " + addressInfoP.getPublicIp() + " getting associated; sleeping " + START_SLEEP_TIME + "ms");
 					Thread.sleep(START_SLEEP_TIME);
 
 				} catch (Exception e) {
@@ -419,7 +349,7 @@ public class IpAddressWorker extends Worker {
 			}
 			if (match == true) {
 				try {
-					orig_compute.setDnsName(addressInfoP.getPublicIp());
+					orig_compute.setIpAddress(addressInfoP.getPublicIp());
 					orig_compute.merge();
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
@@ -427,10 +357,8 @@ public class IpAddressWorker extends Worker {
 
 				try {
 					addressInfoP4PublicIp.setAssociated(true);
-					addressInfoP4PublicIp.setInstanceId(orig_compute
-							.getInstanceId());
-					addressInfoP4PublicIp
-							.setStatus(Commons.ipaddress_STATUS.associated + "");
+					addressInfoP4PublicIp.setInstanceId(orig_compute.getInstanceId());
+					addressInfoP4PublicIp.setStatus(Commons.ipaddress_STATUS.associated + "");
 					addressInfoP4PublicIp.merge();
 
 				} catch (Exception e) {
@@ -440,39 +368,32 @@ public class IpAddressWorker extends Worker {
 				try {
 					addressInfoP4InstanceId.setAssociated(false);
 					addressInfoP4InstanceId.setInstanceId("somebody");
-					addressInfoP4InstanceId
-							.setStatus(Commons.ipaddress_STATUS.associated + "");
+					addressInfoP4InstanceId.setStatus(Commons.ipaddress_STATUS.associated + "");
 					addressInfoP4InstanceId.merge();
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
 				}
 
-				accountLogService.saveLogAndSendMail("Completed : "+
-						this.getClass().getName()
-								+ " : "
-								+ Thread.currentThread().getStackTrace()[1]
-										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getName(),
-						Commons.task_name.IPADDRESS.name(),
-						Commons.task_status.SUCCESS.ordinal(), userId);
+				accountLogService.saveLogAndSendMail("Completed : "
+						+ this.getClass().getName()
+						+ " : "
+						+ Thread.currentThread().getStackTrace()[1].getMethodName()
+								.subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+						Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 			}
 
 		} catch (Exception e) {
-			logger.error(e);// e.printStackTrace();
+			logger.error(e);
+			e.printStackTrace();
 			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName() + ", " + e.getMessage(),
-					Commons.task_name.IPADDRESS.name(),
-					Commons.task_status.FAIL.ordinal(), userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName() + ", " + e.getMessage(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.FAIL.ordinal(), userId);
 			try {
-				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP
-						.getId());
+				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 				a.setStatus(Commons.ipaddress_STATUS.failed + "");
 				a = a.merge();
 				setAssetEndTime(a.getAsset());
@@ -484,8 +405,7 @@ public class IpAddressWorker extends Worker {
 	}// end of associateAddress
 
 	@Async
-	public void disassociateAddress(final Infra infra,
-			final AddressInfoP addressInfoP, final String userId) {
+	public void disassociateAddress(final Infra infra, final AddressInfoP addressInfoP, final String userId) {
 		String threadName = Thread.currentThread().getName();
 
 		try {
@@ -493,15 +413,11 @@ public class IpAddressWorker extends Worker {
 					"Started : "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName(), Commons.task_name.IPADDRESS
-							.name(), Commons.task_status.SUCCESS.ordinal(),
-					userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
-			logger.debug("threadName " + threadName
-					+ " started for disassociateAddress");
+			logger.debug("threadName " + threadName + " started for disassociateAddress");
 			Jec2 ec2 = getNewJce2(infra);
 
 			try {
@@ -516,23 +432,19 @@ public class IpAddressWorker extends Worker {
 			}
 			String instanceIdOrig = addressInfoP.getInstanceId();
 			if (StringUtils.contains(instanceIdOrig, " ")) {
-				instanceIdOrig = StringUtils.substringBefore(instanceIdOrig,
-						" ");
+				instanceIdOrig = StringUtils.substringBefore(instanceIdOrig, " ");
 			}
 
 			InstanceP orig_compute = null;
 			try {
-				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(
-						instanceIdOrig).getSingleResult();
+				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(instanceIdOrig).getSingleResult();
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
 
 			AddressInfoP addressInfoP4PublicIp = null;
 			try {
-				addressInfoP4PublicIp = AddressInfoP
-						.findAddressInfoPsByPublicIpEquals(
-								addressInfoP.getPublicIp()).getSingleResult();
+				addressInfoP4PublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(addressInfoP.getPublicIp()).getSingleResult();
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
@@ -551,22 +463,15 @@ public class IpAddressWorker extends Worker {
 				try {
 
 					List<String> params = new ArrayList<String>();
-					List<ReservationDescription> instances = ec2
-							.describeInstances(params);
+					List<ReservationDescription> instances = ec2.describeInstances(params);
 					for (ReservationDescription res : instances) {
 						if (res.getInstances() != null) {
 							HashSet<InstanceP> instancesP = new HashSet<InstanceP>();
 							for (Instance inst : res.getInstances()) {
-								logger.info(inst.getInstanceId() + " "
-										+ orig_compute.getInstanceId() + " "
-										+ inst.getDnsName() + " "
-										+ addressInfoP.getPublicIp());
-								if (inst.getInstanceId().equals(
-										orig_compute.getInstanceId())
-										&& !inst.getDnsName().equals(
-												addressInfoP.getPublicIp())) {
+								logger.info(inst.getInstanceId() + " " + orig_compute.getInstanceId() + " " + inst.getDnsName()+ " " + inst.getIpAddress() + " " + addressInfoP.getPublicIp());
+								if (inst.getInstanceId().equals(orig_compute.getInstanceId()) && !inst.getIpAddress().equals(addressInfoP.getPublicIp())) {
 
-									newIp = inst.getDnsName();
+									newIp = inst.getIpAddress();
 									match = true;
 									break outer;
 								}
@@ -575,9 +480,7 @@ public class IpAddressWorker extends Worker {
 						}// if (res.getInstances() != null) {
 					}// for (ReservationDescription res : instances) {
 
-					logger.info("Ipaddress " + addressInfoP.getPublicIp()
-							+ " getting disassociated; sleeping "
-							+ START_SLEEP_TIME + "ms");
+					logger.info("Ipaddress " + addressInfoP.getPublicIp() + " getting disassociated; sleeping " + START_SLEEP_TIME + "ms");
 					Thread.sleep(START_SLEEP_TIME);
 
 				} catch (Exception e) {
@@ -589,16 +492,14 @@ public class IpAddressWorker extends Worker {
 
 			AddressInfoP addressInfoP4NewPublicIp = null;
 			try {
-				addressInfoP4NewPublicIp = AddressInfoP
-						.findAddressInfoPsByPublicIpEquals(newIp)
-						.getSingleResult();
+				addressInfoP4NewPublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(newIp).getSingleResult();
 			} catch (Exception e) {
 				logger.error(e);// e.printStackTrace();
 			}
 
 			if (match == true) {
 				try {
-					orig_compute.setDnsName(newIp);
+					orig_compute.setIpAddress(newIp);
 					orig_compute.merge();
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
@@ -607,8 +508,7 @@ public class IpAddressWorker extends Worker {
 				try {
 					addressInfoP4PublicIp.setAssociated(false);
 					addressInfoP4PublicIp.setInstanceId("available");
-					addressInfoP4PublicIp
-							.setStatus(Commons.ipaddress_STATUS.available + "");
+					addressInfoP4PublicIp.setStatus(Commons.ipaddress_STATUS.available + "");
 					addressInfoP4PublicIp.merge();
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
@@ -616,40 +516,32 @@ public class IpAddressWorker extends Worker {
 
 				try {
 					addressInfoP4NewPublicIp.setAssociated(false);
-					addressInfoP4NewPublicIp.setInstanceId(orig_compute
-							.getInstanceId());
-					addressInfoP4PublicIp
-							.setStatus(Commons.ipaddress_STATUS.available + "");
+					addressInfoP4NewPublicIp.setInstanceId(orig_compute.getInstanceId());
+					addressInfoP4PublicIp.setStatus(Commons.ipaddress_STATUS.available + "");
 					addressInfoP4NewPublicIp.merge();
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
 				}
-				accountLogService.saveLogAndSendMail("Completed : "+
-						this.getClass().getName()
-								+ " : "
-								+ Thread.currentThread().getStackTrace()[1]
-										.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-												.getMethodName().indexOf("_")) + " for "
-								+ addressInfoP.getName(),
-						Commons.task_name.IPADDRESS.name(),
-						Commons.task_status.SUCCESS.ordinal(), userId);
+				accountLogService.saveLogAndSendMail("Completed : "
+						+ this.getClass().getName()
+						+ " : "
+						+ Thread.currentThread().getStackTrace()[1].getMethodName()
+								.subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
+						Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 			}
 
 		} catch (Exception e) {
-			logger.error(e);// e.printStackTrace();
+			logger.error(e);
+			e.printStackTrace();
 			accountLogService.saveLogAndSendMail(
 					"Error in "
 							+ this.getClass().getName()
 							+ " : "
-							+ Thread.currentThread().getStackTrace()[1]
-									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
-											.getMethodName().indexOf("_")) + " for "
-							+ addressInfoP.getName() + ", " + e.getMessage(),
-					Commons.task_name.IPADDRESS.name(),
-					Commons.task_status.FAIL.ordinal(), userId);
+							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
+									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName() + ", " + e.getMessage(),
+					Commons.task_name.IPADDRESS.name(), Commons.task_status.FAIL.ordinal(), userId);
 			try {
-				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP
-						.getId());
+				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 				a.setStatus(Commons.ipaddress_STATUS.failed + "");
 				a = a.merge();
 				setAssetEndTime(a.getAsset());

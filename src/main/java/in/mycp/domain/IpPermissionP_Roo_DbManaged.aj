@@ -30,26 +30,29 @@ privileged aspect IpPermissionP_Roo_DbManaged {
     @Column(name = "uid_group_pairs", length = 45)
     private String IpPermissionP.uidGroupPairs;
     
-    @Column(name = "description", length = 255)
-    private String IpPermissionP.description;
+    @Column(name = "vcloud_name", length = 255)
+    private String IpPermissionP.vcloudName;
     
-    @Column(name = "policy", length = 45)
-    private String IpPermissionP.policy;
+    @Column(name = "vcloud_policy", length = 45)
+    private String IpPermissionP.vcloudPolicy;
     
-    @Column(name = "source_ip", length = 45)
-    private String IpPermissionP.sourceIp;
+    @Column(name = "vcloud_source_ip", length = 45)
+    private String IpPermissionP.vcloudSourceIp;
     
-    @Column(name = "source_port")
-    private Integer IpPermissionP.sourcePort;
+    @Column(name = "vcloud_source_port")
+    private Integer IpPermissionP.vcloudSourcePort;
     
-    @Column(name = "destination_ip", length = 45)
-    private String IpPermissionP.destinationIp;
+    @Column(name = "vcloud_destination_ip", length = 45)
+    private String IpPermissionP.vcloudDestinationIp;
     
-    @Column(name = "destination_port")
-    private Integer IpPermissionP.destinationPort;
+    @Column(name = "vcloud_destination_port")
+    private Integer IpPermissionP.vcloudDestinationPort;
     
-    @Column(name = "direction", length = 45)
-    private String IpPermissionP.direction;
+    @Column(name = "vcloud_direction", length = 45)
+    private String IpPermissionP.vcloudDirection;
+    
+    @Column(name = "vcloud_enabled")
+    private Boolean IpPermissionP.vcloudEnabled;
     
     public GroupDescriptionP IpPermissionP.getGroupDescription() {
         return groupDescription;
@@ -99,60 +102,68 @@ privileged aspect IpPermissionP_Roo_DbManaged {
         this.uidGroupPairs = uidGroupPairs;
     }
     
-    public String IpPermissionP.getDescription() {
-        return description;
+    public String IpPermissionP.getVcloudName() {
+        return vcloudName;
     }
     
-    public void IpPermissionP.setDescription(String description) {
-        this.description = description;
+    public void IpPermissionP.setVcloudName(String vcloudName) {
+        this.vcloudName = vcloudName;
     }
     
-    public String IpPermissionP.getPolicy() {
-        return policy;
+    public String IpPermissionP.getVcloudPolicy() {
+        return vcloudPolicy;
     }
     
-    public void IpPermissionP.setPolicy(String policy) {
-        this.policy = policy;
+    public void IpPermissionP.setVcloudPolicy(String vcloudPolicy) {
+        this.vcloudPolicy = vcloudPolicy;
     }
     
-    public String IpPermissionP.getSourceIp() {
-        return sourceIp;
+    public String IpPermissionP.getVcloudSourceIp() {
+        return vcloudSourceIp;
     }
     
-    public void IpPermissionP.setSourceIp(String sourceIp) {
-        this.sourceIp = sourceIp;
+    public void IpPermissionP.setVcloudSourceIp(String vcloudSourceIp) {
+        this.vcloudSourceIp = vcloudSourceIp;
     }
     
-    public Integer IpPermissionP.getSourcePort() {
-        return sourcePort;
+    public Integer IpPermissionP.getVcloudSourcePort() {
+        return vcloudSourcePort;
     }
     
-    public void IpPermissionP.setSourcePort(Integer sourcePort) {
-        this.sourcePort = sourcePort;
+    public void IpPermissionP.setVcloudSourcePort(Integer vcloudSourcePort) {
+        this.vcloudSourcePort = vcloudSourcePort;
     }
     
-    public String IpPermissionP.getDestinationIp() {
-        return destinationIp;
+    public String IpPermissionP.getVcloudDestinationIp() {
+        return vcloudDestinationIp;
     }
     
-    public void IpPermissionP.setDestinationIp(String destinationIp) {
-        this.destinationIp = destinationIp;
+    public void IpPermissionP.setVcloudDestinationIp(String vcloudDestinationIp) {
+        this.vcloudDestinationIp = vcloudDestinationIp;
     }
     
-    public Integer IpPermissionP.getDestinationPort() {
-        return destinationPort;
+    public Integer IpPermissionP.getVcloudDestinationPort() {
+        return vcloudDestinationPort;
     }
     
-    public void IpPermissionP.setDestinationPort(Integer destinationPort) {
-        this.destinationPort = destinationPort;
+    public void IpPermissionP.setVcloudDestinationPort(Integer vcloudDestinationPort) {
+        this.vcloudDestinationPort = vcloudDestinationPort;
     }
     
-    public String IpPermissionP.getDirection() {
-        return direction;
+    public String IpPermissionP.getVcloudDirection() {
+        return vcloudDirection;
     }
     
-    public void IpPermissionP.setDirection(String direction) {
-        this.direction = direction;
+    public void IpPermissionP.setVcloudDirection(String vcloudDirection) {
+        this.vcloudDirection = vcloudDirection;
+    }
+    
+    public Boolean IpPermissionP.getVcloudEnabled() {
+        return vcloudEnabled;
+    }
+    
+    public void IpPermissionP.setVcloudEnabled(Boolean vcloudEnabled) {
+        this.vcloudEnabled = vcloudEnabled;
     }
     
 }

@@ -51,6 +51,7 @@ function centerPopup_ipaddress(popup,backgroundPopup){
 	var max = 17;
 
 	function findAll_ipaddress(p){
+		//alert(dwr.util.toDescriptiveString(p,3));
 		/* alert(p.length);
 		alert(p[0].imageId); */
 	//alert(dwr.util.toDescriptiveString(p,3));
@@ -98,7 +99,11 @@ function centerPopup_ipaddress(popup,backgroundPopup){
             if('PENDING_APPROVAL' == p[i].status ){
             	p[i].status='<img title="pending approval" alt="pending approval" src=/images/pending.png>&nbsp;';
             	actions='<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_ipaddress('+p[i].id+')>';
-            }else if('starting' == p[i].status ){
+            }else if('starting' == p[i].status || 
+            		'associating' == p[i].status  || 
+            		'disassociating' == p[i].status  || 
+            		'releasing' == p[i].status  || 
+            		'allocating' == p[i].status){
             	p[i].status='<img title="starting" alt="starting" src=/images/preloader.gif>&nbsp;';
             	actions='';
             }else if('available' == p[i].status ){
@@ -140,7 +145,14 @@ function centerPopup_ipaddress(popup,backgroundPopup){
 				projName = p[i].asset.project.name;
 			}catch(e){}
 			
-			oTable.fnAddData( [start+i+1,p[i].name,projName,p[i].instanceId, p[i].publicIp,p[i].status,p[i].reason,p[i].asset.productCatalog.infra.name,
+			var infraName = '';
+			try{
+				infraName = p[i].asset.productCatalog.infra.name;
+			}catch(e){}
+			
+			
+			
+			oTable.fnAddData( [start+i+1,p[i].name,projName,p[i].instanceId, p[i].publicIp,p[i].status,p[i].reason,infraName,
 			                   actions ] );
 		}
 		
@@ -223,14 +235,7 @@ $(function(){
 		$(document).ready(function() {
 			$("#popupbutton_ipaddresslist").click();
 			
-			InstanceP.findAll4Attach(function(p){
-				//alert(dwr.util.toDescriptiveString(p,3));
-				dwr.util.removeAllOptions('instanceId');
-				dwr.util.addOptions('instanceId', p, 'instanceId', function(p) {
-					return p.name+' '+p.instanceId+' '+p.dnsName;
-				});
-				//dwr.util.setValue(id, sel);
-			});
+
 			
 			$("#thisform").validate({
 				 submitHandler: function(form) {
@@ -339,6 +344,16 @@ function afterEdit_ipaddress_associate(p){
 	centerPopup_ipaddress($("#popupContact_ipaddress_associate"),$("#backgroundPopup_ipaddress_associate"));
 	loadPopup_ipaddress($("#popupContact_ipaddress_associate"),$("#backgroundPopup_ipaddress_associate"));
 	dwr.util.setValues(addressInfop);
+	
+	InstanceP.findAll4Attach(addressInfop,function(p){
+		//alert(dwr.util.toDescriptiveString(p,3));
+		dwr.util.removeAllOptions('instanceId');
+		dwr.util.addOptions('instanceId', p, 'instanceId', function(p) {
+			return p.name+' '+p.instanceId+' '+p.dnsName;
+		});
+		//dwr.util.setValue(id, sel);
+	});
+	
 	dwr.util.setValue('instanceId',p.instanceId);
 	
 }
@@ -444,26 +459,26 @@ function afterSave_ipaddress(){
 								<p id="contactArea_ipaddress" class="contactArea" >
 								<input type="hidden" id="id" name="id">
 								<table style="width: 100%;">
-								  <tr>
-								    <td style="width: 50%;">Name : </td>
-								    <td style="width: 50%;"><input type="text" name="name" id="name" size="30" class="required"></td>
-								  </tr>
-								  
-								  <tr>
-								    <td style="width: 50%;">Reason : </td>
-								    <td style="width: 50%;"><input type="text" name="reason" id="reason" size="30" ></td>
-								  </tr>
 								   <tr>
 								    <td style="width: 50%;">Product : </td>
 								    <td style="width: 50%;">
-								    <select id="product" name="product" style="width: 205px;" class="required">
-							    	</select>
-							    	</td>
+								    <select id="product" name="product" style="width: 305px;" class="required"></select></td>
 								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">Name : </td>
+								    <td style="width: 50%;"><input type="text" name="name" id="name"  style="width: 305px;" maxlength="30" class="required"></td>
+								  </tr>
+								  
+								 <!--  <tr>
+								    <td style="width: 50%;">Reason : </td>
+								    <td style="width: 50%;"><input type="text" name="reason" id="reason" size="30" ></td>
+								  </tr> -->
+								  
 								  <tr>
 								    <td style="width: 20%;">project : </td>
 								    <td style="width: 80%;">
-								    <select id="projectId" name="projectId" style="width: 205px;" class="required">
+								    <select id="projectId" name="projectId" style="width: 305px;" class="required">
 							    	</select>
 							    	</td>
 								  </tr>

@@ -152,6 +152,10 @@ public class VmwareComputeWorker extends Worker {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
+			InstanceP inst = InstanceP.findInstanceP(instancePId);
+			inst.setState(Commons.REQUEST_STATUS.FAILED + "");
+			setAssetEndTime(inst.getAsset());
+			inst.merge();
 			accountLogService
 					.saveLog(
 							"Error in "

@@ -241,3 +241,14 @@ ALTER TABLE `mycp`.`volume_info_p` CHANGE COLUMN `volumeId` `volumeId` VARCHAR(2
 
 -- charu end - 03 dec 2012
 
+-- charu start - 05 dec 2012
+ALTER TABLE `mycp`.`ip_permission_p` CHANGE COLUMN `description` `vcloud_name` VARCHAR(255) NULL DEFAULT NULL  , 
+CHANGE COLUMN `policy` `vcloud_policy` VARCHAR(45) NULL DEFAULT NULL  , 
+CHANGE COLUMN `source_ip` `vcloud_source_ip` VARCHAR(45) NULL DEFAULT NULL  , 
+CHANGE COLUMN `source_port` `vcloud_source_port` INT(11) NULL DEFAULT NULL  , 
+CHANGE COLUMN `destination_ip` `vcloud_destination_ip` VARCHAR(45) NULL DEFAULT NULL  , 
+CHANGE COLUMN `destination_port` `vcloud_destination_port` INT(11) NULL DEFAULT NULL  , 
+CHANGE COLUMN `direction` `vcloud_direction` VARCHAR(45) NULL DEFAULT NULL  ;
+ALTER TABLE `mycp`.`ip_permission_p` ADD COLUMN `vcloud_enabled` TINYINT NULL  AFTER `vcloud_direction` ;
+ALTER TABLE `mycp`.`ip_permission_p` CHANGE COLUMN `vcloud_enabled` `vcloud_enabled` BIT NULL DEFAULT NULL  ;
+-- charu end - 05 dec 2012

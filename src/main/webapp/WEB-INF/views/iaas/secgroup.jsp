@@ -417,56 +417,70 @@ $(function(){
 								<input type="hidden" id="id" name="id">
 								<table  style="width: 100%;" border="0">
 								<tr>
-								    <td style="width: 20%;">Name : </td>
-								    <td style="width: 20%;">Description : </td>
-								    <td style="width: 20%;">Owner : </td>
-								    <td style="width: 20%;">Product : </td>
-								    <td style="width: 20%;">Project : </td>
-								</tr>
-								 
-								<tr valign="top">
-								    <td><input type="text" name="name" id="name" size="20" class="required"></td>
-								    <td><input type="text" name="descripton" id="descripton" size="20" class="required"></td>
-								    <td><input type="text" name="owner" id="owner" size="20" class="required"> </td>
-								    <td><select id="product" name="product" style="width: 185px;" class="required"></select>
+								    <td style="width: 10%; ">Product : </td>
+								    <td style="width: 33%; text-align: left;"><select id="product" name="product" style="width: 285px;" class="required"></select>
 								    </td>
-								    <td>
-									    <select id="projectId" name="projectId" style="width: 185px;" class="required">
-								    	</select>
-							    	</td>
 								</tr>
+								
 								</table>
-								<br>
-								<table  style="width: 100%;">
-									<tr>
-										  <td>
-											  <table style="width: 100%;" id="secTable">
-												  <tr>
-													  <td style="width: 20%;">Protocol : </td>
-													  <td style="width: 20%;">From Port : </td>
-													  <td style="width: 20%;">To Port : </td>
-													  <td style="width: 20%;">CIDR : </td>
-													  <td style="width: 5%;">
-													  	<a title="Add New Rule" onclick="addRow('secTable');return false;"> <img src="../images/add_row.png"/> </a>
-													  </td>
-													  <td style="width: 15%;"></td>
-												  </tr>
-											  </table>
-										  </td>
-									</tr>
-									<tr>
-									  	<td align="right">
-									    <br><br>
-											<div class="demo" id="popupbutton_secgroup_create">
-											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
-												<button onclick="cancelForm_secgroup(this.form);return false;">Cancel</button>
-											</div>
-										</td>
-										
-									</tr>
-								</table>
+								<table style="width: 100%;" id="otherFields" cellpadding="5" cellspacing="5"></table>
 								</p>
 							</form>
 						</div>
 		<div id="backgroundPopup_secgroup" class="backgroundPopup" ></div>
-	</div>				
+	</div>		
+	
+	<script>
+	$("#product").change(function(){
+		var tabEle = '';
+		var productCatId = parseInt($("#product").val());
+		$("#otherFields").html('');
+		ProductService.findById(productCatId, function(s){
+			if(s.infra.infraType.id == INFRA_TYPE_EUCA || s.infra.infraType.id == INFRA_TYPE_AWS){
+				tabEle = 
+					'<tr><td style=\"width: 10%;\">Project : <\/td><td style=\"width: 33%; \">'+
+					'<select id=\"projectId\" name=\"projectId\" style=\"width: 285px;\" class=\"required\"><\/select><\/td><\/tr>'+
+					'<tr><td style=\"width: 20%;\">Name : <\/td><td>'+
+					'<input type=\"text\" name=\"name\" id=\"name\" size=\"20\" style=\"width: 285px;\" maxlength=\"30\" class=\"required\"><\/td><\/tr>'+
+					'<tr><td style=\"width: 20%;\">Description : <\/td>'+
+					'<td><input type=\"text\" name=\"descripton\" id=\"descripton\" style=\"width: 285px;\" size=\"20\" maxlength=\"90\" class=\"required\"><\/td><\/tr>'+
+					'<tr><td style=\"width: 20%;\">Owner : <\/td><td>'+
+					'<input type=\"text\" name=\"owner\" id=\"owner\" size=\"20\" maxlength=\"20\" style=\"width: 285px;\" class=\"required\"> <\/td><\/tr> <\/table>'+
+					'<br><table  style=\"width: 100%;\">\t<tr>  <td>  <table style=\"width: 100%;\" id=\"secTable\"> '+
+					' <tr><td style=\"width: 20%;\">Protocol : <\/td><td style=\"width: 20%;\">From Port : <\/td> '+
+					'<td style=\"width: 20%;\">To Port : <\/td><td style=\"width: 20%;\">CIDR : <\/td><td style=\"width: 5%;\">'+
+					'<a title=\"Add New Rule\" onclick=\"addRow(\'secTable\');return false;\"> <img src=\"..\/images\/add_row.png\"\/> <\/a><\/td>'+
+					'<td style=\"width: 15%;\"><\/td>  <\/tr>  <\/table>  <\/td>\t<\/tr>\t<tr>\t<td align=\"right\">  <br><br>'+
+					'<div class=\"demo\" id=\"popupbutton_secgroup_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>'+
+					'&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_secgroup(this.form);return false;\">Cancel<\/button><\/div><\/td><\/tr>';
+					
+			}else if(s.infra.infraType.id == INFRA_TYPE_VCLOUD){
+				tabEle = '<tr><td style=\"width: 50%;\">Name : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"61\" maxlength=\"90\" class=\"required\"><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><select id=\"image\" name=\"image\" style=\"width:385px;\" class=\"required\"></select>\n<\/td>  <\/tr>' 
+					+'<tr><td style=\"width: 50%;\">Security Group : <\/td><td style=\"width: 50%;\"><select id=\"groupName\" name=\"groupName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td><\/tr>'
+					+'<tr><td style=\"width: 50%;\">project : <\/td><td style=\"width: 50%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
+					+'<tr><td style=\"width: 50%;\"><\/td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_compute_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>'+
+					'&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_compute(this.form);return false;\">Cancel<\/button><\/div><\/td>  <\/tr>';
+			} 
+			$("#otherFields").html(tabEle);
+			
+			ProjectService.findAll(function(p){
+				dwr.util.removeAllOptions('projectId');
+				//dwr.util.addOptions('project', p, 'id', 'name');
+				dwr.util.addOptions('projectId', p, 'id', function(p) {
+					return p.name+' @ '+p.department.name;
+				});
+			});
+			
+		});
+	} );
+</script>
+	
+			<!-- 
+			Charu : 
+			
+			what I need for vcloud:
+			
+			https://dl.dropbox.com/u/48692478/secgroup_jsp.JPG
+			
+			 -->

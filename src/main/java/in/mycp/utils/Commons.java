@@ -85,7 +85,7 @@ public class Commons {
 	}
 
 	static public enum ipaddress_STATUS {
-		starting,available,associated,failed
+		starting,associating,disassociating,releasing,allocating, available,associated,failed,released,disassociated
 	}
 
 	static public enum keypair_STATUS {
@@ -187,15 +187,15 @@ public class Commons {
 			}
 		}
 		long userAssetCost = reportService.getAllAssetCosts("user", currentUser.getId()).getTotalCost();
-		if(currentUser.getQuota()<=userAssetCost)
+		if(currentUser.getQuota()>0 && currentUser.getQuota()<=userAssetCost)
 			throw new Exception("User "+Commons.QUOTA_EXCEED_MSG);
 		long deptAssetCost = reportService.getAllAssetCosts("department", department.getId()).getTotalCost();
-		if(department.getQuota()<=deptAssetCost)
+		if(department.getQuota()>0 && department.getQuota()<=deptAssetCost)
 			throw new Exception("Department "+Commons.QUOTA_EXCEED_MSG);
 		Set<Project> stProjects = department.getProjects();
 		for (Project project : stProjects) {
 			long projAssetCost = reportService.getAllAssetCosts("project", project.getId()).getTotalCost();
-			if(project.getQuota()<=projAssetCost)
+			if(project.getQuota()>0 && project.getQuota()<=projAssetCost)
 				throw new Exception("Project "+Commons.QUOTA_EXCEED_MSG);
 		}
 		/*long minQuota = Math.round(0.1 * currentUser.getQuota());
