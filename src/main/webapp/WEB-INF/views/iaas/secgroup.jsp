@@ -6,31 +6,55 @@
 <script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
 <script type="text/javascript">
 	function clearTable(tableID) {
-		$(document.getElementById(tableID)).find("tr:gt(0)").remove();	
+		//$(document.getElementById(tableID)).find("tr:gt(0)").remove();
+		$('#'+tableID).html('');
 	}
-
-	function addRowWithData(tableID,id,protocol,fromPort,toPort,cidrIps) {
-		var table = document.getElementById('secTable');
-
-			var rowData = '<tr valign="top">'+
-					'<input type="hidden" name="ids" id="ids" value=\''+id+'\'>'+	  
-					'<td style="width: 20%;"><input type="text" name="protocol" id="protocol" size="20" value=\''+protocol+'\' class="required"></td>'+
-				  '<td style="width: 20%;"><input type="text" name="fromPort" id="fromPort" size="20" value=\''+fromPort+'\' class="required number"></td>'+
-				  '<td style="width: 20%;"><input type="text" name="toPort" id="toPort" size="20" value=\''+toPort+'\' class="required number"></td>'+
-				  '<td style="width: 20%;"><input type="text" name="cidrIps" id="cidrIps" size="20" value=\''+cidrIps+'\' ></td>'+
-				  '<td style="width: 5%;">'+
-						'<a title="Remove Rule" onclick="deleteRow(this,'+id+')"><img src=../images/minus.png></a>'+
-				  '</td>'+
-			  '</tr>';
-			  
-		    $('#'+tableID+' tr:last').after(rowData);
-		}
 	
-	function addRow(tableID) {
-	var table = document.getElementById('secTable');
-
+	function addRowLabel(tableID){
+		var rowData = '<tr>'+
+			'<td style=\"width: 20%;\">Protocol : <\/td>'+
+			'<td style=\"width: 20%;\">From Port : <\/td>'+
+			'<td style=\"width: 20%;\">To Port : <\/td>'+
+			'<td style=\"width: 20%;\">CIDR : <\/td>'+
+			'<td style=\"width: 5%;\">\t<a title=\"Add New Rule\" onclick=\"addRow(\'secTable\');return false;\"> <img src=\"..\/images\/add_row.png\"\/> <\/a><\/td>'+
+			'<td style=\"width: 15%;\"><\/td>'+
+		'<\/tr>';
+		$('#'+tableID).append(rowData);
+	}
+	
+	function addRowLabelVcloud(tableID){
+		var rowData = '<tr style="font-size:12px;">'+
+			'<td style=\"width: 5%;\">Name : <\/td>'+
+			'<td style=\"width: 5%;\">Direction : <\/td>'+
+			'<td style=\"width: 5%;\">Source IP : <\/td>'+
+			'<td style=\"width: 5%;\">Source Port : <\/td>'+
+			'<td style=\"width: 5%;\">Destination IP : <\/td>'+
+			'<td style=\"width: 5%;\">Destination Port : <\/td>'+
+			'<td style=\"width: 5%;\">Protocol : <\/td>'+
+			'<td style=\"width: 5%;\">Action : <\/td>'+
+			'<td style=\"width: 5%;\">Enabled : <\/td>'+
+			'<td style=\"width: 5%;\">\t<a title=\"Add New Rule\" onclick=\"addRowVcloud(\'secTable\');return false;\"> <img src=\"..\/images\/add_row.png\"\/> <\/a><\/td>'+
+		'<\/tr>';
+		$('#'+tableID).append(rowData);
+	}
+	
+	function addRowWithData(tableID,id,protocol,fromPort,toPort,cidrIps) {
 		var rowData = '<tr valign="top">'+
-				'<input type="hidden" name="ids" id="ids" value=0>'+
+				'<input type="hidden" name="ids" id="ids" value=\''+id+'\'>'+	  
+				'<td style="width: 20%;"><input type="text" name="protocol" id="protocol" size="20" value=\''+protocol+'\' class="required"></td>'+
+			  '<td style="width: 20%;"><input type="text" name="fromPort" id="fromPort" size="20" value=\''+fromPort+'\' class="required number"></td>'+
+			  '<td style="width: 20%;"><input type="text" name="toPort" id="toPort" size="20" value=\''+toPort+'\' class="required number"></td>'+
+			  '<td style="width: 20%;"><input type="text" name="cidrIps" id="cidrIps" size="20" value=\''+cidrIps+'\' ></td>'+
+			  '<td style="width: 5%;">'+
+					'<a title="Remove Rule" onclick="deleteRow(this,'+id+')"><img src=../images/minus.png></a>'+
+			  '</td>'+
+		  '</tr>';
+		$('#'+tableID).append(rowData);
+	}
+	
+	function addRow(tableID){
+		var rowData = '<tr valign="top">'+
+			  '<input type="hidden" name="ids" id="ids" value=0>'+
 			  '<td style="width: 20%;"><input type="text" name="protocol" id="protocol" size="20" class="required"></td>'+
 			  '<td style="width: 20%;"><input type="text" name="fromPort" id="fromPort" size="20" class="required number"></td>'+
 			  '<td style="width: 20%;"><input type="text" name="toPort" id="toPort" size="20" class="required number"></td>'+
@@ -40,7 +64,52 @@
 			  '</td>'+
 		  '</tr>';
 		  
-	    $('#'+tableID+' tr:last').after(rowData);
+	    $('#'+tableID).append(rowData);
+	}
+	
+	function addRowVcloud(tableID,id,protocol,fromPort,toPort,cidrIps) {
+		var rowData = '<tr valign="top">'+
+			  '<input type="hidden" name="ids" id="ids" value=0>'+
+			  '<td style="width: 5%;"><input type="text" name="rname" id="rname" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><select name="direction" id="direction" style="width:80px;" class="required"></select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="sourceIP" id="sourceIP" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><select name="sourcePort" id="sourcePort" style="width:80px;" class="required"></select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="destinationIP" id="destinationIP" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><select name="destinationPort" id="destinationPort" style="width:80px;" class="required number"></select></td>'+
+			  '<td style="width: 5%;"><select name="protocol" id="protocol" style="width:80px;" class="required number"></select></td>'+
+			  '<td style="width: 5%;"><select name="action" id="action" style="width:80px;" class="required number"></select></td>'+
+			  '<td style="width: 5%;"><input type="checkbox" name="status" id="status" size="10" ></td>'+
+			  '<td style="width: 5%;">'+
+					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
+			  '</td>'+
+		  '</tr>';
+		  
+	    $('#'+tableID).append(rowData);
+	}
+	
+	function addRowWithDataVcloud(tableID, ipPermissionP) {
+		var rowData = '<tr valign="top">'+
+			  '<input type="hidden" name="ids" id="ids" value=0>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudName" id="vcloudName" size="10" value=\''+ipPermissionP.vcloudName+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><select name="vcloudDirection" id="vcloudDirection" style="width:80px;" class="required">'+ 
+			  		'<option value=\''+ipPermissionP.vcloudDirection+'\'>'+ipPermissionP.vcloudDirection+'</option></select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudSourceIp" id="vcloudSourceIp" size="10" value=\''+ipPermissionP.vcloudSourceIp+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><select name="vcloudSourcePort" id="vcloudSourcePort" style="width:80px;" class="required">'+ 
+			  		'<option value=\''+ipPermissionP.vcloudSourcePort+'\'>'+ipPermissionP.vcloudSourcePort+'</option></select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudDestinationIp" id="vcloudDestinationIp" size="10" value=\''+ipPermissionP.vcloudDestinationIp+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><select name="vcloudDestinationPort" id="vcloudDestinationPort" style="width:80px;" class="required number">'+
+			  		'<option value=\''+ipPermissionP.vcloudDestinationPort+'\'>'+ipPermissionP.vcloudDestinationPort+'</option></select></td>'+
+			  '<td style="width: 5%;"><select name="protocol" id="protocol" style="width:80px;" class="required number">'+
+			  		'<option value=\''+ipPermissionP.protocol+'\'>'+ipPermissionP.protocol+'</option></select></td>'+
+			  '<td style="width: 5%;"><select name="action" id="action" style="width:80px;" class="required number">'+ 
+			  		'<option value=\''+ipPermissionP.protocol+'\'>'+ipPermissionP.protocol+'</option></select></td>'+
+			  '<td style="width: 5%;"><input type="checkbox" name="vcloudEnabled" id="vcloudEnabled" size="10" checked=\''+ipPermissionP.vcloudEnabled+'\' ></td>'+
+			  '<td style="width: 5%;">'+
+					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
+			  '</td>'+
+		  '</tr>';
+		  
+	    $('#'+tableID).append(rowData);
 	}
 	
 	function deleteRow(row,id) {
@@ -186,63 +255,59 @@
 	}
 
 	var viewed_secgroup = -1;	
-$(function(){
-	
-	
+	$(function(){
 		$("#popupbutton_secgroup").click(function(){
-			
 			viewed_secgroup = -1;
 			centerPopup_secgroup();
 			loadPopup_secgroup();
-				var groupDescriptionp = {  id:null,name:null, url:null };
-			  	dwr.util.setValues(groupDescriptionp);
-			  	clearTable('secTable');
-			  	addRow('secTable');
-			  
+			var groupDescriptionp = {  id:null,name:null, url:null };
+		  	dwr.util.setValues(groupDescriptionp);
+		  	clearTable('secTable');
+		  	addRowLabel('secTable');
+		  	addRow('secTable');
 		});
-	
 		
-			$("#popupbutton_secgrouplist").click(function(){
-				
-					dwr.engine.beginBatch();
-					start =0;
-					$('#SearchField').val('');
-					GroupDescriptionP.findAll4Edit(start,max,'',findAll_secgroup);
-				  dwr.engine.endBatch();
-			} );
+		$("#popupbutton_secgrouplist").click(function(){
 			
-			$("#popupbutton_previous").click(function(){
-				if(start>16){
-					start=start -17;
-				}
-				var text2Search = dwr.util.getValue("SearchField");
-				GroupDescriptionP.findAll4Edit(start,max,text2Search,findAll_secgroup);
-			} );
+				dwr.engine.beginBatch();
+				start =0;
+				$('#SearchField').val('');
+				GroupDescriptionP.findAll4Edit(start,max,'',findAll_secgroup);
+			  dwr.engine.endBatch();
+		} );
+		
+		$("#popupbutton_previous").click(function(){
+			if(start>16){
+				start=start -17;
+			}
+			var text2Search = dwr.util.getValue("SearchField");
+			GroupDescriptionP.findAll4Edit(start,max,text2Search,findAll_secgroup);
+		} );
+		
+		$("#popupbutton_next").click(function(){
+			start = start +17;
+			var text2Search = dwr.util.getValue("SearchField");
+			GroupDescriptionP.findAll4Edit(start,max,text2Search,findAll_secgroup);
+		} );
+		
+		$("#popupbutton_search").click(function(){
 			
-			$("#popupbutton_next").click(function(){
-				start = start +17;
-				var text2Search = dwr.util.getValue("SearchField");
-				GroupDescriptionP.findAll4Edit(start,max,text2Search,findAll_secgroup);
-			} );
+			var text2Search = dwr.util.getValue("SearchField");
+			start = 0;
+			GroupDescriptionP.findAll4Edit(start,max,text2Search,findAll_secgroup);
 			
-			$("#popupbutton_search").click(function(){
-				
-				var text2Search = dwr.util.getValue("SearchField");
-				start = 0;
-				GroupDescriptionP.findAll4Edit(start,max,text2Search,findAll_secgroup);
-				
-			} );
-	
-			ProjectService.findAll(function(p){
-				dwr.util.removeAllOptions('projectId');
-				//dwr.util.addOptions('project', p, 'id', 'name');
-				dwr.util.addOptions('projectId', p, 'id', function(p) {
-					return p.name+' @ '+p.department.name;
-				});
-				//dwr.util.setValue(id, sel);
-				
+		} );
+
+		ProjectService.findAll(function(p){
+			dwr.util.removeAllOptions('projectId');
+			//dwr.util.addOptions('project', p, 'id', 'name');
+			dwr.util.addOptions('projectId', p, 'id', function(p) {
+				return p.name+' @ '+p.department.name;
 			});
+			//dwr.util.setValue(id, sel);
+			
 		});
+	});
 
 		$("#popupContactClose_secgroup").click(function(){
 			viewed_secgroup = -1;
@@ -266,6 +331,7 @@ $(function(){
   				dwr.util.removeAllOptions('product');
   				dwr.util.addOptions('product', p,'id','name');
   				//dwr.util.setValue(id, sel);
+  				$("#product").attr('disabled', true);
   			});
 			
 			$("#thisform").validate({
@@ -320,19 +386,36 @@ $(function(){
 	}
 	
 	function afterEdit_secgroup(p){
+		clearTable('secTable');
 		viewed_secgroup=p.id;
 		centerPopup_secgroup();
 		loadPopup_secgroup();
 		dwr.util.setValues(p);
-		dwr.util.setValue('product',p.product.id);
-		clearTable('secTable');
-		IpPermissionP.findBySecurityGroup(p,function(p) {
-			for (j=0;j<p.length;j++)
-			{
-				addRowWithData('secTable',p[j].id,p[j].protocol,p[j].fromPort,p[j].toPort,p[j].cidrIps);
-				//addRow('secTable');//alert(p[j].protocol);
-			}
-		});
+		dwr.util.setValue('product',p.asset.productCatalog.id);
+		$("#product").attr("disabled", true);
+		var infraType = p.asset.productCatalog.infra.infraType.id;
+		if(infraType == INFRA_TYPE_EUCA || infraType == INFRA_TYPE_AWS){
+			addRowLabel('secTable');
+			IpPermissionP.findBySecurityGroup(p,function(p) {
+				for (j=0;j<p.length;j++)
+				{
+					addRowWithData('secTable',p[j].id,p[j].protocol,p[j].fromPort,p[j].toPort,p[j].cidrIps);
+				}
+			});
+		}else if(infraType == INFRA_TYPE_VCLOUD){
+			$("#projectId").attr("disabled", true);
+			$("#name").attr("disabled", true);
+			$("#descripton").attr("disabled", true);
+			$("#rowOwner").remove();
+			
+			addRowLabelVcloud('secTable');
+			IpPermissionP.findBySecurityGroup(p,function(p) {
+				for (j=0;j<p.length;j++)
+				{
+					addRowWithDataVcloud('secTable',p[j]);
+				}
+			});
+		}
 		//if(p.ipPermissionPs!=null && p.ipPermissionPs.length>0){
 			//var j=0;
 			//for (j=0;j<p.ipPermissionPs.length;j++)
@@ -416,71 +499,52 @@ $(function(){
 								<p id="contactArea_secgroup" class="contactArea" >
 								<input type="hidden" id="id" name="id">
 								<table  style="width: 100%;" border="0">
-								<tr>
-								    <td style="width: 10%; ">Product : </td>
-								    <td style="width: 33%; text-align: left;"><select id="product" name="product" style="width: 285px;" class="required"></select>
-								    </td>
-								</tr>
-								
+									<tr>
+									    <td style="width: 20%;">Product : </td>
+									    <td><select id="product" name="product" style="width: 250px;" class="required"></select></td>
+									 </tr>
+									<tr>
+									    <td style="width: 20%;">Project : </td>
+									     <td>
+										    <select id="projectId" name="projectId" style="width: 250px;" class="required">
+									    	</select>
+								    	</td>
+									</tr>
+									<tr>
+									    <td style="width: 20%;">Name : </td>
+									    <td><input type="text" name="name" id="name" size="39" class="required"></td>
+									</tr>
+									<tr>
+									    <td style="width: 20%;">Description : </td>
+									    <td><input type="text" name="descripton" id="descripton" size="39" class="required"></td>
+									 </tr>
+									<tr id="rowOwner">
+									    <td style="width: 20%;">Owner : </td>
+									    <td><input type="text" name="owner" id="owner" size="39" class="required"> </td>
+									 </tr>
 								</table>
-								<table style="width: 100%;" id="otherFields" cellpadding="5" cellspacing="5"></table>
+								<br>
+								<table  style="width: 100%;">
+									<tr>
+										  <td>
+											  <table style="width: 100%;" id="secTable" border="0">
+											  </table>
+										  </td>
+									</tr>
+									<tr>
+									  	<td align="right">
+									    <br><br>
+											<div class="demo" id="popupbutton_secgroup_create">
+											<input class="submit" type="submit" value="Save"/>&nbsp;&nbsp;&nbsp;&nbsp;
+												<button onclick="cancelForm_secgroup(this.form);return false;">Cancel</button>
+											</div>
+										</td>
+										
+									</tr>
+								</table>
 								</p>
 							</form>
 						</div>
 		<div id="backgroundPopup_secgroup" class="backgroundPopup" ></div>
-	</div>		
+	</div>
 	
-	<script>
-	$("#product").change(function(){
-		var tabEle = '';
-		var productCatId = parseInt($("#product").val());
-		$("#otherFields").html('');
-		ProductService.findById(productCatId, function(s){
-			if(s.infra.infraType.id == INFRA_TYPE_EUCA || s.infra.infraType.id == INFRA_TYPE_AWS){
-				tabEle = 
-					'<tr><td style=\"width: 10%;\">Project : <\/td><td style=\"width: 33%; \">'+
-					'<select id=\"projectId\" name=\"projectId\" style=\"width: 285px;\" class=\"required\"><\/select><\/td><\/tr>'+
-					'<tr><td style=\"width: 20%;\">Name : <\/td><td>'+
-					'<input type=\"text\" name=\"name\" id=\"name\" size=\"20\" style=\"width: 285px;\" maxlength=\"30\" class=\"required\"><\/td><\/tr>'+
-					'<tr><td style=\"width: 20%;\">Description : <\/td>'+
-					'<td><input type=\"text\" name=\"descripton\" id=\"descripton\" style=\"width: 285px;\" size=\"20\" maxlength=\"90\" class=\"required\"><\/td><\/tr>'+
-					'<tr><td style=\"width: 20%;\">Owner : <\/td><td>'+
-					'<input type=\"text\" name=\"owner\" id=\"owner\" size=\"20\" maxlength=\"20\" style=\"width: 285px;\" class=\"required\"> <\/td><\/tr> <\/table>'+
-					'<br><table  style=\"width: 100%;\">\t<tr>  <td>  <table style=\"width: 100%;\" id=\"secTable\"> '+
-					' <tr><td style=\"width: 20%;\">Protocol : <\/td><td style=\"width: 20%;\">From Port : <\/td> '+
-					'<td style=\"width: 20%;\">To Port : <\/td><td style=\"width: 20%;\">CIDR : <\/td><td style=\"width: 5%;\">'+
-					'<a title=\"Add New Rule\" onclick=\"addRow(\'secTable\');return false;\"> <img src=\"..\/images\/add_row.png\"\/> <\/a><\/td>'+
-					'<td style=\"width: 15%;\"><\/td>  <\/tr>  <\/table>  <\/td>\t<\/tr>\t<tr>\t<td align=\"right\">  <br><br>'+
-					'<div class=\"demo\" id=\"popupbutton_secgroup_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>'+
-					'&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_secgroup(this.form);return false;\">Cancel<\/button><\/div><\/td><\/tr>';
-					
-			}else if(s.infra.infraType.id == INFRA_TYPE_VCLOUD){
-				tabEle = '<tr><td style=\"width: 50%;\">Name : <\/td><td style=\"width: 50%;\"><input type=\"text\" name=\"name\" id=\"name\" size=\"61\" maxlength=\"90\" class=\"required\"><\/td>  <\/tr>'
-					+'<tr><td style=\"width: 50%;\">Image : <\/td><td style=\"width: 50%;\"><select id=\"image\" name=\"image\" style=\"width:385px;\" class=\"required\"></select>\n<\/td>  <\/tr>' 
-					+'<tr><td style=\"width: 50%;\">Security Group : <\/td><td style=\"width: 50%;\"><select id=\"groupName\" name=\"groupName\" style=\"width: 385px;\" class=\"required\"><\/select><\/td><\/tr>'
-					+'<tr><td style=\"width: 50%;\">project : <\/td><td style=\"width: 50%;\"><select id=\"projectId\" name=\"projectId\" style=\"width: 385px;\" class=\"required\"><\/select><\/td>  <\/tr>'
-					+'<tr><td style=\"width: 50%;\"><\/td><td style=\"width: 50%;\"><br><br><div class=\"demo\" id=\"popupbutton_compute_create\"><input class=\"submit\" type=\"submit\" value=\"Save\"\/>'+
-					'&nbsp;&nbsp;&nbsp;&nbsp;<button onclick=\"cancelForm_compute(this.form);return false;\">Cancel<\/button><\/div><\/td>  <\/tr>';
-			} 
-			$("#otherFields").html(tabEle);
-			
-			ProjectService.findAll(function(p){
-				dwr.util.removeAllOptions('projectId');
-				//dwr.util.addOptions('project', p, 'id', 'name');
-				dwr.util.addOptions('projectId', p, 'id', function(p) {
-					return p.name+' @ '+p.department.name;
-				});
-			});
-			
-		});
-	} );
-</script>
-	
-			<!-- 
-			Charu : 
-			
-			what I need for vcloud:
-			
-			https://dl.dropbox.com/u/48692478/secgroup_jsp.JPG
-			
-			 -->
