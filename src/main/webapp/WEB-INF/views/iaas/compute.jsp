@@ -124,7 +124,7 @@
 				'<img class="clickimg" title="Edit" alt="Edit" src=/images/edit.png onclick=edit_compute('+p[i].id+')>&nbsp; '+
                 '<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>'
             
-            if('running' == state || 'RUNNING' == state || 'POWERED_ON' == state){
+            if('running' == state || 'RUNNING' == state ){
 				state='<img  title="Running" alt="Running" src=../images/running.png>&nbsp;';
 				//Euca 2.0 does not impl stop and reboot
 				//actions='<img alt="Edit" src=../images/stop.png onclick=stop_compute('+p[i].id+')>&nbsp; '+
@@ -139,7 +139,7 @@
                 
                 
                 //'<img class="clickimg" title="Delete" alt="Remove" src=/images/deny.png onclick=remove_compute('+p[i].id+')>';
-			}else if('STOPPED' == state  || 'POWERED_OFF' == state){
+			}else if('STOPPED' == state  || 'stopped' == state){
 				
 				state='<img  title="Stopped" alt="Stopped" src=../images/waiting.png>&nbsp;';
 				if(p[i].instanceType,p[i].asset.productCatalog.infra.infraType.id == INFRA_TYPE_VCLOUD){

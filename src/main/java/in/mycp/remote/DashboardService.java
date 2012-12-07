@@ -85,6 +85,7 @@ public class DashboardService {
 				
 			} else {
 				Company c = Company.findCompany(Commons.getCurrentSession().getCompanyId());
+				
 				dto.setInstanceCount(InstanceP.findInstanceCountByCompany(c,
 						Commons.REQUEST_STATUS.running + "").intValue());
 				dto.setVolCount(VolumeInfoP.findVolumeInfoCountByCompany(c,

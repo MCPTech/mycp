@@ -152,13 +152,13 @@ public class Commons {
 	
 	public static String QUOTA_EXCEED_MSG = "Quota Exceeded.";
 	
-	public static String QUOTA_ABOVETO_EXCEED_MSG = "Quota Above Exceed.";
+	public static String QUOTA_ABOUTTO_EXCEED_MSG = "Quota Above Exceed.";
 	
 	public static int PRIVATE_CLOUD_EDITION_ENABLED=1;
 	public static int HOSTED_EDITION_ENABLED=2;
 	public static int SERVICE_PROVIDER_EDITION_ENABLED=3;
 	
-	public static int EDITION_ENABLED=HOSTED_EDITION_ENABLED;
+	public static int EDITION_ENABLED=SERVICE_PROVIDER_EDITION_ENABLED;
 	
 
 	public static List getAllJbpmProcDefNames() {

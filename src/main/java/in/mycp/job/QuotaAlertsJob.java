@@ -53,7 +53,7 @@ public class QuotaAlertsJob implements EventListener {
 					if(company.getQuota() <= companyAssetCost){
 						throw new Exception("Company '"+company.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 					}else if( company.getQuota()-companyAssetCost <= company.getMinBal() ){
-						throw new Exception("Company '"+company.getName()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+						throw new Exception("Company '"+company.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 					}
 				}
 				
@@ -65,7 +65,7 @@ public class QuotaAlertsJob implements EventListener {
 					if(department.getQuota()<=deptAssetCost){
 						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 					}else if(department.getQuota()>0 && (department.getQuota()-deptAssetCost <= minQuota))
-						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 					
 					Set<Project> lstProjects = department.getProjects();
 					for (Project project : lstProjects) {
@@ -75,7 +75,7 @@ public class QuotaAlertsJob implements EventListener {
 						if(project.getQuota()<=projAssetCost)
 							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 						else if(project.getQuota()>0 && (project.getQuota()-projAssetCost <= minQuota))
-							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 						
 					}
 					Set<User> stUsers = department.getUsers();
@@ -86,7 +86,7 @@ public class QuotaAlertsJob implements EventListener {
 						if(user.getQuota()<=userAssetCost){
 							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_EXCEED_MSG);
 						}else if(user.getQuota()>0 && user.getQuota()-userAssetCost <= minQuota)
-							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 					}
 				}
 			}catch(Exception ex){

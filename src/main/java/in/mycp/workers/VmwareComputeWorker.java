@@ -132,6 +132,7 @@ public class VmwareComputeWorker extends Worker {
 						Commons.task_status.SUCCESS.ordinal(), userId);
 				
 			} else {
+				logger.error(" after reset vapp is not in powered on state but in "+Vapp.getVappByReference(vcloudClient, vapp.getReference()).getVappStatus());
 				currentCompute.setState(Commons.REQUEST_STATUS.FAILED + "");
 				setAssetEndTime(currentCompute.getAsset());
 				currentCompute.merge();
@@ -607,7 +608,7 @@ public class VmwareComputeWorker extends Worker {
 					double d2 = new BigDecimal("1024").doubleValue();
 					
 					double memorySizeGB = d1/d2;
-					String vmStatus = vm.getVMStatus().name();
+					String vmStatus = Commons.REQUEST_STATUS.running+ "";//vm.getVMStatus().name();
 					
 					logger.info("Name ="+vm.getResource().getName()+" isDeployed = " 
 							+ vm.isDeployed() + " , NoOfCpus = "
