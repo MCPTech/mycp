@@ -41,19 +41,19 @@ public class AsyncWorker  {
 		String threadName = Thread.currentThread().getName();
 		try {
 	         logger.info(threadName+" Started.");
-	         System.out.println(threadName+" Started.");
+	         //System.out.println(threadName+" Started.");
 	         
 	         while(1==1){
 	         Thread.sleep(10);
 	         logger.info(threadName+" doing-----.");
-	         System.out.println(threadName+" doing-----.");
+	        // System.out.println(threadName+" doing-----.");
 	         
 	         }
 	         
 	         
 	        }catch (InterruptedException e) {
 	        	logger.info(threadName+" Interrupted.");
-	        	System.out.println(threadName+" Interrupted.");
+	        	//System.out.println(threadName+" Interrupted.");
 	            Thread.currentThread().interrupt();
 	        }
 		

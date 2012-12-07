@@ -376,7 +376,7 @@ public class ReportService {
 							//just to get teh active ones only
 							assets2return = new ArrayList<Asset>();
 							assets2return = fillCommonComputeInfo(assets, assets2return);
-							System.out.println("assets2return.size() = "+assets2return.size());
+							//System.out.println("assets2return.size() = "+assets2return.size());
 							for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
@@ -495,7 +495,7 @@ public class ReportService {
 
 						try {
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-							System.out.println(" is it coming here ?/n/n**************************************************************************************/n/n ");
+							//System.out.println(" is it coming here ?/n/n**************************************************************************************/n/n ");
 							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();

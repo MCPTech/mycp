@@ -46,7 +46,7 @@ public class QuotaAlertsJob implements EventListener {
 		for (Company company : lstCompany) {
 			 Hibernate.initialize(company);
 			//company = Company.findCompany(company.getId());
-			System.out.println("company : "+company.getName());
+			//System.out.println("company : "+company.getName());
 			try{
 				long companyAssetCost = reportService.getAllAssetCosts("company", company.getId()).getTotalCost();
 				if(company.getQuota()>0){
@@ -59,7 +59,7 @@ public class QuotaAlertsJob implements EventListener {
 				
 				Set<Department> lstdeDepartments = company.getDepartments();
 				for (Department department : lstdeDepartments) {
-					System.out.println("department : "+department.getName());
+					//System.out.println("department : "+department.getName());
 					long deptAssetCost = reportService.getAllAssetCosts("department", department.getId()).getTotalCost();
 					long minQuota = Math.round(0.1 * department.getQuota());
 					if(department.getQuota()<=deptAssetCost){
@@ -69,7 +69,7 @@ public class QuotaAlertsJob implements EventListener {
 					
 					Set<Project> lstProjects = department.getProjects();
 					for (Project project : lstProjects) {
-						System.out.println("project : "+project.getName());
+						//System.out.println("project : "+project.getName());
 						long projAssetCost = reportService.getAllAssetCosts("project", project.getId()).getTotalCost();
 						minQuota = Math.round(0.1 * project.getQuota());
 						if(project.getQuota()<=projAssetCost)
@@ -80,7 +80,7 @@ public class QuotaAlertsJob implements EventListener {
 					}
 					Set<User> stUsers = department.getUsers();
 					for (User user : stUsers) {
-						System.out.println("user : "+user.getEmail());
+						//System.out.println("user : "+user.getEmail());
 						long userAssetCost = reportService.getAllAssetCosts("user", user.getId()).getTotalCost();
 						minQuota = Math.round(0.1 * user.getQuota());
 						if(user.getQuota()<=userAssetCost){

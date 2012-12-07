@@ -50,7 +50,7 @@ while( deptHashKeys.hasMoreElements() ) {
   <%
   for (Iterator iterator = deptList.iterator(); iterator.hasNext();) {
 		Asset asset = (Asset) iterator.next();
-		System.out.println("  "+deptName+" "+deptList.size());
+		//System.out.println("  "+deptName+" "+deptList.size());
 		totalCost = totalCost+asset.getCost();
 %>
 							<tr >

@@ -267,7 +267,7 @@ public class VmwareComputeWorker extends Worker {
 	public void stopCompute(final Infra infra, final int instancePId,
 			final String userId) {
 		InstanceP instanceP = null;
-		System.out.println("");
+		//System.out.println("");
 		try {
 
 			logger.info("stopCompute " + infra.getCompany().getName()
@@ -405,7 +405,7 @@ public class VmwareComputeWorker extends Worker {
 					logger.info(e.getMessage());
 					if (e.getMessage()!=null && e.getMessage().contains("No access to entity")){
 						
-						System.out.println("instancePId = "+instancePId);
+						//System.out.println("instancePId = "+instancePId);
 					
 				InstanceP instanceP = InstanceP.findInstanceP(instancePId);
 						/*.findInstancePsByInstanceIdEquals(instancePId+"")
@@ -675,8 +675,8 @@ public class VmwareComputeWorker extends Worker {
 							for (Iterator iterator5 = vdisks.iterator(); iterator5.hasNext();) {
 								VirtualDisk virtualDisk = (VirtualDisk) iterator5.next();
 								if (virtualDisk.isHardDisk()) {
-									System.out.println("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
-											+ virtualDisk.getHardDiskBusType() + " , virtualDisk.getHardDiskSize() = " + virtualDisk.getHardDiskSize());
+									/*System.out.println("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
+											+ virtualDisk.getHardDiskBusType() + " , virtualDisk.getHardDiskSize() = " + virtualDisk.getHardDiskSize());*/
 									diskSizeGB = diskSizeGB +(virtualDisk.getHardDiskSize().intValue()/1024);
 								}
 							}

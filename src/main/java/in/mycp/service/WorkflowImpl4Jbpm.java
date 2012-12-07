@@ -215,7 +215,7 @@ public class WorkflowImpl4Jbpm  {
 		Set<String> activityNames = pi.findActiveActivityNames();
 		for (Iterator iterator = activityNames.iterator(); iterator.hasNext();) {
 			String string = (String) iterator.next();
-			System.out.println("before move activityNames = " + string);
+			//System.out.println("before move activityNames = " + string);
 		}
 		
 		pi = moveProcessInstance(pi.getId(), "Reject");

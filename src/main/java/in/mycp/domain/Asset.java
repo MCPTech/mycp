@@ -66,7 +66,7 @@ public class Asset {
             q.setParameter("companyId", companyId);
             q.setParameter("assetType", assetType);
            // q.setParameter("active", active);
-            System.out.println("findAssets4Report4Company q.getResultList().size() = "+q.getResultList().size());
+            //System.out.println("findAssets4Report4Company q.getResultList().size() = "+q.getResultList().size());
             return q;
         } catch (Exception e) {
             logger.info(e.getMessage());
@@ -84,7 +84,7 @@ public class Asset {
             q.setParameter("departmentId", departmentId);
             q.setParameter("assetType", assetType);
             //q.setParameter("active", active);
-            System.out.println("findAssets4Report4Department q.getResultList().size() = "+q.getResultList().size());
+           // System.out.println("findAssets4Report4Department q.getResultList().size() = "+q.getResultList().size());
             return q;
         } catch (Exception e) {
             logger.info(e.getMessage());
