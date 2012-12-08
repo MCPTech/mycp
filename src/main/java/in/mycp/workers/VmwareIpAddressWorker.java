@@ -46,8 +46,6 @@ import com.vmware.vcloud.sdk.Organization;
 import com.vmware.vcloud.sdk.VcloudClient;
 import com.vmware.vcloud.sdk.admin.AdminOrgNetwork;
 import com.vmware.vcloud.sdk.admin.AdminOrganization;
-import com.xerox.amazonws.ec2.AddressInfo;
-import com.xerox.amazonws.ec2.Jec2;
 
 /**
  * 

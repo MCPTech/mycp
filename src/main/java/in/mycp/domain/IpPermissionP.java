@@ -26,7 +26,7 @@ public class IpPermissionP {
         if (sourcePort == null) throw new IllegalArgumentException("The sourcePort argument is required");
         if (sourceIp == null) throw new IllegalArgumentException("The sourceIp argument is required");
         EntityManager em = entityManager();
-        TypedQuery<IpPermissionP> q = em.createQuery("SELECT o FROM IpPermissionP AS o WHERE o.groupDescription = :groupDescription " + " AND o.protocol = :protocol  AND o.sourceIp = :sourceIp AND o.sourcePort = :sourcePort", IpPermissionP.class);
+        TypedQuery<IpPermissionP> q = em.createQuery("SELECT o FROM IpPermissionP AS o WHERE o.groupDescription = :groupDescription " + " AND o.protocol = :protocol  AND o.cidrIps = :sourceIp AND o.fromPort = :sourcePort", IpPermissionP.class);
         q.setParameter("groupDescription", groupDescription);
         q.setParameter("protocol", protocol);
         q.setParameter("sourceIp", sourceIp);

@@ -32,13 +32,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.TypedQuery;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 /**
  * 
@@ -102,6 +101,8 @@ public class SecurityGroupService {
 					throw new Exception(
 							"Security group with this name already exists for this account, Choose another name.");
 				}
+			}catch(EmptyResultDataAccessException ersde){
+				//do nothing here
 			} catch (Exception e) {
 				e.printStackTrace();
 				if (e.getMessage().contains("returns more than one elements")

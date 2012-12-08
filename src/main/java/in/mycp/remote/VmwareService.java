@@ -324,10 +324,10 @@ public class VmwareService {
 											ipPermissionP.setProtocol(getPrototcolAsString(firewallRule.getProtocols()));
 											ipPermissionP.setVcloudName(firewallRule.getDescription());
 											ipPermissionP.setVcloudPolicy(firewallRule.getPolicy());
-											ipPermissionP.setVcloudSourceIp(firewallRule.getSourceIp());
-											ipPermissionP.setVcloudSourcePort(firewallRule.getSourcePort());
+											ipPermissionP.setCidrIps(firewallRule.getSourceIp());
+											ipPermissionP.setFromPort(firewallRule.getSourcePort());
 											ipPermissionP.setVcloudDestinationIp(firewallRule.getDestinationIp());
-											ipPermissionP.setVcloudDestinationPort(firewallRule.getPort());
+											ipPermissionP.setToPort(firewallRule.getPort());
 											ipPermissionP.setVcloudDirection(firewallRule.getDirection());
 											ipPermissionP.setVcloudEnabled(firewallRule.isIsEnabled());
 											
