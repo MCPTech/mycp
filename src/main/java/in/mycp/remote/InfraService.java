@@ -323,7 +323,7 @@ public class InfraService {
 	public List<Infra> findAll4Dashboard() {
 		try {
 			List<Infra> infras = null;
-			if (Commons.getCurrentUser().getRole().getName()
+			if (Commons.EDITION_ENABLED== Commons.SERVICE_PROVIDER_EDITION_ENABLED || Commons.getCurrentUser().getRole().getName()
 					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				infras = Infra.findAllInfras();
 			} else {

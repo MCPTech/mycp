@@ -29,6 +29,7 @@ import in.mycp.web.MailDetailsDTO;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -132,7 +133,7 @@ public class LoginController {
 	            user.setPassword(passwordEncoder.encodePassword(password, email));
             Company c = new Company();
 	            c.setName(organization);
-	            c.setCurrency("INR");
+	            c.setCurrency(Commons.CURRENCY_DEFAULT);
 	            c = c.merge();
             Department d = new Department();
 	            d.setCompany(c);
@@ -142,24 +143,37 @@ public class LoginController {
 	            p.setDepartment(d);
 	            p.setName("Proj @ " + d.getName());
 	            p = p.merge();
+	            
+	            if(user.getProjects() == null){
+	            	user.setProjects(new HashSet<Project>());
+	            }
             user.getProjects().add(p);
+            user.setDepartment(d);
             user = user.merge();
             
+            if(p.getUsers() == null){
+            	p.setUsers(new HashSet<User>());
+            }
             
-            Infra infra = new Infra();
-	            infra.setName(c.getName() + " Euca Setup");
-	            infra.setAccessId("change it");
-	            infra.setSecretKey("change it");
-	            infra.setServer("change it");
-	            infra.setCompany(c);
-	            infra.setDetails("");
-	            infra.setPort(8773);
-	            infra.setResourcePrefix("/services/Eucalyptus");
-	            infra.setSignatureVersion(1);
-	            infra.setZone("");
-	            infra.setInfraType(InfraType.findInfraType(Commons.INFRA_TYPE_EUCA));
-	            infra = infra.merge();
-            createAllProducts(infra);
+            p.getUsers().add(user);
+            p.merge();
+            
+            if(Commons.EDITION_ENABLED==Commons.HOSTED_EDITION_ENABLED){
+	            Infra infra = new Infra();
+		            infra.setName(c.getName() + " Euca Setup");
+		            infra.setAccessId("change it");
+		            infra.setSecretKey("change it");
+		            infra.setServer("change it");
+		            infra.setCompany(c);
+		            infra.setDetails("");
+		            infra.setPort(8773);
+		            infra.setResourcePrefix("/services/Eucalyptus");
+		            infra.setSignatureVersion(1);
+		            infra.setZone("");
+		            infra.setInfraType(InfraType.findInfraType(Commons.INFRA_TYPE_EUCA));
+		            infra = infra.merge();
+	            createAllProducts(infra);
+            }
             //send signup notification to the user
             MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
 			mailDetailsDTO.setTemplateName("SignupMailTemplate");
@@ -167,12 +181,12 @@ public class LoginController {
         	mailDetailsDTO.setToName(user.getFirstName());
         	Map<String, Object> variables = new HashMap<String, Object>(); 
 		    variables.put("mailDetailsDTO", mailDetailsDTO);
-		    //charu - even if email sedning fails, lets the user signup process work fine.
 		    
 		    try{
 		    workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
 		    }catch(Exception e){
-		    	e.printStackTrace();
+		    	//e.printStackTrace();
+		    	logger.error(e.getMessage());
 		    }
             req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: green;\"> User " + user.getEmail() + " created.Please Sign In now.</font>");
             if(authenticate(email,password)){
@@ -185,7 +199,8 @@ public class LoginController {
     			}
             }
         } catch (Exception e) {
-        	e.printStackTrace();
+        	//e.printStackTrace();
+        	logger.error(e.getMessage());
             req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: red;\"> Cannot create User.Please try later.</font>");
             logger.error(e);
         }

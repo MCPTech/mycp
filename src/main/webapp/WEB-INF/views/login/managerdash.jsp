@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
-
+<%@ page import="in.mycp.utils.Commons" %>
 <script type="text/javascript" src="/js/jqueryplugins/jquery.jcarousel.min.js"></script>
 <script type='text/javascript' src='/dwr/interface/WorkflowService.js'></script>
 <script type='text/javascript' src='/dwr/interface/DashboardService.js'></script>
@@ -103,8 +103,14 @@
 						 if(p[i].status == 'loading'){
 							 p[i].status =  '<div id=cloudStatus'+p[i].server+'><img title="Loading" alt=loading src=../images/preloader.gif></div>'; 
 	                	 }
+						 
+			 	<%if(Commons.EDITION_ENABLED==Commons.SERVICE_PROVIDER_EDITION_ENABLED){ %>
+			 		p[i].server = p[i].server;
+				<% }else{%>
+					p[i].server = '<a href="/config/infra">'+p[i].server+'</a>';
+				<% }%>
 
-						p[i].server = '<a href="/config/infra">'+p[i].server+'</a>';
+						
 						 
 						 
 						 oTable1.fnAddData( [	p[i].name,p[i].server, p[i].status
@@ -219,7 +225,14 @@
 						<table width="100%">
 						<tbody>
 						<tr>
-							<td width="50%"><a href="/enterprise/company">Accounts</a> </td><td width="50%"><span id="Accounts"></span></td></tr>
+							<td width="50%">
+							<%if(Commons.EDITION_ENABLED==Commons.SERVICE_PROVIDER_EDITION_ENABLED){ %>
+							Accounts 
+							<% }else{%>
+							<a href="/enterprise/company">Accounts</a>
+							<% }%>
+							
+							</td><td width="50%"><span id="Accounts"></span></td></tr>
 						<tr>
 							<td width="50%"><a href="/enterprise/department">Departments</a> </td><td width="50%"><span id="Departments"></span></td></tr>
 						<tr>
@@ -227,9 +240,22 @@
 						<tr>
 							<td width="50%"><a href="/realm/user">Users</a> </td><td width="50%"><span id="Users"></span></td></tr>
 						<tr>
-							<td width="50%"><a href="/config/infra">Clouds</a> </td><td width="50%"><span id="Clouds"></span></td></tr>
-						<tr>
-							<td width="50%"><a href="/config/product">Products</a> </td><td width="50%"><span id="Products"></span></td></tr>
+							<td width="50%">
+							<%if(Commons.EDITION_ENABLED==Commons.SERVICE_PROVIDER_EDITION_ENABLED){ %>
+							Clouds 
+							<% }else{%>
+							<a href="/config/infra">Clouds</a>
+							<% }%>
+							 
+							
+							
+							</td><td width="50%"><span id="Clouds"></span></td></tr>
+							<%if(Commons.EDITION_ENABLED==Commons.SERVICE_PROVIDER_EDITION_ENABLED){ %>
+							
+							<% }else{%>
+							<tr><td width="50%"><a href="/config/product">Products</a> </td><td width="50%"><span id="Products"></span></td></tr>
+							<% }%>
+						
 						</tbody>
 						</table>
 						

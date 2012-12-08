@@ -122,7 +122,7 @@ public class ImageService {
 		try {
 			User user = Commons.getCurrentUser();
 
-			if (user.getRole().getName()
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED || user.getRole().getName()
 					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				return ImageDescriptionP.findAllImageDescriptionPs(start, max,
 						search);
@@ -199,7 +199,8 @@ public class ImageService {
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while requestImage, Instance "
 					+ instance.getName() + "<br> Reason: " + e.getMessage());
-			log.error(e);// e.printStackTrace();
+			log.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}// end of requestSnapshot(SnapshotInfoP

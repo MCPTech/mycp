@@ -200,8 +200,11 @@ public class InstancePService {
 					}
 				}
 			
-			
-			instance.remove();
+			Asset a = instance.getAsset();
+			if(a!=null && a.getEndTime()!=null){
+				Commons.setAssetEndTime(a);
+			}
+			//instance.remove();
 			Commons.setSessionMsg("Removed Instance "+id);
 			accountLogService.saveLog("Compute instance '"+instanceName+"' removed with ID "+id, Commons.task_name.COMPUTE.name(), Commons.task_status.SUCCESS.ordinal()
 					,Commons.getCurrentUser().getEmail());
@@ -302,7 +305,8 @@ public class InstancePService {
 						continue;
 					}
 				} catch (Exception e) {
-					log.error(e);//e.printStackTrace();
+					log.error(e);
+					e.printStackTrace();
 				}
 				instances2return.add(instanceP);
 			}
@@ -416,7 +420,7 @@ public class InstancePService {
 	@RemoteMethod
 	public List<ProductCatalog> findProductType() {
 		
-		if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
+		if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED ||  Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
 			return ProductCatalog.findProductCatalogsByProductTypeEquals(Commons.ProductType.ComputeInstance.getName()).getResultList();
 		}else{
 			

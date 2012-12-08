@@ -10,43 +10,6 @@ import javax.persistence.TypedQuery;
 
 privileged aspect AddressInfoP_Roo_Finder {
     
-    public static TypedQuery<AddressInfoP> AddressInfoP.findAddressInfoPsByAsset(Asset asset) {
-        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
-        EntityManager em = AddressInfoP.entityManager();
-        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset = :asset", AddressInfoP.class);
-        q.setParameter("asset", asset);
-        return q;
-    }
     
-    public static TypedQuery<AddressInfoP> AddressInfoP.findAddressInfoPsByInstanceIdEquals(String instanceId) {
-        if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
-        EntityManager em = AddressInfoP.entityManager();
-        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.instanceId = :instanceId", AddressInfoP.class);
-        q.setParameter("instanceId", instanceId);
-        return q;
-    }
-    
-    public static TypedQuery<AddressInfoP> AddressInfoP.findAddressInfoPsByInstanceIdLike(String instanceId) {
-        if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
-        instanceId = instanceId.replace('*', '%');
-        if (instanceId.charAt(0) != '%') {
-            instanceId = "%" + instanceId;
-        }
-        if (instanceId.charAt(instanceId.length() - 1) != '%') {
-            instanceId = instanceId + "%";
-        }
-        EntityManager em = AddressInfoP.entityManager();
-        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE LOWER(o.instanceId) LIKE LOWER(:instanceId)", AddressInfoP.class);
-        q.setParameter("instanceId", instanceId);
-        return q;
-    }
-    
-    public static TypedQuery<AddressInfoP> AddressInfoP.findAddressInfoPsByPublicIpEquals(String publicIp) {
-        if (publicIp == null || publicIp.length() == 0) throw new IllegalArgumentException("The publicIp argument is required");
-        EntityManager em = AddressInfoP.entityManager();
-        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.publicIp = :publicIp", AddressInfoP.class);
-        q.setParameter("publicIp", publicIp);
-        return q;
-    }
     
 }

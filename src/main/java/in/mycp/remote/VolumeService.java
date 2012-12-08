@@ -219,7 +219,12 @@ public class VolumeService {
 	public void remove(int id) {
 		try {
 			// deleteVolume(id);
-			VolumeInfoP.findVolumeInfoP(id).remove();
+			Asset a = VolumeInfoP.findVolumeInfoP(id).getAsset();
+			if(a.getEndTime()!=null){
+				Commons.setAssetEndTime(a);
+			}
+			
+			//VolumeInfoP.findVolumeInfoP(id).remove();
 			Commons.setSessionMsg("Scheduling Volume remove");
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Volume remove");
@@ -307,7 +312,7 @@ public class VolumeService {
 
 	@RemoteMethod
 	public List<ProductCatalog> findProductType() {
-		if (Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED ||  Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			return ProductCatalog.findProductCatalogsByProductTypeEquals(Commons.ProductType.Volume.getName()).getResultList();
 		} else {
 

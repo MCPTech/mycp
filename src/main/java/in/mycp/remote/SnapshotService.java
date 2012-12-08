@@ -26,6 +26,8 @@ import in.mycp.domain.VolumeInfoP;
 import in.mycp.utils.Commons;
 import in.mycp.workers.SnapshotWorker;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -84,7 +86,12 @@ public class SnapshotService {
 	public void remove(int id) {
 		try {
 			deleteSnapshot(id);
-			SnapshotInfoP.findSnapshotInfoP(id).remove();
+			Asset a = SnapshotInfoP.findSnapshotInfoP(id).getAsset();
+			if(a!=null && a.getEndTime() !=null){
+				Commons.setAssetEndTime(a);
+			}
+			
+			//SnapshotInfoP.findSnapshotInfoP(id).remove();
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();
 		}
@@ -175,7 +182,8 @@ public class SnapshotService {
 		} catch (Exception e) {
 			Commons.setSessionMsg("Error while Scheduling Snapshot request: "
 					+ e.getMessage());
-			log.error(e.getMessage());// e.printStackTrace();
+			log.error(e.getMessage());// 
+			e.printStackTrace();
 		}
 		return null;
 	}// end of requestSnapshot(SnapshotInfoP
@@ -210,18 +218,30 @@ public class SnapshotService {
 
 	@RemoteMethod
 	public List<ProductCatalog> findProductType() {
-
-		if (Commons.getCurrentUser().getRole().getName()
+		//do some circus to rempve vcloud specific snapshot product types
+		List<ProductCatalog> pcs2return = new ArrayList<ProductCatalog>();
+		List<ProductCatalog> pcs = null;
+		
+		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED ||  Commons.getCurrentUser().getRole().getName()
 				.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-			return ProductCatalog.findProductCatalogsByProductTypeEquals(
+			pcs =  ProductCatalog.findProductCatalogsByProductTypeEquals(
 					Commons.ProductType.VolumeSnapshot.getName())
 					.getResultList();
 		} else {
-			return ProductCatalog.findProductCatalogsByProductTypeAndCompany(
+			pcs =  ProductCatalog.findProductCatalogsByProductTypeAndCompany(
 					Commons.ProductType.VolumeSnapshot.getName(),
 					Company.findCompany(Commons.getCurrentSession()
 							.getCompanyId())).getResultList();
 		}
+		
+		for (Iterator iterator = pcs.iterator(); iterator.hasNext(); ) {
+			ProductCatalog productCatalog = (ProductCatalog) iterator.next();
+			if(productCatalog.getInfra().getInfraType().getId() == Commons.INFRA_TYPE_AWS 
+					|| productCatalog.getInfra().getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
+				pcs2return.add(productCatalog);
+			}
+		}
+		return pcs2return;
 
 	}
 

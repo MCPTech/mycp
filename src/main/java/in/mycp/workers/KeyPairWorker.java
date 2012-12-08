@@ -194,12 +194,16 @@ public class KeyPairWorker extends Worker {
 
 			if (!found) {
 				try {
-					KeyPairInfoP keyPairInfoP = (KeyPairInfoP
-							.findKeyPairInfoPsByKeyNameEquals(keypair
-									.getKeyName()).getSingleResult());
-					keyPairInfoP
-							.setStatus(Commons.keypair_STATUS.inactive + "");
+					KeyPairInfoP keyPairInfoP = KeyPairInfoP.findKeyPairInfoP(keypair.getId());
+					if(keyPairInfoP.getStatus().equals(Commons.keypair_STATUS.active+"")){
+						keyPairInfoP
+						.setStatus(Commons.keypair_STATUS.inactive + "");
+					}
+					
+					setAssetEndTime(keyPairInfoP.getAsset());
+					
 					keyPairInfoP = keyPairInfoP.merge();
+					
 
 					logger.info("Keypair - " + keypair.getKeyName()
 							+ " Removed");
@@ -214,10 +218,11 @@ public class KeyPairWorker extends Worker {
 							Commons.task_name.KEYPAIR.name(),
 							Commons.task_status.SUCCESS.ordinal(), userId);
 
-					setAssetEndTime(keyPairInfoP.getAsset());
+					
 
 				} catch (Exception e) {
-					logger.error(e.getMessage());// e.printStackTrace();
+					logger.error(e.getMessage());// 
+					e.printStackTrace();
 					throw new Exception(
 							"KeyPair in Infra deleted but not in mycp DB");
 				}

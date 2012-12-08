@@ -54,16 +54,16 @@ public class KeyPairInfoP {
     }
 
     public static List<in.mycp.domain.KeyPairInfoP> findAllKeyPairInfoPs() {
-        return entityManager().createQuery("SELECT o FROM KeyPairInfoP o", KeyPairInfoP.class).getResultList();
+        return entityManager().createQuery("SELECT o FROM KeyPairInfoP o where  o.asset.active = 1 ", KeyPairInfoP.class).getResultList();
     }
 
     public static List<in.mycp.domain.KeyPairInfoP> findAllKeyPairInfoPs(int start, int max, String search) {
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM KeyPairInfoP o", KeyPairInfoP.class);
+            q = em.createQuery("SELECT o FROM KeyPairInfoP o where  o.asset.active = 1 ", KeyPairInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM KeyPairInfoP o " + " where " + "o.keyName like :search ", KeyPairInfoP.class);
+            q = em.createQuery("SELECT o FROM KeyPairInfoP o " + " where  o.asset.active = 1  and " + "o.keyName like :search ", KeyPairInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -79,9 +79,9 @@ public class KeyPairInfoP {
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user = :user", KeyPairInfoP.class);
+            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user = :user and  o.asset.active = 1 ", KeyPairInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user = :user " + " and " + "o.keyName like :search ", KeyPairInfoP.class);
+            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user = :user and  o.asset.active = 1 " + " and " + "o.keyName like :search ", KeyPairInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -98,9 +98,9 @@ public class KeyPairInfoP {
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company", KeyPairInfoP.class);
+            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 ", KeyPairInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company " + " and " + " o.keyName like :search ", KeyPairInfoP.class);
+            q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 " + " and " + " o.keyName like :search ", KeyPairInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -116,7 +116,7 @@ public class KeyPairInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = null;
-        q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company", KeyPairInfoP.class);
+        q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 ", KeyPairInfoP.class);
         q.setParameter("company", company);
         return q;
     }
@@ -125,7 +125,7 @@ public class KeyPairInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = null;
-        q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
+        q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -135,13 +135,13 @@ public class KeyPairInfoP {
         if (infra == null) throw new IllegalArgumentException("The infra argument is required");
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = null;
-        q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
+        q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset.productCatalog.infra = :infra and  o.asset.active = 1", KeyPairInfoP.class);
         q.setParameter("infra", infra);
         return q;
     }
 
     public static Number findKeyPairInfoCountByCompany(Company company, String status) {
-        String queryStr = "SELECT COUNT(i.id) FROM KeyPairInfoP i where i.status = :status ";
+        String queryStr = "SELECT COUNT(i.id) FROM KeyPairInfoP i where i.status = :status  and  i.asset.active = 1";
         if (company != null) {
             queryStr = queryStr + "  and i.asset.user.department.company = :company";
         }
@@ -156,7 +156,7 @@ public class KeyPairInfoP {
     public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsByKeyNameEqualsAndCompanyEquals(String keyName, Company company) {
         if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
         EntityManager em = entityManager();
-        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName " + " and o.asset.user.department.company = :company", KeyPairInfoP.class);
+        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName  and  o.asset.active = 1" + " and o.asset.user.department.company = :company", KeyPairInfoP.class);
         q.setParameter("keyName", keyName);
         q.setParameter("company", company);
         return q;
@@ -165,7 +165,7 @@ public class KeyPairInfoP {
     public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsBy(Infra infra, String keyName, Company company) {
         if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
         EntityManager em = entityManager();
-        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName " + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
+        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName  and  o.asset.active = 1" + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
         q.setParameter("keyName", keyName);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
@@ -188,4 +188,21 @@ public class KeyPairInfoP {
         }
         return keyMaterial;
     }
+    
+    public static TypedQuery<KeyPairInfoP> findKeyPairInfoPsByAsset(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset = :asset and  o.asset.active = 1", KeyPairInfoP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+    
+    public static TypedQuery<KeyPairInfoP> findKeyPairInfoPsByKeyNameEquals(String keyName) {
+        if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName and  o.asset.active = 1", KeyPairInfoP.class);
+        q.setParameter("keyName", keyName);
+        return q;
+    }
+    
 }

@@ -37,7 +37,10 @@ public class IpAddressService {
 
     private static final Logger log = Logger.getLogger(IpAddressService.class.getName());
 
-	
+    
+    // not used as of now, 
+    //ip address work is done by addressinfopservice
+	/*
 	
     	@RemoteMethod
 		public void save(IpAddressP instance){
@@ -90,7 +93,7 @@ public class IpAddressService {
 			}
 			return null;
 		}//end of method findAll
-   }//end of class IpAddressPController
+*/   }//end of class IpAddressPController
    
    
 

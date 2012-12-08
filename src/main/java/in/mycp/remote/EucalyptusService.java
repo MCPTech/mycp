@@ -178,7 +178,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang IpAddress");
 				productCatalog.setName("Eucalyptus Bang IpAddress");
 				productCatalog.setPrice(12);
@@ -196,7 +196,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang SecurityGroup");
 				productCatalog.setName("Eucalyptus Bang SecurityGroup");
 				productCatalog.setPrice(12);
@@ -215,7 +215,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang IpPermission");
 				productCatalog.setName("Eucalyptus Bang IpPermission");
 				productCatalog.setPrice(12);
@@ -235,7 +235,7 @@ public class EucalyptusService {
 
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang Volume");
 				productCatalog.setName("Eucalyptus Bang Volume");
 				productCatalog.setPrice(12);
@@ -254,7 +254,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang VolumeSnapshot");
 				productCatalog.setName("Eucalyptus Bang VolumeSnapshot");
 				productCatalog.setPrice(12);
@@ -273,7 +273,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang ComputeImage");
 				productCatalog.setName("Eucalyptus Bang ComputeImage");
 				productCatalog.setPrice(12);
@@ -292,7 +292,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang ComputeReservation");
 				productCatalog.setName("Eucalyptus Bang ComputeReservation");
 				productCatalog.setPrice(12);
@@ -311,7 +311,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang ComputeInstance");
 				productCatalog.setName("Eucalyptus Bang ComputeInstance");
 				productCatalog.setPrice(12);
@@ -330,7 +330,7 @@ public class EucalyptusService {
 			}
 			if (productCatalog == null) {
 				productCatalog = new ProductCatalog();
-				productCatalog.setCurrency("INR");
+				productCatalog.setCurrency(Commons.CURRENCY_DEFAULT);
 				productCatalog.setDetails("Eucalyptus Bang KeyPair");
 				productCatalog.setName("Eucalyptus Bang KeyPair");
 				productCatalog.setPrice(12);
@@ -925,7 +925,8 @@ public class EucalyptusService {
 					addressInfoP = AddressInfoP.findAddressInfoPsBy(infra, addressInfo.getPublicIp(), company).getSingleResult();
 
 				} catch (Exception e) {
-					// logger.error(e.getMessage());//e.printStackTrace();
+					// logger.error(e.getMessage());
+					e.printStackTrace();
 				}
 				if (addressInfoP == null) {
 					addressInfoP = new AddressInfoP();
@@ -1018,7 +1019,8 @@ public class EucalyptusService {
 				try {
 					availabilityZoneP = AvailabilityZoneP.findAvailabilityZonePsBy(infra, availabilityZone.getName()).getSingleResult();
 				} catch (Exception e) {
-					// logger.error(e.getMessage());//e.printStackTrace();
+					// logger.error(e.getMessage());
+					e.printStackTrace();
 				}
 
 				if (availabilityZoneP != null) {
@@ -1092,7 +1094,8 @@ public class EucalyptusService {
 				try {
 					volumeInfoP = VolumeInfoP.findVolumeInfoPsBy(infra, volumeInfo.getVolumeId(), company).getSingleResult();
 				} catch (Exception e) {
-					// logger.error(e.getMessage());//e.printStackTrace();
+					// logger.error(e.getMessage());
+					e.printStackTrace();
 				}
 				if (volumeInfoP != null) {
 
@@ -1211,7 +1214,7 @@ public class EucalyptusService {
 				try {
 					snapshotInfoP = SnapshotInfoP.findSnapshotInfoPsBy(infra, snapshotInfo.getSnapshotId(), company).getSingleResult();
 				} catch (Exception e) {
-					logger.error(e.getMessage());// e.printStackTrace();
+					logger.error(e.getMessage());e.printStackTrace();
 				}
 
 				if (snapshotInfoP != null) {
@@ -1330,7 +1333,8 @@ public class EucalyptusService {
 						try {
 							imageDescriptionP = ImageDescriptionP.findImageDescriptionPsBy(infra, img.getImageId(), company).getSingleResult();
 						} catch (Exception e) {
-							// logger.error(e.getMessage());//e.printStackTrace();
+							 logger.error(e.getMessage());
+							 e.printStackTrace();
 						}
 						if (imageDescriptionP != null) {
 
@@ -1446,7 +1450,8 @@ public class EucalyptusService {
 						try {
 							instanceP = InstanceP.findInstancePsBy(infra, inst.getInstanceId(), company).getSingleResult();
 						} catch (Exception e) {
-							// logger.error(e.getMessage());//e.printStackTrace();
+							// logger.error(e.getMessage());
+							e.printStackTrace();
 						}
 
 						if (instanceP != null) {
@@ -1462,7 +1467,7 @@ public class EucalyptusService {
 						instanceP.setImage(ImageDescriptionP.findImageDescriptionPsByImageIdEquals(inst.getImageId()).getSingleResult());
 						}catch(Exception e){
 							logger.error(e.getMessage());
-							//e.printStackTrace();
+							e.printStackTrace();
 						}
 						instanceP.setDnsName(inst.getDnsName());
 						instanceP.setState(inst.getState());
@@ -1571,7 +1576,8 @@ public class EucalyptusService {
 				try {
 					keyPairInfoP = KeyPairInfoP.findKeyPairInfoPsBy(infra, keypairinfo.getKeyName(), company).getSingleResult();
 				} catch (Exception e) {
-					// logger.error(e);//e.printStackTrace();
+					// logger.error(e);
+					e.printStackTrace();
 				}
 
 				if (keyPairInfoP != null) {

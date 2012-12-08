@@ -10,20 +10,6 @@ import javax.persistence.TypedQuery;
 
 privileged aspect SnapshotInfoP_Roo_Finder {
     
-    public static TypedQuery<SnapshotInfoP> SnapshotInfoP.findSnapshotInfoPsByAsset(Asset asset) {
-        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
-        EntityManager em = SnapshotInfoP.entityManager();
-        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset = :asset", SnapshotInfoP.class);
-        q.setParameter("asset", asset);
-        return q;
-    }
     
-    public static TypedQuery<SnapshotInfoP> SnapshotInfoP.findSnapshotInfoPsBySnapshotIdEquals(String snapshotId) {
-        if (snapshotId == null || snapshotId.length() == 0) throw new IllegalArgumentException("The snapshotId argument is required");
-        EntityManager em = SnapshotInfoP.entityManager();
-        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId", SnapshotInfoP.class);
-        q.setParameter("snapshotId", snapshotId);
-        return q;
-    }
     
 }

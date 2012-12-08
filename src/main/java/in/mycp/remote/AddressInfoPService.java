@@ -87,7 +87,7 @@ public class AddressInfoPService {
 			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetType, currentUser,productId, reportService,company);
 			asset.setProject(Project.findProject(projectId));
-			asset.setActive(false);
+			//asset.setActive(false);
 			instance.setAsset(asset);
 			instance = instance.merge();
 
@@ -153,9 +153,12 @@ public class AddressInfoPService {
 	public void remove(int id) {
 		try {
 			// releaseAddress(id);
-			Commons.setAssetEndTime(AddressInfoP.findAddressInfoP(id)
-					.getAsset());
-			AddressInfoP.findAddressInfoP(id).remove();
+			Asset a = AddressInfoP.findAddressInfoP(id).getAsset();
+			if(a!=null && a.getEndTime()!=null){
+				Commons.setAssetEndTime(a);	
+			}
+			
+			//AddressInfoP.findAddressInfoP(id).remove();
 			Commons.setSessionMsg("Scheduled Ip Address remove");
 		} catch (Exception e) {
 			// e.printStackTrace();
@@ -332,7 +335,7 @@ public class AddressInfoPService {
 
 	@RemoteMethod
 	public List<ProductCatalog> findProductType() {
-		if (Commons.getCurrentUser().getRole().getName()
+		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED || Commons.getCurrentUser().getRole().getName()
 				.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			return ProductCatalog.findProductCatalogsByProductTypeEquals(
 					Commons.ProductType.IpAddress.getName()).getResultList();

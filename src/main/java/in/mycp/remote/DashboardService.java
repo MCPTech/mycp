@@ -105,7 +105,13 @@ public class DashboardService {
 				dto.setDepartments(Department.findDepartmentsByCompany(c).getResultList().size());
 				dto.setProjects(Project.findProjectsByCompany(c).getResultList().size());
 				dto.setUsers(User.findUsersByCompany(c).getResultList().size());
-				dto.setClouds(Infra.findInfrasByCompany(c).getResultList().size());
+				if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+					dto.setClouds(Infra.findAllInfras().size());
+				}else {
+					dto.setClouds(Infra.findInfrasByCompany(c).getResultList().size());	
+				}
+				
+				
 				dto.setProducts(ProductCatalog.findProductCatalogsByCompany(c).getResultList().size());
 				
 			}

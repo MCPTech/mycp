@@ -50,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 			try {
 				List<AvailabilityZoneP> az= new ArrayList<AvailabilityZoneP>();
 				
-				if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
+				if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED || Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
 					return AvailabilityZoneP.findAllAvailabilityZonePs();
 				}else{
 					return AvailabilityZoneP.findAllAvailabilityZonePsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId()));
@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 			try {
 				List<AvailabilityZoneP> az= new ArrayList<AvailabilityZoneP>();
 				
-				if(Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
+				if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED || Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
 					return AvailabilityZoneP.findAllAvailabilityZonePsByInfra(infra);
 				}else{
 					return AvailabilityZoneP.findAllAvailabilityZonePsBy(infra,Company.findCompany(Commons.getCurrentSession().getCompanyId()));

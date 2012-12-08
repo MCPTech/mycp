@@ -1,6 +1,8 @@
 package in.mycp.domain;
 
 import java.util.Date;
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
@@ -44,7 +46,7 @@ public class Asset {
                 q = em.createQuery("SELECT o FROM Asset AS o WHERE o.assetType = :assetType" + "  ", Asset.class);
             } else {
             	//AND (o.active = :active or o.endTime is not null)
-                q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user.id = :userId AND o.assetType = :assetType" + "  ", Asset.class);
+                q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user.id = :userId AND o.assetType = :assetType and o.startTime is not null " + "  ", Asset.class);
                 q.setParameter("userId", userId);
             }
             q.setParameter("assetType", assetType);
@@ -62,7 +64,7 @@ public class Asset {
             EntityManager em = Asset.entityManager();
             TypedQuery<Asset> q = null;
             //AND (o.active = :active or o.endTime is not null)
-            q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user.department.company.id = :companyId AND o.assetType = :assetType" + "  ", Asset.class);
+            q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user.department.company.id = :companyId AND o.assetType = :assetType and o.startTime is not null " + "  ", Asset.class);
             q.setParameter("companyId", companyId);
             q.setParameter("assetType", assetType);
            // q.setParameter("active", active);
@@ -80,7 +82,7 @@ public class Asset {
             EntityManager em = Asset.entityManager();
             TypedQuery<Asset> q = null;
             //AND (o.active = :active or o.endTime is not null)
-            q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user.department.id = :departmentId AND o.assetType = :assetType" + "  ", Asset.class);
+            q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user.department.id = :departmentId AND o.assetType = :assetType and o.startTime is not null " + "  ", Asset.class);
             q.setParameter("departmentId", departmentId);
             q.setParameter("assetType", assetType);
             //q.setParameter("active", active);
@@ -98,7 +100,7 @@ public class Asset {
             EntityManager em = Asset.entityManager();
             TypedQuery<Asset> q = null;
             //AND (o.active = :active or o.endTime is not null)
-            q = em.createQuery("SELECT o FROM Asset o join o.user.projects ps WHERE ps.id = :projectId AND o.assetType = :assetType" + "  ", Asset.class);
+            q = em.createQuery("SELECT o FROM Asset o join o.user.projects ps WHERE ps.id = :projectId AND o.assetType = :assetType and o.startTime is not null " + "  ", Asset.class);
             q.setParameter("projectId", projectId);
             q.setParameter("assetType", assetType);
            // q.setParameter("active", active);
@@ -157,5 +159,26 @@ public class Asset {
 
     public String toString() {
         return "";
+    }
+    
+    public static TypedQuery<Asset> findAssetsByUserAndAssetType(User user, AssetType assetType) {
+        if (user == null) throw new IllegalArgumentException("The user argument is required");
+        if (assetType == null) throw new IllegalArgumentException("The assetType argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<Asset> q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user = :user AND o.assetType = :assetType and o.startTime is not null ", Asset.class);
+        q.setParameter("user", user);
+        q.setParameter("assetType", assetType);
+        return q;
+    }
+    
+    public static long countAssets() {
+        return entityManager().createQuery("SELECT COUNT(o) FROM Asset o where  o.startTime is not null ", Long.class).getSingleResult();
+    }
+    
+    public static List<Asset> findAllAssets() {
+        return entityManager().createQuery("SELECT o FROM Asset o where o.startTime is not null ", Asset.class).getResultList();
+    }
+    public static List<Asset> findAssetEntries(int firstResult, int maxResults) {
+        return entityManager().createQuery("SELECT o FROM Asset o where  o.startTime is not null ", Asset.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
 }

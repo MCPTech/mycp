@@ -10,20 +10,6 @@ import javax.persistence.TypedQuery;
 
 privileged aspect VolumeInfoP_Roo_Finder {
     
-    public static TypedQuery<VolumeInfoP> VolumeInfoP.findVolumeInfoPsByAsset(Asset asset) {
-        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
-        EntityManager em = VolumeInfoP.entityManager();
-        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset = :asset", VolumeInfoP.class);
-        q.setParameter("asset", asset);
-        return q;
-    }
-    
-    public static TypedQuery<VolumeInfoP> VolumeInfoP.findVolumeInfoPsByVolumeIdEquals(String volumeId) {
-        if (volumeId == null || volumeId.length() == 0) throw new IllegalArgumentException("The volumeId argument is required");
-        EntityManager em = VolumeInfoP.entityManager();
-        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId", VolumeInfoP.class);
-        q.setParameter("volumeId", volumeId);
-        return q;
-    }
+   
     
 }

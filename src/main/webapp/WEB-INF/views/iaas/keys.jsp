@@ -53,7 +53,7 @@
 	var max = 17;
 	
 	function findAll_keys(p){
-		
+		//alert(dwr.util.toDescriptiveString(p,3));
 		 oTable = $('#compute-table').dataTable( {
 	    	"sPaginationType": "full_numbers",
 	    	"bDestroy": true,
@@ -331,17 +331,19 @@
 								<p id="contactArea_keys" class="contactArea" >
 								<input type="hidden" id="id" name="id">
 								<table style="width: 100%;">
-								  <tr>
-								    <td style="width: 50%;">Name : </td>
-								    <td style="width: 50%;"><input type="text" name="keyName" id="keyName" size="30" class="required"></td>
-								  </tr>
-								  <tr>
+								   <tr>
 								    <td style="width: 50%;">Product : </td>
 								    <td style="width: 50%;">
 								    <select id="product" name="product" style="width: 205px;" class="required">
 							    	</select>
 							    	</td>
 								  </tr>
+								  
+								  <tr>
+								    <td style="width: 50%;">Name : </td>
+								    <td style="width: 50%;"><input type="text" name="keyName" id="keyName" size="30" class="required"></td>
+								  </tr>
+								 
 								  <tr>
 								    <td style="width: 20%;">project : </td>
 								    <td style="width: 80%;">

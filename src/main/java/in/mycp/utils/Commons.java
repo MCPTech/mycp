@@ -160,6 +160,8 @@ public class Commons {
 	
 	public static int EDITION_ENABLED=SERVICE_PROVIDER_EDITION_ENABLED;
 	
+	public static String CURRENCY_DEFAULT="USD"; 
+	
 
 	public static List getAllJbpmProcDefNames() {
 		// public static final String JBPM_PROC_DEF_NAME_FVC_BILL = "fvc bill";
@@ -181,21 +183,21 @@ public class Commons {
 		currentUser = User.findUser(currentUser.getId());
 		Department department = currentUser.getDepartment();
 		long companyAssetCost = reportService.getAllAssetCosts("company", company.getId()).getTotalCost();
-		if(company.getQuota()>0){
+		if(company.getQuota() != null && company.getQuota()>0){
 			if( company.getQuota()-companyAssetCost <= company.getMinBal() ){
 				throw new Exception("Company "+Commons.QUOTA_EXCEED_MSG);
 			}
 		}
 		long userAssetCost = reportService.getAllAssetCosts("user", currentUser.getId()).getTotalCost();
-		if(currentUser.getQuota()>0 && currentUser.getQuota()<=userAssetCost)
+		if(currentUser.getQuota() != null && currentUser.getQuota()>0 && currentUser.getQuota()<=userAssetCost)
 			throw new Exception("User "+Commons.QUOTA_EXCEED_MSG);
 		long deptAssetCost = reportService.getAllAssetCosts("department", department.getId()).getTotalCost();
-		if(department.getQuota()>0 && department.getQuota()<=deptAssetCost)
+		if(department.getQuota() !=null && department.getQuota()>0 && department.getQuota()<=deptAssetCost)
 			throw new Exception("Department "+Commons.QUOTA_EXCEED_MSG);
 		Set<Project> stProjects = department.getProjects();
 		for (Project project : stProjects) {
 			long projAssetCost = reportService.getAllAssetCosts("project", project.getId()).getTotalCost();
-			if(project.getQuota()>0 && project.getQuota()<=projAssetCost)
+			if(project.getQuota()!=null && project.getQuota()>0 && project.getQuota()<=projAssetCost)
 				throw new Exception("Project "+Commons.QUOTA_EXCEED_MSG);
 		}
 		/*long minQuota = Math.round(0.1 * currentUser.getQuota());
@@ -215,11 +217,10 @@ public class Commons {
 		
 		Asset asset = new Asset();
 		asset.setActive(true);
-		asset.setStartTime(new Date());
+		//asset.setStartTime(new Date());
 		asset.setAssetType(at);
 		asset.setDetails("from mycp");
 		asset.setUser(currentUser);
-		asset.setActive(false);
 		if (!StringUtils.isEmpty(productCatalogId)) {
 			ProductCatalog pc = ProductCatalog.findProductCatalog(Integer.parseInt(productCatalogId));
 			asset.setStartRate(pc.getPrice());
@@ -231,9 +232,9 @@ public class Commons {
 
 	public static Asset getNewAsset(AssetType at, User currentUser, ProductCatalog productCatalog) {
 		Asset asset = new Asset();
-		asset.setActive(false);
+		asset.setActive(true);
 
-		asset.setStartTime(new Date());
+		//asset.setStartTime(new Date());
 		asset.setAssetType(at);
 		asset.setDetails("from mycp");
 		asset.setUser(currentUser);

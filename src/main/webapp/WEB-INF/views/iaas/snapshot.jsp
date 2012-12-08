@@ -320,6 +320,14 @@ $(function(){
 								<p id="contactArea_backup" class="contactArea" >
 								<input type="hidden" id="id" name="id">
 								<table style="width: 100%;">
+								<tr>
+								    <td style="width: 50%;">Product : </td>
+								    <td style="width: 50%;">
+								    <select id="product" name="product" style="width: 205px;" class="required">
+							    	</select>
+							    	</td>
+								  </tr>
+								  
 								  <tr>
 								    <td style="width: 50%;">Description : </td>
 								    <td style="width: 50%;"><input type="text" name="description" id="description" size="30" class="required"> </td>
@@ -329,13 +337,7 @@ $(function(){
 								    <td style="width: 50%;">Volume : </td>
 								    <td style="width: 50%;"><select id="volumeId" name="volumeId" style="width: 205px;" class="required"></td>
 								  </tr>
-								   <tr>
-								    <td style="width: 50%;">Product : </td>
-								    <td style="width: 50%;">
-								    <select id="product" name="product" style="width: 205px;" class="required">
-							    	</select>
-							    	</td>
-								  </tr>
+								   
 								  <tr>
 								    <td style="width: 50%;">project : </td>
 								    <td style="width: 50%;">

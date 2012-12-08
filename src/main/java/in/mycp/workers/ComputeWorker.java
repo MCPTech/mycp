@@ -106,7 +106,7 @@ public class ComputeWorker extends Worker {
 								.get(0);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
-						// e.printStackTrace();
+						 e.printStackTrace();
 					}
 				}
 				logger.info("out of while loop, instanceEc2.isRunning() "
@@ -228,7 +228,7 @@ public class ComputeWorker extends Worker {
 								.get(0);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
-						// e.printStackTrace();
+						 e.printStackTrace();
 					}
 				}
 				logger.info("out of while loop, instanceEc2.isRunning() "

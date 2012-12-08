@@ -12,7 +12,7 @@
        	 	default-target-url="/cloud-portal/dash"
         />
         <logout logout-url="/resources/j_spring_security_logout" success-handler-ref="mycplogoutSuccessHandler"/>
-        
+        <!-- TODO - change this for different editions - probably in a build file -->
         <!-- Configure these elements to secure URIs in your application -->
         <intercept-url pattern="/config/**" access="hasRole('ROLE_MANAGER')" />
         <intercept-url pattern="/workflow/**" access="hasRole('ROLE_MANAGER')" />

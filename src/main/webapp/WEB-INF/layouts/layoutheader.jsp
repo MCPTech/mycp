@@ -12,7 +12,7 @@
 	<script type="text/javascript" src="/js/jqueryplugins/sticky/sticky.full.js"></script>
 	<script type="text/javascript" src="/js/myccep.js"></script>
 	<script type="text/javascript" src="/js/jqueryplugins/nospam.js"></script>
-	<script type="text/javascript" src="/dwr/interface/SignupService.js"></script>
+	
 	<script type='text/javascript' src='/dwr/interface/RealmService.js'></script>
 	
 	

@@ -255,43 +255,61 @@ public class ReportService {
 						// do nothing since we are not able to create imgaes on the fly now in euca
 						dto.setImageCost(0);
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.ComputeInstance)) {
-						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+						assets2return = new ArrayList<Asset>();
+						assets2return = fillCommonComputeInfo(assets, assets2return);
+						
+						for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 							Asset asset = (Asset) iterator2.next();
-							
+
 							dto.setComputeCost(dto.getComputeCost() + getAssetCost(asset));
 						}
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.IpAddress)) {
-						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+						assets2return = new ArrayList<Asset>();
+						assets2return = fillCommonAddressInfo(assets, assets2return);
+						
+						for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 							Asset asset = (Asset) iterator2.next();
 							dto.setIpaddressCost(dto.getIpaddressCost() + getAssetCost(asset));
 						}
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.IpPermission)) {
 
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.KeyPair)) {
-						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+						
+						assets2return = new ArrayList<Asset>();
+						assets2return = fillCommonKeypairInfo(assets, assets2return);
+						
+						for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 							Asset asset = (Asset) iterator2.next();
 							dto.setKeyCost(dto.getKeyCost() + getAssetCost(asset));
 						}
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.SecurityGroup)) {
+						
+						assets2return = new ArrayList<Asset>();
+						assets2return = fillCommonSecurityGroupInfo(assets, assets2return);
+						
 						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 							Asset asset = (Asset) iterator2.next();
 							dto.setSecgroupCost(dto.getSecgroupCost() + getAssetCost(asset));
 						}
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.Volume)) {
-						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+						assets2return = new ArrayList<Asset>();
+						assets2return = fillCommonVolumeInfo(assets, assets2return);
+						
+						
+						for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 							Asset asset = (Asset) iterator2.next();
 							dto.setVolumeCost(dto.getVolumeCost() + getAssetCost(asset));
 						}
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.VolumeSnapshot)) {
-						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+						assets2return = new ArrayList<Asset>();
+						assets2return = fillCommonSnapshotInfo(assets, assets2return);
+						
+						for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 							Asset asset = (Asset) iterator2.next();
 							dto.setSnapshotCost(dto.getSnapshotCost() + getAssetCost(asset));
 						}
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.addressInfo)) {
-						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
-							Asset asset = (Asset) iterator2.next();
-							dto.setIpaddressCost(dto.getIpaddressCost() + getAssetCost(asset));
-						}
+						//nothing here
 					} else {
 						log.error("Which asset does this workflow belong?");
 						// throw new
@@ -493,20 +511,7 @@ public class ReportService {
 
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.addressInfo)) {
 
-						try {
-							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-							//System.out.println(" is it coming here ?/n/n**************************************************************************************/n/n ");
-							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
-								try {
-									Asset asset = (Asset) iterator2.next();
-									dto.setIpaddressCost(dto.getIpaddressCost() + getAssetCost(asset));
-								} catch (Exception e) {
-									log.error(e.getMessage());// e.printStackTrace();
-								}
-							}
-						} catch (Exception e) {
-							log.error(e.getMessage());// e.printStackTrace();
-						}
+						//nothing here 
 
 					} else {
 						log.error("Which asset does this workflow belong?");
@@ -542,7 +547,8 @@ public class ReportService {
 				asset.setAssetDetails(volume.getName() + " " + volume.getVolumeId() + " " + volume.getSize() + "(GB)");
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
-				log.error(e.getMessage());// e.printStackTrace();
+				log.error(e.getMessage());
+				//e.printStackTrace();
 			}
 		}
 		return assets2return;
@@ -558,7 +564,8 @@ public class ReportService {
 						+ instance.getInstanceType());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
-				log.error(e.getMessage());// e.printStackTrace();
+				log.error(e.getMessage());//
+				//e.printStackTrace();
 			}
 		}
 		return assets2return;
@@ -572,7 +579,8 @@ public class ReportService {
 				asset.setAssetDetails(snapshot.getSnapshotId() + " " + snapshot.getOwnerId());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
-				log.error(e.getMessage());// e.printStackTrace();
+				log.error(e.getMessage());// 
+				//e.printStackTrace();
 			}
 		}
 		return assets2return;
@@ -586,7 +594,8 @@ public class ReportService {
 				asset.setAssetDetails(keyPairInfoP.getKeyName());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
-				log.error(e.getMessage());// log.error(e.getMessage());//e.printStackTrace();
+				log.error(e.getMessage());// log.error(e.getMessage());//
+				//e.printStackTrace();
 			}
 		}
 		return assets2return;
@@ -600,7 +609,8 @@ public class ReportService {
 				asset.setAssetDetails(groupDescriptionP.getName() + " " + groupDescriptionP.getOwner());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
-				log.error(e.getMessage());// e.printStackTrace();
+				log.error(e.getMessage());// 
+				//e.printStackTrace();
 			}
 		}
 		return assets2return;
@@ -614,7 +624,8 @@ public class ReportService {
 				asset.setAssetDetails(addressInfoP.getName() + " " + addressInfoP.getPublicIp());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
-				log.error(e.getMessage());// e.printStackTrace();
+				log.error(e.getMessage());// 
+				//e.printStackTrace();
 			}
 		}
 		return assets2return;
@@ -878,13 +889,14 @@ public class ReportService {
 						}
 
 					} else {
-						log.error("Which asset does this workflow belong?");
+						log.error("Which asset does this workflow belong? "+assetType.getName());
 					}
 
 				} catch (Exception e) {
 					log.error(e.getMessage());// e.printStackTrace();
 				}
 			}
+			System.out.println("assets2return.size() = "+assets2return.size());
 			return assets2return;
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();

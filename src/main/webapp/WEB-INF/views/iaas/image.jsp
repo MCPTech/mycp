@@ -53,13 +53,32 @@ function loadPopup_compute(){
 		
 	}
 	function create_server(imageId,infraId){
+		InstanceP.findProductType(function(p){
+			//alert(dwr.util.toDescriptiveString(p,3));
+				dwr.util.removeAllOptions('product');
+				dwr.util.addOptions('product', p,'id','name');
+				//dwr.util.setValue(id, sel);
+			});
+		
+		KeyPairInfoP.findAll4List(function(p){
+			dwr.util.removeAllOptions('keyName');
+			dwr.util.addOptions('keyName', p, 'id', 'keyName');
+			//dwr.util.setValue(id, sel);
+		});
+		
+		GroupDescriptionP.findAll4List(function(p){
+			dwr.util.removeAllOptions('groupName');
+			dwr.util.addOptions('groupName', p, 'name', 'name');
+			//dwr.util.setValue(id, sel);
+		});
+		
 		
 		viewed_compute = -1;
 		centerPopup_compute();
 		loadPopup_compute();
 		dwr.util.setValue('imageId',imageId);
 		
-		InstanceP.findProductType(function(p){
+		/* InstanceP.findProductType(function(p){
 				dwr.util.removeAllOptions('product');
 				for (var key in p) {
 					   var obj = p[key];
@@ -71,7 +90,7 @@ function loadPopup_compute(){
 							dwr.util.addOptions('product',  a);	
 						}
 				}
-			});
+			}); */
 		
 		KeyPairInfoP.findAll4List(function(p){
 			dwr.util.removeAllOptions('keyName');
@@ -228,28 +247,6 @@ $(function(){
 		
 		$(document).ready(function() {
 			$("#popupbutton_imagelist").click();
-			
-			
-			
-			
-			InstanceP.findProductType(function(p){
-				//alert(dwr.util.toDescriptiveString(p,3));
-  				dwr.util.removeAllOptions('product');
-  				dwr.util.addOptions('product', p,'id','name');
-  				//dwr.util.setValue(id, sel);
-  			});
-			
-			KeyPairInfoP.findAll4List(function(p){
-				dwr.util.removeAllOptions('keyName');
-				dwr.util.addOptions('keyName', p, 'id', 'keyName');
-				//dwr.util.setValue(id, sel);
-			});
-			
-			GroupDescriptionP.findAll4List(function(p){
-				dwr.util.removeAllOptions('groupName');
-				dwr.util.addOptions('groupName', p, 'name', 'name');
-				//dwr.util.setValue(id, sel);
-			});
 			
 			$("#thisform").validate({
 				 submitHandler: function(form) {

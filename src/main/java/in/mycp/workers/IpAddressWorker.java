@@ -291,21 +291,24 @@ public class IpAddressWorker extends Worker {
 			try {
 				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(instanceIdOrig).getSingleResult();
 			} catch (Exception e) {
-				logger.error(e);// e.printStackTrace();
+				logger.error(e);// 
+				e.printStackTrace();
 			}
 
 			AddressInfoP addressInfoP4PublicIp = null;
 			try {
 				addressInfoP4PublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(addressInfoP.getPublicIp()).getSingleResult();
 			} catch (Exception e) {
-				logger.error(e);// e.printStackTrace();
+				logger.error(e);// 
+				e.printStackTrace();
 			}
 
 			AddressInfoP addressInfoP4InstanceId = null;
 			try {
 				addressInfoP4InstanceId = AddressInfoP.findAddressInfoPsByInstanceIdLike(instanceIdOrig).getSingleResult();
 			} catch (Exception e) {
-				logger.error(e);// e.printStackTrace();
+				logger.error(e);// 
+				e.printStackTrace();
 			}
 
 			boolean match = false;
@@ -439,14 +442,16 @@ public class IpAddressWorker extends Worker {
 			try {
 				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(instanceIdOrig).getSingleResult();
 			} catch (Exception e) {
-				logger.error(e);// e.printStackTrace();
+				logger.error(e);// 
+				e.printStackTrace();
 			}
 
 			AddressInfoP addressInfoP4PublicIp = null;
 			try {
 				addressInfoP4PublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(addressInfoP.getPublicIp()).getSingleResult();
 			} catch (Exception e) {
-				logger.error(e);// e.printStackTrace();
+				logger.error(e);// 
+				e.printStackTrace();
 			}
 
 			String newIp = "";
@@ -494,7 +499,8 @@ public class IpAddressWorker extends Worker {
 			try {
 				addressInfoP4NewPublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(newIp).getSingleResult();
 			} catch (Exception e) {
-				logger.error(e);// e.printStackTrace();
+				logger.error(e);// 
+				e.printStackTrace();
 			}
 
 			if (match == true) {

@@ -45,9 +45,9 @@ public class SnapshotInfoP {
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM SnapshotInfoP o", SnapshotInfoP.class);
+            q = em.createQuery("SELECT o FROM SnapshotInfoP o where  o.asset.active = 1", SnapshotInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM SnapshotInfoP o " + " where " + " (o.snapshotId like :search or o.volumeId like :search)", SnapshotInfoP.class);
+            q = em.createQuery("SELECT o FROM SnapshotInfoP o " + " where   o.asset.active = 1 and " + " (o.snapshotId like :search or o.volumeId like :search)", SnapshotInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -63,9 +63,9 @@ public class SnapshotInfoP {
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user = :user", SnapshotInfoP.class);
+            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user = :user and  o.asset.active = 1", SnapshotInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user = :user " + " and " + " (o.snapshotId like :search or o.volumeId like :search)", SnapshotInfoP.class);
+            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user = :user  and  o.asset.active = 1" + " and " + " (o.snapshotId like :search or o.volumeId like :search)", SnapshotInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -82,9 +82,9 @@ public class SnapshotInfoP {
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company", SnapshotInfoP.class);
+            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1", SnapshotInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company " + " and " + " ( o.snapshotId like :search or o.volumeId like :search)", SnapshotInfoP.class);
+            q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company  and  o.asset.active = 1" + " and " + " ( o.snapshotId like :search or o.volumeId like :search)", SnapshotInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -100,7 +100,7 @@ public class SnapshotInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = null;
-        q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company", SnapshotInfoP.class);
+        q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1", SnapshotInfoP.class);
         q.setParameter("company", company);
         return q;
     }
@@ -109,7 +109,7 @@ public class SnapshotInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = null;
-        q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
+        q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -119,15 +119,15 @@ public class SnapshotInfoP {
         if (infra == null) throw new IllegalArgumentException("The infra argument is required");
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = null;
-        q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
+        q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset.productCatalog.infra = :infra and  o.asset.active = 1", SnapshotInfoP.class);
         q.setParameter("infra", infra);
         return q;
     }
 
     public static Number findSnapshotInfoCountByCompany(Company company, String status) {
-        String queryStr = "SELECT COUNT(i.id) FROM SnapshotInfoP i where i.status = :status ";
+        String queryStr = "SELECT COUNT(i.id) FROM SnapshotInfoP i where i.status = :status and  i.asset.active = 1 ";
         if (company != null) {
-            queryStr = queryStr + "  and i.asset.user.department.company = :company";
+            queryStr = queryStr + "  and i.asset.user.department.company = :company ";
         }
         Query q = entityManager().createQuery(queryStr);
         q.setParameter("status", status);
@@ -140,7 +140,7 @@ public class SnapshotInfoP {
     public static TypedQuery<in.mycp.domain.SnapshotInfoP> findSnapshotInfoPsBySnapshotIdEqualsAndCompanyEquals(String snapshotId, Company company) {
         if (snapshotId == null || snapshotId.length() == 0) throw new IllegalArgumentException("The snapshotId argument is required");
         EntityManager em = entityManager();
-        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId" + " and o.asset.user.department.company = :company", SnapshotInfoP.class);
+        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId and  o.asset.active = 1" + " and o.asset.user.department.company = :company", SnapshotInfoP.class);
         q.setParameter("snapshotId", snapshotId);
         q.setParameter("company", company);
         return q;
@@ -149,7 +149,7 @@ public class SnapshotInfoP {
     public static TypedQuery<in.mycp.domain.SnapshotInfoP> findSnapshotInfoPsBy(Infra infra, String snapshotId, Company company) {
         if (snapshotId == null || snapshotId.length() == 0) throw new IllegalArgumentException("The snapshotId argument is required");
         EntityManager em = entityManager();
-        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId" + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
+        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId and  o.asset.active = 1" + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
         q.setParameter("snapshotId", snapshotId);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
@@ -158,5 +158,21 @@ public class SnapshotInfoP {
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+    
+    public static TypedQuery<SnapshotInfoP> findSnapshotInfoPsByAsset(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset = :asset and  o.asset.active = 1", SnapshotInfoP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+    
+    public static TypedQuery<SnapshotInfoP> findSnapshotInfoPsBySnapshotIdEquals(String snapshotId) {
+        if (snapshotId == null || snapshotId.length() == 0) throw new IllegalArgumentException("The snapshotId argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId and  o.asset.active = 1", SnapshotInfoP.class);
+        q.setParameter("snapshotId", snapshotId);
+        return q;
     }
 }

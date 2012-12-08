@@ -20,22 +20,14 @@ privileged aspect Asset_Roo_Jpa_ActiveRecord {
         return em;
     }
     
-    public static long Asset.countAssets() {
-        return entityManager().createQuery("SELECT COUNT(o) FROM Asset o", Long.class).getSingleResult();
-    }
     
-    public static List<Asset> Asset.findAllAssets() {
-        return entityManager().createQuery("SELECT o FROM Asset o", Asset.class).getResultList();
-    }
     
     public static Asset Asset.findAsset(Integer id) {
         if (id == null) return null;
         return entityManager().find(Asset.class, id);
     }
     
-    public static List<Asset> Asset.findAssetEntries(int firstResult, int maxResults) {
-        return entityManager().createQuery("SELECT o FROM Asset o", Asset.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
-    }
+   
     
     @Transactional
     public void Asset.persist() {

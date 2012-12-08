@@ -66,7 +66,8 @@ public class RealmService {
 			}
 
 		} catch (Exception e) {
-			log.error(e.getMessage());// e.printStackTrace();
+			log.error(e.getMessage());
+			e.printStackTrace();
 			return false;
 		}
 	}

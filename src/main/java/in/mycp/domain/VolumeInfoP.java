@@ -53,16 +53,16 @@ public class VolumeInfoP {
     }
 
     public static List<in.mycp.domain.VolumeInfoP> findAllVolumeInfoPs() {
-        return entityManager().createQuery("SELECT o FROM VolumeInfoP o", VolumeInfoP.class).getResultList();
+        return entityManager().createQuery("SELECT o FROM VolumeInfoP o where  o.asset.active = 1 ", VolumeInfoP.class).getResultList();
     }
 
     public static List<in.mycp.domain.VolumeInfoP> findAllVolumeInfoPs(int start, int max, String search) {
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM VolumeInfoP o", VolumeInfoP.class);
+            q = em.createQuery("SELECT o FROM VolumeInfoP o where  o.asset.active = 1 ", VolumeInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM VolumeInfoP o " + " where " + " (o.name like :search or o.volumeId like :search)", VolumeInfoP.class);
+            q = em.createQuery("SELECT o FROM VolumeInfoP o " + " where  o.asset.active = 1 and " + " (o.name like :search or o.volumeId like :search)", VolumeInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -78,9 +78,9 @@ public class VolumeInfoP {
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user = :user", VolumeInfoP.class);
+            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user = :user and  o.asset.active = 1 ", VolumeInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user = :user" + " and " + " (o.name like :search or o.volumeId like :search)", VolumeInfoP.class);
+            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user = :user and  o.asset.active = 1 " + " and " + " (o.name like :search or o.volumeId like :search)", VolumeInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -97,9 +97,9 @@ public class VolumeInfoP {
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = null;
         if (StringUtils.isBlank(search)) {
-            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company", VolumeInfoP.class);
+            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 ", VolumeInfoP.class);
         } else {
-            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company" + " and " + " (o.name like :search or o.volumeId like :search)", VolumeInfoP.class);
+            q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 " + " and " + " (o.name like :search or o.volumeId like :search)", VolumeInfoP.class);
             if (StringUtils.contains(search, " ")) {
                 search = StringUtils.replaceChars(search, " ", "%");
             }
@@ -115,7 +115,7 @@ public class VolumeInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = null;
-        q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company", VolumeInfoP.class);
+        q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1 ", VolumeInfoP.class);
         q.setParameter("company", company);
         return q;
     }
@@ -124,7 +124,7 @@ public class VolumeInfoP {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = null;
-        q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra", VolumeInfoP.class);
+        q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.user.department.company = :company and  o.asset.active = 1  " + " and o.asset.productCatalog.infra = :infra", VolumeInfoP.class);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
         return q;
@@ -134,13 +134,13 @@ public class VolumeInfoP {
         if (infra == null) throw new IllegalArgumentException("The infra argument is required");
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = null;
-        q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.productCatalog.infra = :infra", VolumeInfoP.class);
+        q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset.productCatalog.infra = :infra and  o.asset.active = 1 ", VolumeInfoP.class);
         q.setParameter("infra", infra);
         return q;
     }
 
     public static Number findVolumeInfoCountByCompany(Company company, String status) {
-        String queryStr = "SELECT COUNT(i.id) FROM VolumeInfoP i where i.status = :status ";
+        String queryStr = "SELECT COUNT(i.id) FROM VolumeInfoP i where i.status = :status and  i.asset.active = 1 ";
         if (company != null) {
             queryStr = queryStr + "  and i.asset.user.department.company = :company";
         }
@@ -155,7 +155,7 @@ public class VolumeInfoP {
     public static TypedQuery<in.mycp.domain.VolumeInfoP> findVolumeInfoPsByVolumeIdEqualsAndCompanyEquals(String volumeId, Company company) {
         if (volumeId == null || volumeId.length() == 0) throw new IllegalArgumentException("The volumeId argument is required");
         EntityManager em = entityManager();
-        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId " + " and o.asset.user.department.company = :company", VolumeInfoP.class);
+        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId and  o.asset.active = 1 " + " and o.asset.user.department.company = :company", VolumeInfoP.class);
         q.setParameter("volumeId", volumeId);
         q.setParameter("company", company);
         return q;
@@ -164,7 +164,7 @@ public class VolumeInfoP {
     public static TypedQuery<in.mycp.domain.VolumeInfoP> findVolumeInfoPsBy(Infra infra, String volumeId, Company company) {
         if (volumeId == null || volumeId.length() == 0) throw new IllegalArgumentException("The volumeId argument is required");
         EntityManager em = entityManager();
-        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId " + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra ", VolumeInfoP.class);
+        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId and  o.asset.active = 1 " + " and o.asset.user.department.company = :company " + " and o.asset.productCatalog.infra = :infra ", VolumeInfoP.class);
         q.setParameter("volumeId", volumeId);
         q.setParameter("company", company);
         q.setParameter("infra", infra);
@@ -173,5 +173,21 @@ public class VolumeInfoP {
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+    
+    public static TypedQuery<VolumeInfoP> findVolumeInfoPsByAsset(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset = :asset and  o.asset.active = 1 ", VolumeInfoP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+    
+    public static TypedQuery<VolumeInfoP> findVolumeInfoPsByVolumeIdEquals(String volumeId) {
+        if (volumeId == null || volumeId.length() == 0) throw new IllegalArgumentException("The volumeId argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId and  o.asset.active = 1 ", VolumeInfoP.class);
+        q.setParameter("volumeId", volumeId);
+        return q;
     }
 }
