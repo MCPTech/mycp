@@ -86,7 +86,7 @@
        <li><a href="/reports/usageUser">Users</a></li>
             </ul>
 		</li>
-		<li><a class="right" href="/resources/j_spring_security_logout"><span>Logout</span></a></li>
+		<li><a class="right" href="#" onclick="javascript:logout();"><span>Logout</span></a></li>
     </ul>
 	<div style=" color: grey;line-height: 30px;padding: 1px 20px;    
 	   		text-align: right; cursor: pointer;display: block;  font-weight: bold; font-size: small;"> 

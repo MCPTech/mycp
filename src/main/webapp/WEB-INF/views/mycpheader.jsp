@@ -32,14 +32,44 @@
 		<script type="text/javascript" src="/dwr/util.js"></script>
 		<script type="text/javascript" src="/dwr/interface/eucalyptusService.js"></script>
 		<script type="text/javascript" src="/dwr/interface/CommonService.js"></script>
-		<script type="text/javascript">
+		<script type="text/javascript" src="/dwr/interface/AccountLogService.js"></script>
+		<script type="text/javascript" src="/js/jqueryplugins/jquery.idle-timer.js"></script>
+		<script type="text/javascript" src="/js/jqueryplugins/timeout-dialog.js"></script>
+		<link type="text/css" href="/styles/vader/timeout-dialog.css" rel="Stylesheet" />
 		
-		$(document).ready(function() {
-			CommonService.getCurrentSession(function(p){
-				dwr.util.setValue('mysession', ' '+p.company+' '+p.email+' '+dateFormat(p.loggedInDate));
+		<script type="text/javascript">
+			function logSessionTimeOut(is_forced){
+				dwr.engine.beginBatch();
+				if(!is_forced)
+					AccountLogService.saveLog("User session Expired.!","LOGOUT",parseInt("1"),'${CurrentUser.email}', null);
+				else
+					AccountLogService.saveLog("User logged out.", "LOGOUT", parseInt("1") , '${CurrentUser.email}', null);
+				dwr.engine.endBatch();
+			}
+			
+			function logout(){
+				logSessionTimeOut(true);
+				window.location = '/resources/j_spring_security_logout';
+			}
+			
+			 $(function() {
+				 var timeout = 1000*10*9;
+				 $(document).bind("idle.idleTimer", function() {
+				 	// function you want to fire when the user goes idle
+				 	$.timeoutDialog({ timeout: 1, countdown: 60, logout_url:'/resources/j_spring_security_logout', logout_redirect_url: '/resources/j_spring_security_logout', restart_on_yes: true });
+				 });
+				 $(document).bind("active.idleTimer", function() {
+				 // function you want to fire when the user becomes active again
+				 });
+				 $.idleTimer(timeout);
 			});
-		});
-			</script>
+			
+			$(document).ready(function() {
+				CommonService.getCurrentSession(function(p){
+					dwr.util.setValue('mysession', ' '+p.company+' '+p.email+' '+dateFormat(p.loggedInDate));
+				});
+			});
+		</script>
 			
 </head>
 <body>
