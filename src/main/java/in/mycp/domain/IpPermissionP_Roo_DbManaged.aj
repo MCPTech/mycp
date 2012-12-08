@@ -36,17 +36,8 @@ privileged aspect IpPermissionP_Roo_DbManaged {
     @Column(name = "vcloud_policy", length = 45)
     private String IpPermissionP.vcloudPolicy;
     
-    @Column(name = "vcloud_source_ip", length = 45)
-    private String IpPermissionP.vcloudSourceIp;
-    
-    @Column(name = "vcloud_source_port")
-    private Integer IpPermissionP.vcloudSourcePort;
-    
     @Column(name = "vcloud_destination_ip", length = 45)
     private String IpPermissionP.vcloudDestinationIp;
-    
-    @Column(name = "vcloud_destination_port")
-    private Integer IpPermissionP.vcloudDestinationPort;
     
     @Column(name = "vcloud_direction", length = 45)
     private String IpPermissionP.vcloudDirection;
@@ -118,36 +109,12 @@ privileged aspect IpPermissionP_Roo_DbManaged {
         this.vcloudPolicy = vcloudPolicy;
     }
     
-    public String IpPermissionP.getVcloudSourceIp() {
-        return vcloudSourceIp;
-    }
-    
-    public void IpPermissionP.setVcloudSourceIp(String vcloudSourceIp) {
-        this.vcloudSourceIp = vcloudSourceIp;
-    }
-    
-    public Integer IpPermissionP.getVcloudSourcePort() {
-        return vcloudSourcePort;
-    }
-    
-    public void IpPermissionP.setVcloudSourcePort(Integer vcloudSourcePort) {
-        this.vcloudSourcePort = vcloudSourcePort;
-    }
-    
     public String IpPermissionP.getVcloudDestinationIp() {
         return vcloudDestinationIp;
     }
     
     public void IpPermissionP.setVcloudDestinationIp(String vcloudDestinationIp) {
         this.vcloudDestinationIp = vcloudDestinationIp;
-    }
-    
-    public Integer IpPermissionP.getVcloudDestinationPort() {
-        return vcloudDestinationPort;
-    }
-    
-    public void IpPermissionP.setVcloudDestinationPort(Integer vcloudDestinationPort) {
-        this.vcloudDestinationPort = vcloudDestinationPort;
     }
     
     public String IpPermissionP.getVcloudDirection() {

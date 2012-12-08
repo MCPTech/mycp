@@ -90,7 +90,11 @@ public class QuotaAlertsJob implements EventListener {
 					}
 				}
 			}catch(Exception ex){
+				try{
 				accountLogService.saveLogAndSendMail(ex.getMessage(), "Quota Regular Check Job", Commons.task_status.FAIL.ordinal(), "gangu96@yahoo.co.in");
+				}catch(Exception e1){
+					e1.printStackTrace();
+				}
 			}
 		}
 	}catch(Exception e){

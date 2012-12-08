@@ -25,7 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 privileged aspect User_Roo_DbManaged {
     
-    @ManyToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "users", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private Set<Project> User.projects;
     
     @OneToMany(mappedBy = "userId")

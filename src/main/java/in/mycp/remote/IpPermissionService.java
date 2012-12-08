@@ -62,7 +62,7 @@ public class IpPermissionService {
 					.getSingleResult();
 			if(!assetTypeSecurityGroup.getWorkflowEnabled() || (instance.getGroupDescription() !=null 
 					&& instance.getGroupDescription().getStatus().equals(Commons.secgroup_STATUS.active+""))){
-				workflowApproved(instance);
+				//workflowApproved(instance);
 			}
 			Commons.setSessionMsg("Scheduling Ip permission Save");
 			return instance;

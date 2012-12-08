@@ -8,13 +8,21 @@
 		<transition name="Reject" to="Rejected" />
 	</state>
 	<state name="Approval by Manager">
-		<transition name="Approve" to="Approved">
-			<mail template="ResourceApprovalTemplate" />
-		</transition>
-		<transition name="Reject" to="Rejected">
-			<mail template="ResourceRejectTemplate" />
-		</transition>
+		<transition name="Approve" to="Approved"/>
+		<transition name="Reject" to="Rejected"/>
 	</state>
-	<end name="Approved" />
-	<end-cancel name="Rejected" />
+	<end name="Approved">
+		<on event="start">
+			<event-listener class="in.mycp.job.JbpmMailEventListener">
+				<field name="mailTemplate"><string value="ResourceApprovalTemplate"/></field>
+			</event-listener>
+		</on>
+	</end>
+	<end-cancel name="Rejected">
+		<on event="start">
+			<event-listener class="in.mycp.job.JbpmMailEventListener">
+				<field name="mailTemplate"><string value="ResourceRejectTemplate"/></field>
+			</event-listener>
+		</on>
+	</end-cancel>
 </process>

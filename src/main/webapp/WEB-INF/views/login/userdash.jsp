@@ -9,6 +9,7 @@
 <script type='text/javascript' src='/dwr/interface/InfraService.js'></script>
 <script type='text/javascript' src='/dwr/interface/ProductService.js'></script>
 <script type='text/javascript' src='/dwr/interface/eucalyptusService.js'></script>
+<script type="text/javascript" src="/dwr/interface/AccountLogService.js"></script>
 
 
 <script type="text/javascript">

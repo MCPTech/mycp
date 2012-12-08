@@ -479,13 +479,11 @@
         <column name="cidrIps" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="uid_group_pairs" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
         <column name="groupDescription" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <column name="description" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
-        <column name="policy" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
-        <column name="source_ip" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
-        <column name="source_port" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <column name="destination_ip" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
-        <column name="destination_port" primaryKey="false" required="false" scale="0" size="10" type="4,INT"/>
-        <column name="direction" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="vcloud_name" primaryKey="false" required="false" scale="0" size="255" type="12,VARCHAR"/>
+        <column name="vcloud_policy" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="vcloud_destination_ip" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="vcloud_direction" primaryKey="false" required="false" scale="0" size="45" type="12,VARCHAR"/>
+        <column name="vcloud_enabled" primaryKey="false" required="false" scale="0" size="1" type="-7,BIT"/>
         <foreign-key foreignTable="group_description_p" name="fk_Ip_Permission_Group_Description1" onDelete="none" onUpdate="none">
             <option key="exported" value="false"/>
             <reference foreign="id" local="groupDescription"/>
@@ -727,13 +725,13 @@
     <table name="user_project">
         <column name="user_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
         <column name="project_id" primaryKey="true" required="true" scale="0" size="10" type="4,INT"/>
-        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="none" onUpdate="cascade">
-            <option key="exported" value="false"/>
-            <reference foreign="id" local="user_id"/>
-        </foreign-key>
         <foreign-key foreignTable="project" name="FK_PROJECT_ID" onDelete="none" onUpdate="cascade">
             <option key="exported" value="false"/>
             <reference foreign="id" local="project_id"/>
+        </foreign-key>
+        <foreign-key foreignTable="user" name="FK_USER_ID" onDelete="none" onUpdate="cascade">
+            <option key="exported" value="false"/>
+            <reference foreign="id" local="user_id"/>
         </foreign-key>
         <unique name="PRIMARY">
             <unique-column name="user_id"/>

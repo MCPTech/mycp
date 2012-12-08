@@ -31,7 +31,6 @@
 			'<td style=\"width: 5%;\">Destination IP : <\/td>'+
 			'<td style=\"width: 5%;\">Destination Port : <\/td>'+
 			'<td style=\"width: 5%;\">Protocol : <\/td>'+
-			'<td style=\"width: 5%;\">Action : <\/td>'+
 			'<td style=\"width: 5%;\">Enabled : <\/td>'+
 			'<td style=\"width: 5%;\">\t<a title=\"Add New Rule\" onclick=\"addRowVcloud(\'secTable\');return false;\"> <img src=\"..\/images\/add_row.png\"\/> <\/a><\/td>'+
 		'<\/tr>';
@@ -69,46 +68,103 @@
 	
 	function addRowVcloud(tableID,id,protocol,fromPort,toPort,cidrIps) {
 		var rowData = '<tr valign="top">'+
-			  '<input type="hidden" name="ids" id="ids" value=0>'+
-			  '<td style="width: 5%;"><input type="text" name="rname" id="rname" size="10" class="required"></td>'+
-			  '<td style="width: 5%;"><select name="direction" id="direction" style="width:80px;" class="required"></select></td>'+
-			  '<td style="width: 5%;"><input type="text" name="sourceIP" id="sourceIP" size="10" class="required"></td>'+
-			  '<td style="width: 5%;"><select name="sourcePort" id="sourcePort" style="width:80px;" class="required"></select></td>'+
-			  '<td style="width: 5%;"><input type="text" name="destinationIP" id="destinationIP" size="10" class="required"></td>'+
-			  '<td style="width: 5%;"><select name="destinationPort" id="destinationPort" style="width:80px;" class="required number"></select></td>'+
-			  '<td style="width: 5%;"><select name="protocol" id="protocol" style="width:80px;" class="required number"></select></td>'+
-			  '<td style="width: 5%;"><select name="action" id="action" style="width:80px;" class="required number"></select></td>'+
-			  '<td style="width: 5%;"><input type="checkbox" name="status" id="status" size="10" ></td>'+
+			  '<input type="hidden" name="ids" id="ids" value="0">'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudName" id="vcloudName" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudDirection" id="vcloudDirection" style="width:80px;" class="required">'+
+			  '<td style="width: 5%;"><input type="text" name="cidrIps" id="cidrIps" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><input type="text" name="fromPort" id="fromPort" style="width:80px;" class="required">'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudDestinationIp" id="vcloudDestinationIp" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><input type="text" name="toPort" id="toPort" style="width:80px;" class="required number">'+
+			  '<td style="width: 5%;"><input type="text" name="protocol" id="protocol" style="width:80px;" class="required">'+
+			  '<td style="width: 5%;"><input type="checkbox" name="vcloudEnabled" id="vcloudEnabled" size="10" ></td>'+
 			  '<td style="width: 5%;">'+
 					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
 			  '</td>'+
 		  '</tr>';
-		  
 	    $('#'+tableID).append(rowData);
 	}
 	
-	function addRowWithDataVcloud(tableID, ipPermissionP) {
+	/* function addRowVcloud(tableID,id,protocol,fromPort,toPort,cidrIps) {
 		var rowData = '<tr valign="top">'+
 			  '<input type="hidden" name="ids" id="ids" value=0>'+
-			  '<td style="width: 5%;"><input type="text" name="vcloudName" id="vcloudName" size="10" value=\''+ipPermissionP.vcloudName+'\' class="required"></td>'+
-			  '<td style="width: 5%;"><select name="vcloudDirection" id="vcloudDirection" style="width:80px;" class="required">'+ 
-			  		'<option value=\''+ipPermissionP.vcloudDirection+'\'>'+ipPermissionP.vcloudDirection+'</option></select></td>'+
-			  '<td style="width: 5%;"><input type="text" name="vcloudSourceIp" id="vcloudSourceIp" size="10" value=\''+ipPermissionP.vcloudSourceIp+'\' class="required"></td>'+
-			  '<td style="width: 5%;"><select name="vcloudSourcePort" id="vcloudSourcePort" style="width:80px;" class="required">'+ 
-			  		'<option value=\''+ipPermissionP.vcloudSourcePort+'\'>'+ipPermissionP.vcloudSourcePort+'</option></select></td>'+
-			  '<td style="width: 5%;"><input type="text" name="vcloudDestinationIp" id="vcloudDestinationIp" size="10" value=\''+ipPermissionP.vcloudDestinationIp+'\' class="required"></td>'+
-			  '<td style="width: 5%;"><select name="vcloudDestinationPort" id="vcloudDestinationPort" style="width:80px;" class="required number">'+
-			  		'<option value=\''+ipPermissionP.vcloudDestinationPort+'\'>'+ipPermissionP.vcloudDestinationPort+'</option></select></td>'+
-			  '<td style="width: 5%;"><select name="protocol" id="protocol" style="width:80px;" class="required number">'+
-			  		'<option value=\''+ipPermissionP.protocol+'\'>'+ipPermissionP.protocol+'</option></select></td>'+
-			  '<td style="width: 5%;"><select name="action" id="action" style="width:80px;" class="required number">'+ 
-			  		'<option value=\''+ipPermissionP.protocol+'\'>'+ipPermissionP.protocol+'</option></select></td>'+
-			  '<td style="width: 5%;"><input type="checkbox" name="vcloudEnabled" id="vcloudEnabled" size="10" checked=\''+ipPermissionP.vcloudEnabled+'\' ></td>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudName" id="vcloudName" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><select name="vcloudDirection" id="vcloudDirection" style="width:80px;" class="required">'+
+				'<option value="in">in</option>'+
+				'<option value="out">out</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="cidrIps" id="cidrIps" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><select name="fromPort" id="fromPort" style="width:80px;" class="required">'+
+				'<option value="45">45</option>'+
+				'<option value="-1">-1</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudDestinationIp" id="vcloudDestinationIp" size="10" class="required"></td>'+
+			  '<td style="width: 5%;"><select name="toPort" id="toPort" style="width:80px;" class="required number">'+
+			  	'<option value="45">45</option>'+
+				'<option value="-1">-1</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><select name="protocol" id="protocol" style="width:80px;" class="required">'+
+				  	'<option value="ftp">ftp</option>'+
+			  		'<option value="http">http</option>'+
+			  		'<option value="all">all</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><input type="checkbox" name="vcloudEnabled" id="vcloudEnabled" size="10" ></td>'+
 			  '<td style="width: 5%;">'+
 					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
 			  '</td>'+
 		  '</tr>';
-		  
+	    $('#'+tableID).append(rowData);
+	} */
+	
+	/* function addRowWithDataVcloud(tableID, ipPermissionP) {
+		var enabled;
+		if(ipPermissionP.vcloudEnabled != null) enabled="checked";
+		var rowData = '<tr valign="top">'+
+			  '<input type="hidden" name="ids" id="ids" value=\''+ipPermissionP.id+'\'>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudName" id="vcloudName" size="10" value=\''+ipPermissionP.vcloudName+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><select name="vcloudDirection" id="vcloudDirection" style="width:80px;" class="required">'+ 
+			  		'<option value="in"'+ (ipPermissionP.vcloudDirection == "in"?"selected":"") +' >in</option>'+
+			  		'<option value="out"' + (ipPermissionP.vcloudDirection == "out"?"selected":"") +'>out</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="cidrIps" id="cidrIps" size="10" value=\''+ipPermissionP.cidrIps+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><select name="fromPort" id="fromPort" style="width:80px;" class="required">'+ 
+			  		'<option value="45" ' + (ipPermissionP.fromPort == "45"?"selected":"") +'>45</option>'+
+			  		'<option value="-1" ' + (ipPermissionP.fromPort == "-1"?"selected":"") +'>-1</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudDestinationIp" id="vcloudDestinationIp" size="10" value=\''+ipPermissionP.vcloudDestinationIp+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><select name="toPort" id="toPort" style="width:80px;" class="required number">'+
+			  		'<option value="45" ' + (ipPermissionP.toPort == "45"?"selected":"") +'>45</option>'+
+			  		'<option value="-1" ' + (ipPermissionP.toPort == "-1"?"selected":"") +'>-1</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><select name="protocol" id="protocol" style="width:80px;" >'+
+			  		'<option value="ftp" ' + (ipPermissionP.protocol == "ftp"?"selected":"") +'>ftp</option>'+
+			  		'<option value="http" ' + (ipPermissionP.protocol == "http"?"selected":"") +'>http</option>'+
+			  		'<option value="all" ' + (ipPermissionP.protocol == "all"?"selected":"") +'>all</option>'+
+			  '</select></td>'+
+			  '<td style="width: 5%;"><input type="checkbox" name="vcloudEnabled" id="vcloudEnabled" size="10" '+enabled+' ></td>'+
+			  '<td style="width: 5%;">'+
+					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
+			  '</td>'+
+		  '</tr>';
+	    $('#'+tableID).append(rowData);
+	} */
+	
+	function addRowWithDataVcloud(tableID, ipPermissionP) {
+		var enabled;
+		if(ipPermissionP.vcloudEnabled != null && ipPermissionP.vcloudEnabled>0) enabled="checked";
+		var rowData = '<tr valign="top">'+
+			  '<input type="hidden" name="ids" id="ids" value=\''+ipPermissionP.id+'\'>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudName" id="vcloudName" size="10" value=\''+ipPermissionP.vcloudName+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><input type="text" name="vcloudDirection" id="vcloudDirection" style="width:80px;" class="required" value=\''+ipPermissionP.vcloudDirection+'\'> </td>'+
+			  '<td style="width: 5%;"><input type="text" name="cidrIps" id="cidrIps" size="10" value=\''+ipPermissionP.cidrIps+'\' class="required"></td> </td>'+
+			  '<td style="width: 5%;"><input type="text" name="fromPort" id="fromPort" style="width:80px;" class="required" value=\''+ipPermissionP.fromPort+'\'>'+ 
+			  '<td style="width: 5%;"><input type="text" name="vcloudDestinationIp" id="vcloudDestinationIp" size="10" value=\''+ipPermissionP.vcloudDestinationIp+'\' class="required"></td>'+
+			  '<td style="width: 5%;"><input type="text" name="toPort" id="toPort" style="width:80px;" class="required number" value=\''+ipPermissionP.toPort+'\'> </td>'+
+			  '<td style="width: 5%;"><input type="text" name="protocol" id="protocol" style="width:80px;" value=\''+ipPermissionP.protocol+'\'> </td>'+
+			  '<td style="width: 5%;"><input type="checkbox" name="vcloudEnabled" id="vcloudEnabled" size="10" '+enabled+' ></td>'+
+			  '<td style="width: 5%;">'+
+					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
+			  '</td>'+
+		  '</tr>';
 	    $('#'+tableID).append(rowData);
 	}
 	
@@ -331,7 +387,7 @@
   				dwr.util.removeAllOptions('product');
   				dwr.util.addOptions('product', p,'id','name');
   				//dwr.util.setValue(id, sel);
-  				$("#product").attr('disabled', true);
+  				//$("#product").attr('disabled', true);
   			});
 			
 			$("#thisform").validate({
@@ -357,21 +413,45 @@
 					});
 					return;
 				}
-		  		var ids = $('input:hidden[name=ids]');
-		  		 var fromPortData = $('input:text[name=fromPort]');
-		  	     var toPortData = $('input:text[name=toPort]');
-		  	     var protocolData = $('input:text[name=protocol]');
-		  	     var cidrIpsData = $('input:text[name=cidrIps]');
-		  	     var j=0;
-		  	     var rules=new Array();
-		  		for (j=0;j<fromPortData.length;j++)
-		  		{
-		  			//alert(ids[j].value);
-		  			var ipPermissionP = {id:ids[j].value, fromPort:fromPortData[j].value,toPort:toPortData[j].value, 
-		  					protocol:protocolData[j].value,cidrIps:cidrIpsData[j].value,
-		  					groupDescription:{id:p.id}};
-		  			IpPermissionP.saveOrUpdate(ipPermissionP,afterSave_secgroup);
-		  		}
+				var infraType = p.asset.productCatalog.infra.infraType.id;
+				var ids = $('input:hidden[name=ids]');
+				if(infraType == INFRA_TYPE_EUCA || infraType == INFRA_TYPE_AWS){
+			  		 var fromPortData = $('input:text[name=fromPort]');
+			  	     var toPortData = $('input:text[name=toPort]');
+			  	     var protocolData = $('input:text[name=protocol]');
+			  	     var cidrIpsData = $('input:text[name=cidrIps]');
+			  	     var j=0;
+			  	     var rules=new Array();
+			  		 for (j=0;j<protocolData.length;j++){
+				  	   	var ipPermissionP = {id:ids[j].value, fromPort:fromPortData[j].value,toPort:toPortData[j].value, 
+			  					protocol:protocolData[j].value,cidrIps:cidrIpsData[j].value, groupDescription:{id:p.id}
+			  			};
+			  			IpPermissionP.saveOrUpdate(ipPermissionP,afterSave_secgroup);
+			  		 }
+				}else if(infraType == INFRA_TYPE_VCLOUD){
+					var vcloudNameData = $('input:text[name=vcloudName]');
+					var vcloudDirectionData = $('input:text[name=vcloudDirection]');//$('#vcloudDirection option:selected');//issue
+				 	var cidrIpsData = $('input:text[name=cidrIps]');
+				 	var fromPortData = $('input:text[name=fromPort]');//$('#fromPort option:selected');//issue
+				 	var vcloudDestinationIpData = $('input:text[name=vcloudDestinationIp]');
+				 	var toPortData = $('input:text[name=toPort]');//$('#toPort option:selected');//issue
+				 	var protocolData = $('input:text[name=protocol]');//$('#protocol option:selected');//issue
+				 	var vcloudEnabledData = $('#vcloudEnabled:checked');
+				 	
+				 	var j=0;
+			  	    var rules=new Array();
+			  		for (j=0;j<vcloudNameData.length;j++){
+			  			//alert(vcloudEnabledData[j]);
+					 	var ipPermissionP = {id:ids[j].value, groupDescription:{id:p.id}
+			  				,vcloudName:vcloudNameData[j].value, vcloudDirection:vcloudDirectionData[j].value, cidrIps:cidrIpsData[j].value
+			  				,protocol:protocolData[j].value, fromPort:fromPortData[j].value
+			  				,vcloudDestinationIp:vcloudDestinationIpData[j].value,toPort:toPortData[j].value
+			  				,vcloudEnabled: (vcloudEnabledData[j] == undefined? false:true)
+			  			};
+			  			IpPermissionP.saveOrUpdate(ipPermissionP,null); 
+			  		}
+			  		afterSave_secgroup();
+				}
 			});
 		  dwr.engine.endBatch();
 		  disablePopup_secgroup();
@@ -407,6 +487,7 @@
 			$("#name").attr("disabled", true);
 			$("#descripton").attr("disabled", true);
 			$("#rowOwner").remove();
+			$("#productElement").html(p.asset.productCatalog.name);
 			
 			addRowLabelVcloud('secTable');
 			IpPermissionP.findBySecurityGroup(p,function(p) {
@@ -501,7 +582,7 @@
 								<table  style="width: 100%;" border="0">
 									<tr>
 									    <td style="width: 20%;">Product : </td>
-									    <td><select id="product" name="product" style="width: 250px;" class="required"></select></td>
+									    <td id="productElement"><select id="product" name="product" style="width: 250px;" class="required"></select></td>
 									 </tr>
 									<tr>
 									    <td style="width: 20%;">Project : </td>

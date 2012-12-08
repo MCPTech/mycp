@@ -118,9 +118,9 @@ public class VmwareSecurityGroupWorker extends Worker {
 										//this is name
 										frt.setDescription(ipPermissionP.getVcloudName());
 										frt.setDestinationIp(ipPermissionP.getVcloudDestinationIp());
-										frt.setSourceIp(ipPermissionP.getVcloudSourceIp());
-										frt.setPort(ipPermissionP.getVcloudDestinationPort());
-										frt.setSourcePort(ipPermissionP.getVcloudSourcePort());
+										frt.setSourceIp(ipPermissionP.getCidrIps());
+										frt.setPort(ipPermissionP.getToPort());
+										frt.setSourcePort(ipPermissionP.getFromPort());
 										FirewallRuleProtocols frp = new FirewallRuleProtocols();
 											frp.setAny(getFirewallRuleProtocols(ipPermissionP.getProtocol()).isAny());
 											frp.setIcmp(getFirewallRuleProtocols(ipPermissionP.getProtocol()).isIcmp());
