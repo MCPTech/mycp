@@ -132,6 +132,7 @@ public class VmwareComputeWorker extends Worker {
 						Commons.task_status.SUCCESS.ordinal(), userId);
 				
 			} else {
+				logger.error(" after reset vapp is not in powered on state but in "+Vapp.getVappByReference(vcloudClient, vapp.getReference()).getVappStatus());
 				currentCompute.setState(Commons.REQUEST_STATUS.FAILED + "");
 				setAssetEndTime(currentCompute.getAsset());
 				currentCompute.merge();
@@ -266,7 +267,7 @@ public class VmwareComputeWorker extends Worker {
 	public void stopCompute(final Infra infra, final int instancePId,
 			final String userId) {
 		InstanceP instanceP = null;
-		System.out.println("");
+		//System.out.println("");
 		try {
 
 			logger.info("stopCompute " + infra.getCompany().getName()
@@ -404,7 +405,7 @@ public class VmwareComputeWorker extends Worker {
 					logger.info(e.getMessage());
 					if (e.getMessage()!=null && e.getMessage().contains("No access to entity")){
 						
-						System.out.println("instancePId = "+instancePId);
+						//System.out.println("instancePId = "+instancePId);
 					
 				InstanceP instanceP = InstanceP.findInstanceP(instancePId);
 						/*.findInstancePsByInstanceIdEquals(instancePId+"")
@@ -607,7 +608,7 @@ public class VmwareComputeWorker extends Worker {
 					double d2 = new BigDecimal("1024").doubleValue();
 					
 					double memorySizeGB = d1/d2;
-					String vmStatus = vm.getVMStatus().name();
+					String vmStatus = Commons.REQUEST_STATUS.running+ "";//vm.getVMStatus().name();
 					
 					logger.info("Name ="+vm.getResource().getName()+" isDeployed = " 
 							+ vm.isDeployed() + " , NoOfCpus = "
@@ -674,8 +675,8 @@ public class VmwareComputeWorker extends Worker {
 							for (Iterator iterator5 = vdisks.iterator(); iterator5.hasNext();) {
 								VirtualDisk virtualDisk = (VirtualDisk) iterator5.next();
 								if (virtualDisk.isHardDisk()) {
-									System.out.println("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
-											+ virtualDisk.getHardDiskBusType() + " , virtualDisk.getHardDiskSize() = " + virtualDisk.getHardDiskSize());
+									/*System.out.println("Disk for " + vm.getReference().getName() + " , virtualDisk.getHardDiskBusType() = "
+											+ virtualDisk.getHardDiskBusType() + " , virtualDisk.getHardDiskSize() = " + virtualDisk.getHardDiskSize());*/
 									diskSizeGB = diskSizeGB +(virtualDisk.getHardDiskSize().intValue()/1024);
 								}
 							}

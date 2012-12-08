@@ -91,39 +91,50 @@ public class SignupService {
 	            user.setRole(Role.findRolesByNameEquals(Commons.ROLE.ROLE_MANAGER + "").getSingleResult());
 	            user.setRegistereddate(new Date());
 	            user.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
-            Company c = new Company();
-	            c.setName(instance.getOrganization());
-	            c.setCurrency("INR");
-	            c = c.merge();
-            Department d = new Department();
-	            d.setCompany(c);
-	            d.setName("Dept @ " + c.getName());
-	            d = d.merge();
-            Project p = new Project();
-	            p.setDepartment(d);
-	            p.setName("Proj @ " + d.getName());
-	            p = p.merge();
-            user.getProjects().add(p);
-            user = user.merge();
-            Infra infra = new Infra();
-	            infra.setName(c.getName() + " Euca Setup");
-	            infra.setAccessId("change it");
-	            infra.setSecretKey("change it");
-	            infra.setServer("change it");
-	            infra.setCompany(c);
-	            infra.setDetails("");
-	            infra.setPort(8773);
-	            infra.setResourcePrefix("/services/Eucalyptus");
-	            infra.setSignatureVersion(1);
-	            infra.setZone("");
-	            infra = infra.merge();
-            createAllProducts(infra);
+	            
             try {
+            	// need to create related products only for hosted,
+            	//for everybody else, super admin needs to create and setup teh product and clouds.
+            	
+            	if(Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED){
+						Company c = new Company();
+			            c.setName(instance.getOrganization());
+			            c.setCurrency("INR");
+			            c = c.merge();
+		            Department d = new Department();
+			            d.setCompany(c);
+			            d.setName("Dept @ " + c.getName());
+			            d = d.merge();
+		            Project p = new Project();
+			            p.setDepartment(d);
+			            p.setName("Proj @ " + d.getName());
+			            p = p.merge();
+		            user.getProjects().add(p);
+		            user = user.merge();
+		            Infra infra = new Infra();
+			            infra.setName(c.getName() + " Euca Setup");
+			            infra.setAccessId("change it");
+			            infra.setSecretKey("change it");
+			            infra.setServer("change it");
+			            infra.setCompany(c);
+			            infra.setDetails("");
+			            infra.setPort(8773);
+			            infra.setResourcePrefix("/services/Eucalyptus");
+			            infra.setSignatureVersion(1);
+			            infra.setZone("");
+			            infra = infra.merge();
+		            createAllProducts(infra);
+            	}//end if
+            
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+/*            try {
             	final String username = user.getFirstName();
             	final String useremail = user.getEmail();
             	new Thread(new Runnable() {
             		  public void run() {
-                        	/*sendMessage("mycloudportal@gmail.com", "Activation of MyCP test drive",useremail , "\n\nDear "+username+", \n" +
+                        	sendMessage("mycloudportal@gmail.com", "Activation of MyCP test drive",useremail , "\n\nDear "+username+", \n" +
                         			" Thank you for your interest in My Cloud Portal, the open source self service portal for the cloud.\n" +
                         			" You can now configure your Eucalyptus private cloud access details at http://www.mycloudportal.in/config/infra \n" +
                         			" and start the sync process to import your data from eucalyptus cloud into my cloud portal." +
@@ -136,12 +147,12 @@ public class SignupService {
                         			" If you are a developer, please think about participating in the project at http://code.google.com/p/mycloudportal\n" +
                         			"\n\nRegards\n" +
                         			"MyCP Team\n" +
-                        			"www.mycloudportal.in\n");*/
+                        			"www.mycloudportal.in\n");
             		  }
             		}).start();
 			} catch (Exception e) {
 				e.printStackTrace();
-			}
+			}*/
             
             Commons.setSessionAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: green;\"> User " + user.getEmail() + " created.Please Sign In now.</font>");
             return user;

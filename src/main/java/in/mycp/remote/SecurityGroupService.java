@@ -388,7 +388,7 @@ public class SecurityGroupService {
 	@RemoteMethod
 	 public List<in.mycp.domain.GroupDescriptionP> findActiveGroupDescriptionPsByInfra(Infra infra) {
 		List<in.mycp.domain.GroupDescriptionP> descriptionPs = GroupDescriptionP.findActiveGroupDescriptionPsByInfra(infra).getResultList();
-		System.out.println("descriptionPs:"+descriptionPs);
+		//System.out.println("descriptionPs:"+descriptionPs);
 		return descriptionPs;
 	 }
 

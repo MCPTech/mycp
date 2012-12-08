@@ -46,47 +46,47 @@ public class QuotaAlertsJob implements EventListener {
 		for (Company company : lstCompany) {
 			 Hibernate.initialize(company);
 			//company = Company.findCompany(company.getId());
-			System.out.println("company : "+company.getName());
+			//System.out.println("company : "+company.getName());
 			try{
 				long companyAssetCost = reportService.getAllAssetCosts("company", company.getId()).getTotalCost();
 				if(company.getQuota()>0){
 					if(company.getQuota() <= companyAssetCost){
 						throw new Exception("Company '"+company.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 					}else if( company.getQuota()-companyAssetCost <= company.getMinBal() ){
-						throw new Exception("Company '"+company.getName()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+						throw new Exception("Company '"+company.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 					}
 				}
 				
 				Set<Department> lstdeDepartments = company.getDepartments();
 				for (Department department : lstdeDepartments) {
-					System.out.println("department : "+department.getName());
+					//System.out.println("department : "+department.getName());
 					long deptAssetCost = reportService.getAllAssetCosts("department", department.getId()).getTotalCost();
 					long minQuota = Math.round(0.1 * department.getQuota());
 					if(department.getQuota()<=deptAssetCost){
 						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 					}else if(department.getQuota()>0 && (department.getQuota()-deptAssetCost <= minQuota))
-						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 					
 					Set<Project> lstProjects = department.getProjects();
 					for (Project project : lstProjects) {
-						System.out.println("project : "+project.getName());
+						//System.out.println("project : "+project.getName());
 						long projAssetCost = reportService.getAllAssetCosts("project", project.getId()).getTotalCost();
 						minQuota = Math.round(0.1 * project.getQuota());
 						if(project.getQuota()<=projAssetCost)
 							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 						else if(project.getQuota()>0 && (project.getQuota()-projAssetCost <= minQuota))
-							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 						
 					}
 					Set<User> stUsers = department.getUsers();
 					for (User user : stUsers) {
-						System.out.println("user : "+user.getEmail());
+						//System.out.println("user : "+user.getEmail());
 						long userAssetCost = reportService.getAllAssetCosts("user", user.getId()).getTotalCost();
 						minQuota = Math.round(0.1 * user.getQuota());
 						if(user.getQuota()<=userAssetCost){
 							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_EXCEED_MSG);
 						}else if(user.getQuota()>0 && user.getQuota()-userAssetCost <= minQuota)
-							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_ABOVETO_EXCEED_MSG);
+							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
 					}
 				}
 			}catch(Exception ex){

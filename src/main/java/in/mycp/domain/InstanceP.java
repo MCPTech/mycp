@@ -1,5 +1,6 @@
 package in.mycp.domain;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -142,6 +143,24 @@ public class InstanceP {
     }
 
     public static Number findInstanceCountByCompany(Company company, String status) {
+    	{
+	    	String queryStr = "SELECT i FROM InstanceP i where i.state = :status ";
+	        if (company != null) {
+	            queryStr = queryStr + "  and i.asset.user.department.company = :company";
+	        }
+	        Query q = entityManager().createQuery(queryStr);
+	        q.setParameter("status", status);
+	        if (company != null) {
+	            q.setParameter("company", company);
+	        }
+	        List l = q.getResultList();
+	        for (Iterator iterator = l.iterator(); iterator.hasNext(); ) {
+				InstanceP ins = (InstanceP) iterator.next();
+				System.out.println("ins.getInstanceId() = "+ins.getInstanceId());
+			}
+	        
+    	}
+    	
         String queryStr = "SELECT COUNT(i.id) FROM InstanceP i where i.state = :status ";
         if (company != null) {
             queryStr = queryStr + "  and i.asset.user.department.company = :company";

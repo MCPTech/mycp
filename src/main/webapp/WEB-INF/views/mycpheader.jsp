@@ -46,104 +46,51 @@
 
 <div class="container">
     <div id="content">
-	<div class="menu">				
-
-
-    <ul>
-    	<li><a class="right" href="/cloud-portal/dash">Home</a>
-	</li>
-    
     <%
     String roles = Commons.getCurrentUserRolesNonDWR();
+    boolean HOSTED_EDITION_ENABLED = false;
+    boolean SERVICE_PROVIDER_EDITION_ENABLED = false;
+    boolean PRIVATE_CLOUD_EDITION_ENABLED = false;
     
-    if(roles.contains(Commons.ROLE.ROLE_MANAGER+"") ||
-    			roles.contains(Commons.ROLE.ROLE_SUPERADMIN+""))
-    {
-    %>
-    
-    	<li><a class="left dropdown" href="#">Setup<span class="arrow"></span></a>
-		<ul class="width-2">
-		    <li><a href="/enterprise/company">Account</a></li>
-		    <li><a href="/enterprise/department">Department</a></li>
-		    <li><a href="/enterprise/project">Project</a></li>
-		    <li><a href="/realm/user">User</a></li>
-		</ul>
-		</li>
-		<li><a class="right dropdown" href="#">Configuration<span class="arrow"></span></a>
-		<ul class="width-2">
-		    <li><a href="/config/infra">Cloud</a></li>
-		    <li><a href="/config/zone">Availability Zone</a></li>
-		    <li><a href="/config/assettype">Product Type</a></li>
-		    <li><a href="/config/product">Product</a></li>
-
-		</ul>
-		</li>
-        
-      <%} %>
-      
-      	<li><a class="dropdown" href="#">Resource<span class="arrow"></span></a>
-		<ul class="width-3">
-		    <li><a href="/iaas/compute">Compute</a></li>
-		    <li><a href="/iaas/volume">Volume</a></li>
-		    <li><a href="/iaas/ipaddress">IP Address</a></li>
-		    <li><a href="/iaas/secgroup">Security Groups</a></li>
-		    <li><a href="/iaas/keys">Key Pairs</a></li>
-		    <li><a href="/iaas/image">Images</a></li>
-		    <li><a href="/iaas/snapshot">Snapshots</a></li>
-		</ul>
-		</li>
-		
-        
-        <%
-	    if(roles.contains("ROLE_ADMIN") || 
-	    		roles.contains("ROLE_MANAGER") ||
-	    			roles.contains("ROLE_SUPERADMIN"))
-	    {
-	    %>
-         <li><a class="dropdown" href="#">Control<span class="arrow"></span></a>
-			<ul class="width-3">
-			    <li><a href="/workflow/processInstance">Workflows</a></li>
-			    <li><a href="/log/account">Session Log</a></li>
-			</ul>
-		</li>
-	  	<%} %>
-	  	
-	  	<li><a class="dropdown" href="#">Usage Reports<span class="arrow"></span></a>
-			<ul class="width-3">
-			    
-
-        <%
-	    if(roles.contains("ROLE_SUPERADMIN"))
-	    {
-	    %>
-	    <li><a href="/reports/usageAll">All</a></li>
-			
-        <%} %>
-        
-        <%
-	    if(roles.contains("ROLE_ADMIN") || 
-	    		roles.contains("ROLE_MANAGER") ||
-	    			roles.contains("ROLE_SUPERADMIN"))
-	    {
-	    %>
-	    <li><a href="/reports/usageDept">Departments</a></li>
-	    <li><a href="/reports/usageProj">Projects</a></li>
-	
-       <%} %>
-       <li><a href="/reports/usageUser">Users</a></li>
-            </ul>
-		</li>
-		<li><a class="right" href="/resources/j_spring_security_logout"><span>Logout</span></a></li>
-    </ul>
-	<div style=" color: grey;line-height: 30px;padding: 1px 20px;    
-	   		text-align: right; cursor: pointer;display: block;  font-weight: bold; font-size: small;"> 
-	   			
-	   		<span id="mysession"> </span>
-	   </div>    
-  
-</div><!-- <div class="menu"> -->
-</div><!-- <div id="content"> -->
-</div><!-- <div class="container">  -->
+	 if(Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED){
+		 HOSTED_EDITION_ENABLED = true;
+	    }else if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+	    	SERVICE_PROVIDER_EDITION_ENABLED=true;
+	    }else if(Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED){
+	    	PRIVATE_CLOUD_EDITION_ENABLED=true;
+	    }
+	 
+	 /*
+	 
+	 Menu logic: 
+		 SP edition:
+		 if super_admin role and SP edition, then allow him to all permissions across all menu.
+		 if manager role and SP edition, then remove Account, ALL Configuration menu.
+		 if user role and SP edition,  then remove ALL setup menu,Configuration menu, reports, All,depts, projects.
+		 Hosted edition:
+		 if super_admin role and Hosted edition, then allow him  all permissions across all menu.
+		 if manager role and Hosted edition, then allow him all permissions across all menu except 4except reports-All and data level restraints .
+		 if user role and Hosted edition,  then remove ALL setup menu,Configuration menu, reports, All,depts, projects.
+		 Private Cloud edition:
+		 if super_admin role and Private Cloud  edition, then allow him  all permissions across all menu except Account creation
+		 if manager role and Private Cloud  edition, then allow him all permissions across all menu except Account, reports-All and data level restraints .
+		 if user role and Private Cloud  edition,  then remove ALL setup menu,Configuration menu, reports, All,depts, projects.
+	 
+	 */
+	 
+	 %>
+	 
+	<div class="menu">				
+		<%if(HOSTED_EDITION_ENABLED){ %>
+			<%@ include file="hostedmenu.jsp" %>
+		<%}else if(SERVICE_PROVIDER_EDITION_ENABLED){ %>
+			<%@ include file="serviceprovidermenu.jsp" %>
+		<%}else if(PRIVATE_CLOUD_EDITION_ENABLED){ %>
+			<%@ include file="privatecloudmenu.jsp" %>
+		<%} %>  
+	</div><!-- <div class="menu"> -->
+	</div><!-- <div id="content"> -->
+	</div><!-- <div class="container">  -->
 
 
 

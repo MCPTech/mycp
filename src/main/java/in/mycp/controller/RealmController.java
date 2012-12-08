@@ -34,7 +34,7 @@ public class RealmController  {
 
 	@RequestMapping(value="/user", produces = "text/html")
 	public String user(HttpServletRequest req, HttpServletResponse resp) {
-		System.out.println("realm/user");
+		//System.out.println("realm/user");
 		//ModelAndView modelandView = new ModelAndView("main");
 		return "realm/user";
 	}

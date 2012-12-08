@@ -257,6 +257,7 @@ public class ReportService {
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.ComputeInstance)) {
 						for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 							Asset asset = (Asset) iterator2.next();
+							
 							dto.setComputeCost(dto.getComputeCost() + getAssetCost(asset));
 						}
 					} else if (strAssetType.equals("" + Commons.ASSET_TYPE.IpAddress)) {
@@ -372,10 +373,15 @@ public class ReportService {
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.ComputeInstance)) {
 						try {
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-
-							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							//just to get teh active ones only
+							assets2return = new ArrayList<Asset>();
+							assets2return = fillCommonComputeInfo(assets, assets2return);
+							//System.out.println("assets2return.size() = "+assets2return.size());
+							for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
+									//System.out.println("asset.getId() = "+asset.getId()+",   "+dto.getComputeCost()+",  assetType = "+asset.getAssetType().getName());
+									
 									dto.setComputeCost(dto.getComputeCost() + getAssetCost(asset));
 
 								} catch (Exception e) {
@@ -390,7 +396,10 @@ public class ReportService {
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.IpAddress)) {
 						try {
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							assets2return = new ArrayList<Asset>();
+							assets2return = fillCommonAddressInfo(assets, assets2return);
+							
+							for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
 									dto.setIpaddressCost(dto.getIpaddressCost() + getAssetCost(asset));
@@ -409,7 +418,9 @@ public class ReportService {
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.KeyPair)) {
 						try {
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							assets2return = new ArrayList<Asset>();
+							assets2return = fillCommonKeypairInfo(assets, assets2return);
+							for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
 									dto.setKeyCost(dto.getKeyCost() + getAssetCost(asset));
@@ -426,7 +437,9 @@ public class ReportService {
 
 						try {
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							assets2return = new ArrayList<Asset>();
+							assets2return = fillCommonSecurityGroupInfo(assets, assets2return);
+							for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
 									dto.setSecgroupCost(dto.getSecgroupCost() + getAssetCost(asset));
@@ -443,7 +456,10 @@ public class ReportService {
 
 						try {
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							assets2return = new ArrayList<Asset>();
+							assets2return = fillCommonVolumeInfo(assets, assets2return);
+							
+							for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
 									dto.setVolumeCost(dto.getVolumeCost() + getAssetCost(asset));
@@ -458,8 +474,11 @@ public class ReportService {
 
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.VolumeSnapshot)) {
 						try {
+							
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
-							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
+							assets2return = new ArrayList<Asset>();
+							assets2return = fillCommonSnapshotInfo(assets, assets2return);
+							for (Iterator iterator2 = assets2return.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
 									dto.setSnapshotCost(dto.getSnapshotCost() + getAssetCost(asset));
@@ -476,6 +495,7 @@ public class ReportService {
 
 						try {
 							assets = getAssets(currentRole, currentUser, assetType, billable, active);
+							//System.out.println(" is it coming here ?/n/n**************************************************************************************/n/n ");
 							for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 								try {
 									Asset asset = (Asset) iterator2.next();
@@ -704,6 +724,7 @@ public class ReportService {
 					if (!assetType.getBillable()) {
 						continue;
 					}
+					
 					if (assetType.getName().equals("" + Commons.ASSET_TYPE.ComputeImage)) {
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.ComputeInstance)) {
 						try {
