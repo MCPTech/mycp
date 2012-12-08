@@ -74,7 +74,7 @@ public class SecurityGroupService {
 			try {
 				String s = instance.getName();
 				instance.setName(StringUtils.replace(s, " ", "_"));
-
+				instance.setName(instance.getName()+"_"+Commons.getCurrentSession().getCompany());
 			} catch (Exception e) {
 			}
 			// String companyName = Commons.getCurrentSession().getCompany();
@@ -207,8 +207,12 @@ public class SecurityGroupService {
 			}
 
 			GroupDescriptionP g = GroupDescriptionP.findGroupDescriptionP(id);
-			Commons.setAssetEndTime(g.getAsset());
-			g.remove();
+			Asset a = g.getAsset();
+			if(a !=null && a.getEndTime()!=null){
+				Commons.setAssetEndTime(a);	
+			}
+			
+			//g.remove();
 			/*
 			 * g.setStatus(Commons.secgroup_STATUS.inactive+""); g.merge();
 			 */
@@ -371,7 +375,7 @@ public class SecurityGroupService {
 
 	@RemoteMethod
 	public List<ProductCatalog> findProductType() {
-		if (Commons.getCurrentUser().getRole().getName()
+		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED || Commons.getCurrentUser().getRole().getName()
 				.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			return ProductCatalog.findProductCatalogsByProductTypeEquals(
 					Commons.ProductType.SecurityGroup.getName())

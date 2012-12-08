@@ -310,7 +310,7 @@ public class VmwareService {
 												ipPermissionP = IpPermissionP.findIpPermissionPsByParams(descriptionP, getPrototcolAsString(firewallRule.getProtocols()), 
 														firewallRule.getSourceIp(), firewallRule.getSourcePort()).getSingleResult();
 											} catch (Exception e) {
-												//e.printStackTrace();
+												e.printStackTrace();
 												logger.error(e.getMessage());
 											}
 
@@ -527,7 +527,8 @@ public class VmwareService {
 					addressInfoP = AddressInfoP.findAddressInfoPsBy(infra, extIp, company).getSingleResult();
 
 				} catch (Exception e) {
-					logger.error(e.getMessage());//e.printStackTrace();
+					logger.error(e.getMessage());//
+					e.printStackTrace();
 				}
 				if (addressInfoP == null) {
 					addressInfoP = new AddressInfoP();
@@ -636,7 +637,8 @@ public class VmwareService {
 							try {
 								volumeInfoP = VolumeInfoP.findVolumeInfoPsBy(infra, volId, company).getSingleResult();
 							} catch (Exception e) {
-								logger.error(e.getMessage());//e.printStackTrace();
+								logger.error(e.getMessage());//
+								e.printStackTrace();
 							}
 							if (volumeInfoP != null) {
 
@@ -749,7 +751,8 @@ public class VmwareService {
 						try {
 							imageDescriptionP = ImageDescriptionP.findImageDescriptionPsBy(infra,vappTemplate.getResource().getId(), company).getSingleResult();
 						} catch (Exception e) {
-							logger.error(e.getMessage());//e.printStackTrace();
+							logger.error(e.getMessage());//
+							e.printStackTrace();
 						}
 						if (imageDescriptionP != null) {
 	
@@ -976,7 +979,8 @@ public class VmwareService {
 						try {
 							instanceP = InstanceP.findInstancePsBy(infra, vmId, company).getSingleResult();
 						} catch (Exception e) {
-							logger.error(e.getMessage());//e.printStackTrace();
+							logger.error(e.getMessage());//
+							e.printStackTrace();
 						}
 
 						if (instanceP != null) {
@@ -999,6 +1003,7 @@ public class VmwareService {
 						
 						} catch (Exception e) {
 							logger.error(e.getMessage());
+							e.printStackTrace();
 						}
 						instanceP.setDnsName(ipAddress);
 						instanceP.setState(vmStatus);
