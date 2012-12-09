@@ -159,16 +159,24 @@ public class SnapshotInfoP {
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
-    public static TypedQuery<SnapshotInfoP> findSnapshotInfoPsByAsset(Asset asset) {
+
+    public static TypedQuery<in.mycp.domain.SnapshotInfoP> findSnapshotInfoPsByAsset4Report(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset = :asset ", SnapshotInfoP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+
+    public static TypedQuery<in.mycp.domain.SnapshotInfoP> findSnapshotInfoPsByAsset(Asset asset) {
         if (asset == null) throw new IllegalArgumentException("The asset argument is required");
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.asset = :asset and  o.asset.active = 1", SnapshotInfoP.class);
         q.setParameter("asset", asset);
         return q;
     }
-    
-    public static TypedQuery<SnapshotInfoP> findSnapshotInfoPsBySnapshotIdEquals(String snapshotId) {
+
+    public static TypedQuery<in.mycp.domain.SnapshotInfoP> findSnapshotInfoPsBySnapshotIdEquals(String snapshotId) {
         if (snapshotId == null || snapshotId.length() == 0) throw new IllegalArgumentException("The snapshotId argument is required");
         EntityManager em = entityManager();
         TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId and  o.asset.active = 1", SnapshotInfoP.class);

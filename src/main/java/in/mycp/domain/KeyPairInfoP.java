@@ -188,21 +188,28 @@ public class KeyPairInfoP {
         }
         return keyMaterial;
     }
-    
-    public static TypedQuery<KeyPairInfoP> findKeyPairInfoPsByAsset(Asset asset) {
+
+    public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsByAsset4Report(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset = :asset ", KeyPairInfoP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+
+    public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsByAsset(Asset asset) {
         if (asset == null) throw new IllegalArgumentException("The asset argument is required");
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.asset = :asset and  o.asset.active = 1", KeyPairInfoP.class);
         q.setParameter("asset", asset);
         return q;
     }
-    
-    public static TypedQuery<KeyPairInfoP> findKeyPairInfoPsByKeyNameEquals(String keyName) {
+
+    public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsByKeyNameEquals(String keyName) {
         if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
         EntityManager em = entityManager();
         TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName and  o.asset.active = 1", KeyPairInfoP.class);
         q.setParameter("keyName", keyName);
         return q;
     }
-    
 }

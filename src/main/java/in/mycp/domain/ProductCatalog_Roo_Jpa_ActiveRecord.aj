@@ -66,12 +66,4 @@ privileged aspect ProductCatalog_Roo_Jpa_ActiveRecord {
         this.entityManager.clear();
     }
     
-    @Transactional
-    public ProductCatalog ProductCatalog.merge() {
-        if (this.entityManager == null) this.entityManager = entityManager();
-        ProductCatalog merged = this.entityManager.merge(this);
-        this.entityManager.flush();
-        return merged;
-    }
-    
 }

@@ -53,16 +53,16 @@ privileged aspect Asset_Roo_DbManaged {
     private Set<VolumeInfoP> Asset.volumeInfoPs;
     
     @ManyToOne
+    @JoinColumn(name = "project", referencedColumnName = "id")
+    private Project Asset.project;
+    
+    @ManyToOne
     @JoinColumn(name = "assetType", referencedColumnName = "id")
     private AssetType Asset.assetType;
     
     @ManyToOne
     @JoinColumn(name = "productCatalog", referencedColumnName = "id")
     private ProductCatalog Asset.productCatalog;
-    
-    @ManyToOne
-    @JoinColumn(name = "project", referencedColumnName = "id")
-    private Project Asset.project;
     
     @ManyToOne
     @JoinColumn(name = "user", referencedColumnName = "id")
@@ -154,6 +154,14 @@ privileged aspect Asset_Roo_DbManaged {
         this.volumeInfoPs = volumeInfoPs;
     }
     
+    public Project Asset.getProject() {
+        return project;
+    }
+    
+    public void Asset.setProject(Project project) {
+        this.project = project;
+    }
+    
     public AssetType Asset.getAssetType() {
         return assetType;
     }
@@ -168,14 +176,6 @@ privileged aspect Asset_Roo_DbManaged {
     
     public void Asset.setProductCatalog(ProductCatalog productCatalog) {
         this.productCatalog = productCatalog;
-    }
-    
-    public Project Asset.getProject() {
-        return project;
-    }
-    
-    public void Asset.setProject(Project project) {
-        this.project = project;
     }
     
     public User Asset.getUser() {

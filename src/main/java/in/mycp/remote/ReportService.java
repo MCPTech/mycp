@@ -1,17 +1,22 @@
-//My Cloud Portal - Self Service Portal for the cloud.
-//This file is part of My Cloud Portal.
-//
-//My Cloud Portal is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, version 3 of the License.
-//
-//My Cloud Portal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with My Cloud Portal.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ mycloudportal - Self Service Portal for the cloud.
+ Copyright (C) 2012-2013 Mycloudportal Technologies Pvt Ltd
+
+ This file is part of mycloudportal.
+
+ mycloudportal is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ mycloudportal is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package in.mycp.remote;
 
@@ -543,7 +548,7 @@ public class ReportService {
 		for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 			try {
 				Asset asset = (Asset) iterator2.next();
-				VolumeInfoP volume = VolumeInfoP.findVolumeInfoPsByAsset(asset).getSingleResult();
+				VolumeInfoP volume = VolumeInfoP.findVolumeInfoPsByAsset4Report(asset).getSingleResult();
 				asset.setAssetDetails(volume.getName() + " " + volume.getVolumeId() + " " + volume.getSize() + "(GB)");
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
@@ -559,7 +564,7 @@ public class ReportService {
 		for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 			try {
 				Asset asset = (Asset) iterator2.next();
-				InstanceP instance = InstanceP.findInstancePsByAsset(asset).getSingleResult();
+				InstanceP instance = InstanceP.findInstancePsByAsset4Report(asset).getSingleResult();
 				asset.setAssetDetails(instance.getName() + " " + instance.getDnsName() + " " + instance.getInstanceId() + " "
 						+ instance.getInstanceType());
 				assets2return = fillCommon(asset, assets2return);
@@ -575,7 +580,7 @@ public class ReportService {
 		for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 			try {
 				Asset asset = (Asset) iterator2.next();
-				SnapshotInfoP snapshot = SnapshotInfoP.findSnapshotInfoPsByAsset(asset).getSingleResult();
+				SnapshotInfoP snapshot = SnapshotInfoP.findSnapshotInfoPsByAsset4Report(asset).getSingleResult();
 				asset.setAssetDetails(snapshot.getSnapshotId() + " " + snapshot.getOwnerId());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
@@ -590,7 +595,7 @@ public class ReportService {
 		for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 			try {
 				Asset asset = (Asset) iterator2.next();
-				KeyPairInfoP keyPairInfoP = KeyPairInfoP.findKeyPairInfoPsByAsset(asset).getSingleResult();
+				KeyPairInfoP keyPairInfoP = KeyPairInfoP.findKeyPairInfoPsByAsset4Report(asset).getSingleResult();
 				asset.setAssetDetails(keyPairInfoP.getKeyName());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
@@ -605,7 +610,7 @@ public class ReportService {
 		for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 			try {
 				Asset asset = (Asset) iterator2.next();
-				GroupDescriptionP groupDescriptionP = GroupDescriptionP.findGroupDescriptionPsByAsset(asset).getSingleResult();
+				GroupDescriptionP groupDescriptionP = GroupDescriptionP.findGroupDescriptionPsByAsset4Report(asset).getSingleResult();
 				asset.setAssetDetails(groupDescriptionP.getName() + " " + groupDescriptionP.getOwner());
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
@@ -620,8 +625,12 @@ public class ReportService {
 		for (Iterator iterator2 = assets.iterator(); iterator2.hasNext();) {
 			try {
 				Asset asset = (Asset) iterator2.next();
-				AddressInfoP addressInfoP = AddressInfoP.findAddressInfoPsByAsset(asset).getSingleResult();
+				AddressInfoP addressInfoP = AddressInfoP.findAddressInfoPsByAsset4Report(asset).getSingleResult();
 				asset.setAssetDetails(addressInfoP.getName() + " " + addressInfoP.getPublicIp());
+				//if this is a automatically assigned IP , we dont charge for it.
+				if(addressInfoP.getAutomatic()!=null && addressInfoP.getAutomatic()){
+					continue;
+				}
 				assets2return = fillCommon(asset, assets2return);
 			} catch (Exception e) {
 				log.error(e.getMessage());// 
@@ -742,7 +751,7 @@ public class ReportService {
 							assets = Asset.findAssets4Report4Department(departmentId, assetType, billable, active).getResultList();
 							assets2return = fillCommonComputeInfo(assets, assets2return);
 						} catch (Exception e) {
-							log.error(e.getMessage());// e.printStackTrace();
+							log.error(e.getMessage()); e.printStackTrace();
 						}
 
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.IpAddress)
@@ -751,7 +760,7 @@ public class ReportService {
 							assets = Asset.findAssets4Report4Department(departmentId, assetType, billable, active).getResultList();
 							assets2return = fillCommonAddressInfo(assets, assets2return);
 						} catch (Exception e) {
-							log.error(e.getMessage());// e.printStackTrace();
+							log.error(e.getMessage());e.printStackTrace();
 						}
 
 					} else if (assetType.getName().equals("" + Commons.ASSET_TYPE.IpPermission)) {
@@ -896,7 +905,7 @@ public class ReportService {
 					log.error(e.getMessage());// e.printStackTrace();
 				}
 			}
-			System.out.println("assets2return.size() = "+assets2return.size());
+			//System.out.println("assets2return.size() = "+assets2return.size());
 			return assets2return;
 		} catch (Exception e) {
 			log.error(e.getMessage());// e.printStackTrace();

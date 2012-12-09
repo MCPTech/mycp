@@ -60,7 +60,8 @@
 		
 	}
 
-	var isMycpAdmin = false;
+	var isSuperAdmin = false;
+	var isAccountManager = false;
 	function findAll_product(p){
 		/* alert(p.length);
 		alert(p[0].imageId); */
@@ -102,11 +103,28 @@
 			if(p[i].meterMetric !=null){
 				meterMetric=p[i].meterMetric.name;
 			}
-			var options = '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_product('+p[i].id+')>&nbsp; &nbsp; &nbsp;';
-			if(isMycpAdmin){
-				options = options+
-                '<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_product('+p[i].id+')>';
+			// if SP edition, then remove edit options for all other users except super admin
+			var options ='';
+			if(EDITION_ENABLED==SERVICE_PROVIDER_EDITION_ENABLED){
+				if(isSuperAdmin){
+					options =  '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_product('+p[i].id+')>&nbsp; &nbsp; &nbsp;'+
+	                '<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_product('+p[i].id+')>';	
+				}
+			}else if(EDITION_ENABLED==HOSTED_EDITION_ENABLED){
+				if(isAccountManager){
+					options =  '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_product('+p[i].id+')>&nbsp; &nbsp; &nbsp;'+
+	                '<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_product('+p[i].id+')>';	
+				}
+			}else if(EDITION_ENABLED==PRIVATE_CLOUD_EDITION_ENABLED){
+				if(isSuperAdmin){
+					options =  '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_product('+p[i].id+')>&nbsp; &nbsp; &nbsp;'+
+	                '<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_product('+p[i].id+')>';	
+				}else{
+					options =  '<img class="clickimg" title="Edit" alt="Edit" src=../images/edit.png onclick=edit_product('+p[i].id+')>&nbsp; &nbsp; &nbsp;';
+	                
+				}
 			}
+
 			oTable.fnAddData( [i+1,p[i].name, p[i].details, p[i].price+' '+p[i].currency,p[i].productType,
 			                   //meterMetric,
 			                   options ] );
@@ -198,10 +216,10 @@ $(function(){
 			
 			$(document).ready(function() {
 				CommonService.getCurrentSession(function(p){
-					if(p.role != 'ROLE_SUPERADMIN'){
-						//dwr.util.setValue('only4mycpadmin', '');	
-					}else if(p.role == 'ROLE_SUPERADMIN'){
-						isMycpAdmin = true; 
+					if(p.role == 'ROLE_SUPERADMIN'){
+						isSuperAdmin  = true; 
+					}else if(p.role == 'ROLE_MANAGER'){
+						isAccountManager = true;
 					}
 					
 				});

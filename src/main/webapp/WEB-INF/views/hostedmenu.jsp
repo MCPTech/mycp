@@ -6,9 +6,7 @@
     
 	 
    <%
-    if(roles.contains(Commons.ROLE.ROLE_MANAGER+"") ||
-    			roles.contains(Commons.ROLE.ROLE_SUPERADMIN+""))
-    {
+    if(roles.contains(Commons.ROLE.ROLE_MANAGER+"") || roles.contains(Commons.ROLE.ROLE_SUPERADMIN+"")){
     %>
     
     	<li><a class="left dropdown" href="#">Setup<span class="arrow"></span></a>
@@ -19,17 +17,21 @@
 		    <li><a href="/realm/user">User</a></li>
 		</ul>
 		</li>
+		 <%} %>
 		<li><a class="right dropdown" href="#">Configuration<span class="arrow"></span></a>
 		<ul class="width-2">
+		    <% if(roles.contains(Commons.ROLE.ROLE_MANAGER+"") || roles.contains(Commons.ROLE.ROLE_SUPERADMIN+"")){
+		    %>
 		    <li><a href="/config/infra">Cloud</a></li>
 		    <li><a href="/config/zone">Availability Zone</a></li>
 		    <li><a href="/config/assettype">Product Type</a></li>
+		     <%} %>
 		    <li><a href="/config/product">Product</a></li>
 
 		</ul>
 		</li>
         
-      <%} %>
+     
       
       	<li><a class="dropdown" href="#">Resource<span class="arrow"></span></a>
 		<ul class="width-3">

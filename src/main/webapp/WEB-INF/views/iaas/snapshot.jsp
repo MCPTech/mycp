@@ -4,6 +4,7 @@
 <script type='text/javascript' src='/dwr/interface/SnapshotInfoP.js'></script>
 <script type='text/javascript' src='/dwr/interface/VolumeInfoP.js'></script>
 <script type='text/javascript' src='/dwr/interface/ProjectService.js'></script>
+<script type='text/javascript' src='/dwr/interface/ProductService.js'></script>
 <script type="text/javascript">
 /***************************/
 //@Author: Adrian "yEnS" Mato Gondelle
@@ -183,20 +184,10 @@ $(function(){
 		$(document).ready(function() {
 			$("#popupbutton_backuplist").click();
 			
-			VolumeInfoP.findAll4List(function(p){
-				dwr.util.removeAllOptions('instance');
-				dwr.util.addOptions('volumeId', p, 'volumeId', function(p) {
-					if(p.volumeId !=null){
-						return p.volumeId+' '+p.size+' '+p.name;
-					}else {
-						return null;
-					}
-				});
-			});
-			
 			SnapshotInfoP.findProductType(function(p){
 				//alert(dwr.util.toDescriptiveString(p,3));
   				dwr.util.removeAllOptions('product');
+  				dwr.util.addOptions('product', {'-1':'Please Select'});
   				dwr.util.addOptions('product', p,'id','name');
   				//dwr.util.setValue(id, sel);
   			});
@@ -361,3 +352,24 @@ $(function(){
 						</div>
 		<div id="backgroundPopup_backup" class="backgroundPopup" ></div>
 	</div>				
+	
+	<script>
+	$("#product").change(function(){
+		
+		var productCatId = parseInt($("#product").val());
+		ProductService.findById(productCatId, function(s){
+			VolumeInfoP.findAll4List4Infra(s.infra,function(p){
+				dwr.util.removeAllOptions('instance');
+				dwr.util.addOptions('volumeId', p, 'volumeId', function(p) {
+					if(p.volumeId !=null){
+						return p.volumeId+' '+p.size+' '+p.name;
+					}else {
+						return null;
+					}
+				});
+			});
+			
+			
+		});
+	} );
+</script>

@@ -1,0 +1,1655 @@
+-- MySQL dump 10.13  Distrib 5.1.65, for Win64 (unknown)
+--
+-- Host: localhost    Database: mycp
+-- ------------------------------------------------------
+-- Server version	5.1.65-community
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `account_log`
+--
+
+DROP TABLE IF EXISTS `account_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `account_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `task` varchar(90) DEFAULT NULL,
+  `details` varchar(255) DEFAULT NULL,
+  `time_of_entry` datetime DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_account_log_user1_idx` (`user_id`),
+  CONSTRAINT `fk_account_log_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `account_log`
+--
+
+LOCK TABLES `account_log` WRITE;
+/*!40000 ALTER TABLE `account_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `account_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `address_info_p`
+--
+
+DROP TABLE IF EXISTS `address_info_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `address_info_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `publicIp` varchar(45) DEFAULT NULL,
+  `instanceId` varchar(255) DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `associated` tinyint(1) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `automatic` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Address_Info_P_Asset1` (`asset`),
+  CONSTRAINT `fk_Address_Info_P_Asset1` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `address_info_p`
+--
+
+LOCK TABLES `address_info_p` WRITE;
+/*!40000 ALTER TABLE `address_info_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `address_info_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `asset`
+--
+
+DROP TABLE IF EXISTS `asset`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `asset` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user` int(11) DEFAULT NULL,
+  `productCatalog` int(11) DEFAULT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `active` tinyint(1) DEFAULT NULL,
+  `details` varchar(255) DEFAULT NULL,
+  `assetType` int(11) DEFAULT NULL,
+  `startTime` datetime DEFAULT NULL,
+  `endTime` datetime DEFAULT NULL,
+  `startRate` int(11) DEFAULT NULL,
+  `project` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Asset_User1` (`user`),
+  KEY `ix_Asset_Product_Catalog1` (`productCatalog`),
+  KEY `ix_Asset_Asset_Type1` (`assetType`),
+  KEY `fk_Asset_Project_idx` (`project`),
+  CONSTRAINT `fk_Asset_Project` FOREIGN KEY (`project`) REFERENCES `project` (`id`),
+  CONSTRAINT `fk_Asset_Asset_Type1` FOREIGN KEY (`assetType`) REFERENCES `asset_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Asset_Product_Catalog1` FOREIGN KEY (`productCatalog`) REFERENCES `product_catalog` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Asset_User1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=921 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `asset`
+--
+
+LOCK TABLES `asset` WRITE;
+/*!40000 ALTER TABLE `asset` DISABLE KEYS */;
+/*!40000 ALTER TABLE `asset` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `asset_type`
+--
+
+DROP TABLE IF EXISTS `asset_type`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `asset_type` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `description` varchar(45) DEFAULT NULL,
+  `workflowEnabled` tinyint(1) DEFAULT NULL,
+  `billable` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `asset_type`
+--
+
+LOCK TABLES `asset_type` WRITE;
+/*!40000 ALTER TABLE `asset_type` DISABLE KEYS */;
+INSERT INTO `asset_type` VALUES (19,'IpAddress','ip address ',1,1),(20,'SecurityGroup','',1,0),(21,'IpPermission','',1,0),(22,'Volume','',1,1),(23,'VolumeSnapshot','',1,1),(24,'ComputeImage','',1,1),(25,'ComputeReservation','',1,1),(26,'ComputeInstance','',1,1),(27,'KeyPair','',1,1);
+/*!40000 ALTER TABLE `asset_type` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `attachment_info_p`
+--
+
+DROP TABLE IF EXISTS `attachment_info_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `attachment_info_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `volumeId` varchar(45) DEFAULT NULL,
+  `instanceId` varchar(45) DEFAULT NULL,
+  `device` varchar(45) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `attachTime` datetime DEFAULT NULL,
+  `volumeInfo` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Attachment_Info_Volume_Info1` (`volumeInfo`),
+  CONSTRAINT `fk_Attachment_Info_Volume_Info1` FOREIGN KEY (`volumeInfo`) REFERENCES `volume_info_p` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `attachment_info_p`
+--
+
+LOCK TABLES `attachment_info_p` WRITE;
+/*!40000 ALTER TABLE `attachment_info_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `attachment_info_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `availability_zone_p`
+--
+
+DROP TABLE IF EXISTS `availability_zone_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `availability_zone_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `state` varchar(255) DEFAULT NULL,
+  `regionName` varchar(45) DEFAULT NULL,
+  `messages` varchar(255) DEFAULT NULL,
+  `infra_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_infra_id` (`infra_id`),
+  CONSTRAINT `fk_infra_id` FOREIGN KEY (`infra_id`) REFERENCES `infra` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `availability_zone_p`
+--
+
+LOCK TABLES `availability_zone_p` WRITE;
+/*!40000 ALTER TABLE `availability_zone_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `availability_zone_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `block_device_mapping_p`
+--
+
+DROP TABLE IF EXISTS `block_device_mapping_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `block_device_mapping_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `virtualName` varchar(45) DEFAULT NULL,
+  `deviceName` varchar(45) DEFAULT NULL,
+  `snapshotId` varchar(45) DEFAULT NULL,
+  `volumeSize` int(11) DEFAULT NULL,
+  `deleteOnTerminate` tinyint(1) DEFAULT NULL,
+  `imageDescription` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Block_Device_Mapping_ImageDescription1` (`imageDescription`),
+  CONSTRAINT `fk_Block_Device_Mapping_ImageDescription1` FOREIGN KEY (`imageDescription`) REFERENCES `image_description_p` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `block_device_mapping_p`
+--
+
+LOCK TABLES `block_device_mapping_p` WRITE;
+/*!40000 ALTER TABLE `block_device_mapping_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `block_device_mapping_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `company`
+--
+
+DROP TABLE IF EXISTS `company`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `company` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(90) DEFAULT NULL,
+  `address` varchar(90) DEFAULT NULL,
+  `city` varchar(45) DEFAULT NULL,
+  `country` varchar(45) DEFAULT NULL,
+  `phone` varchar(45) DEFAULT NULL,
+  `email` varchar(45) DEFAULT NULL,
+  `currency` varchar(45) DEFAULT NULL,
+  `quota` int(11) DEFAULT '0',
+  `min_bal` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `company`
+--
+
+LOCK TABLES `company` WRITE;
+/*!40000 ALTER TABLE `company` DISABLE KEYS */;
+/*!40000 ALTER TABLE `company` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `department`
+--
+
+DROP TABLE IF EXISTS `department`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `department` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `company` int(11) DEFAULT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `quota` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `ix_Department_Company1` (`company`),
+  CONSTRAINT `fk_Department_Company1` FOREIGN KEY (`company`) REFERENCES `company` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `department`
+--
+
+LOCK TABLES `department` WRITE;
+/*!40000 ALTER TABLE `department` DISABLE KEYS */;
+/*!40000 ALTER TABLE `department` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `group_description_p`
+--
+
+DROP TABLE IF EXISTS `group_description_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `group_description_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `descripton` varchar(255) DEFAULT NULL,
+  `owner` varchar(45) DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Group_Description_Asset1` (`asset`),
+  CONSTRAINT `fk_Group_Description_Asset1` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `group_description_p`
+--
+
+LOCK TABLES `group_description_p` WRITE;
+/*!40000 ALTER TABLE `group_description_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `group_description_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `image_description_p`
+--
+
+DROP TABLE IF EXISTS `image_description_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `image_description_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `imageId` varchar(255) DEFAULT NULL,
+  `imageLocation` varchar(255) DEFAULT NULL,
+  `imageOwnerId` varchar(45) DEFAULT NULL,
+  `imageState` varchar(45) DEFAULT NULL,
+  `isPublic` tinyint(1) DEFAULT NULL,
+  `productCodes` varchar(255) DEFAULT NULL,
+  `architecture` varchar(45) DEFAULT NULL,
+  `imageType` varchar(45) DEFAULT NULL,
+  `kernelId` varchar(45) DEFAULT NULL,
+  `ramdiskId` varchar(45) DEFAULT NULL,
+  `platform` varchar(45) DEFAULT NULL,
+  `reason` varchar(45) DEFAULT NULL,
+  `imageOwnerAlias` varchar(45) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `rootDeviceType` varchar(45) DEFAULT NULL,
+  `rootDeviceName` varchar(45) DEFAULT NULL,
+  `virtualizationType` varchar(45) DEFAULT NULL,
+  `hypervisor` varchar(45) DEFAULT NULL,
+  `tagSet` varchar(255) DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_ImageDescription_Asset1` (`asset`),
+  CONSTRAINT `fk_ImageDescription_Asset1` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=123 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `image_description_p`
+--
+
+LOCK TABLES `image_description_p` WRITE;
+/*!40000 ALTER TABLE `image_description_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `image_description_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `infra`
+--
+
+DROP TABLE IF EXISTS `infra`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `infra` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `company` int(11) DEFAULT NULL,
+  `accessId` varchar(90) DEFAULT NULL,
+  `SecretKey` varchar(90) DEFAULT NULL,
+  `isSecure` tinyint(1) DEFAULT NULL,
+  `server` varchar(45) DEFAULT NULL,
+  `port` int(11) DEFAULT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `details` varchar(90) DEFAULT NULL,
+  `resourcePrefix` varchar(90) DEFAULT NULL,
+  `signatureVersion` int(11) DEFAULT NULL,
+  `importDate` datetime DEFAULT NULL,
+  `syncDate` datetime DEFAULT NULL,
+  `syncInProgress` tinyint(1) DEFAULT NULL,
+  `zone` varchar(90) DEFAULT NULL,
+  `syncstatus` int(1) DEFAULT NULL,
+  `infraType` int(11) NOT NULL,
+  `vcloud_account_name` varchar(90) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Infra_Region1` (`company`),
+  KEY `fk_infra_company1` (`company`),
+  KEY `fk_infra_to_infra_type` (`infraType`),
+  CONSTRAINT `fk_infra_to_infra_type` FOREIGN KEY (`infraType`) REFERENCES `infra_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_infra_company1` FOREIGN KEY (`company`) REFERENCES `company` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `infra`
+--
+
+LOCK TABLES `infra` WRITE;
+/*!40000 ALTER TABLE `infra` DISABLE KEYS */;
+/*!40000 ALTER TABLE `infra` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `infra_type`
+--
+
+DROP TABLE IF EXISTS `infra_type`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `infra_type` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `details` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `infra_type`
+--
+
+LOCK TABLES `infra_type` WRITE;
+/*!40000 ALTER TABLE `infra_type` DISABLE KEYS */;
+INSERT INTO `infra_type` VALUES (1,'EUCA','Euca x'),(2,'AWS','Amazon Web services'),(3,'VCLOUD','vCloud Director 1.5');
+/*!40000 ALTER TABLE `infra_type` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `instance_block_device_mapping_p`
+--
+
+DROP TABLE IF EXISTS `instance_block_device_mapping_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `instance_block_device_mapping_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `instance` int(11) DEFAULT NULL,
+  `deviceName` varchar(45) DEFAULT NULL,
+  `volumeId` varchar(45) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `attachTime` datetime DEFAULT NULL,
+  `deleteOnTerminate` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_InstanceBlockDeviceMapping_Instance1` (`instance`),
+  CONSTRAINT `fk_InstanceBlockDeviceMapping_Instance1` FOREIGN KEY (`instance`) REFERENCES `instance_p` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `instance_block_device_mapping_p`
+--
+
+LOCK TABLES `instance_block_device_mapping_p` WRITE;
+/*!40000 ALTER TABLE `instance_block_device_mapping_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `instance_block_device_mapping_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `instance_p`
+--
+
+DROP TABLE IF EXISTS `instance_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `instance_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `reservationDescription` int(11) DEFAULT NULL,
+  `instanceId` varchar(255) DEFAULT NULL,
+  `privateDnsName` varchar(45) DEFAULT NULL,
+  `dnsName` varchar(45) DEFAULT NULL,
+  `reason` varchar(90) DEFAULT NULL,
+  `keyName` varchar(45) DEFAULT NULL,
+  `launchIndex` varchar(45) DEFAULT NULL,
+  `productCodes` varchar(255) DEFAULT NULL,
+  `launchTime` datetime DEFAULT NULL,
+  `availabilityZone` varchar(45) DEFAULT NULL,
+  `kernelId` varchar(45) DEFAULT NULL,
+  `ramdiskId` varchar(45) DEFAULT NULL,
+  `platform` varchar(45) DEFAULT NULL,
+  `state` varchar(45) DEFAULT NULL,
+  `stateCode` varchar(45) DEFAULT NULL,
+  `monitoring` tinyint(1) DEFAULT NULL,
+  `subnetId` varchar(45) DEFAULT NULL,
+  `vpcId` varchar(45) DEFAULT NULL,
+  `privateIpAddress` varchar(45) DEFAULT NULL,
+  `ipAddress` varchar(45) DEFAULT NULL,
+  `architecture` varchar(45) DEFAULT NULL,
+  `rootDeviceType` varchar(45) DEFAULT NULL,
+  `rootDeviceName` varchar(45) DEFAULT NULL,
+  `instanceLifecycle` varchar(45) DEFAULT NULL,
+  `spotInstanceRequestId` varchar(45) DEFAULT NULL,
+  `virtualizationType` varchar(45) DEFAULT NULL,
+  `clientToken` varchar(45) DEFAULT NULL,
+  `tagSet` varchar(255) DEFAULT NULL,
+  `hypervisor` varchar(45) DEFAULT NULL,
+  `InstanceType` varchar(45) DEFAULT NULL,
+  `name` varchar(90) DEFAULT NULL,
+  `groupName` varchar(45) DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  `image` int(11) DEFAULT NULL,
+  `vcloud_cpu` double DEFAULT NULL,
+  `vcloud_ram_gb` double DEFAULT NULL,
+  `vcloud_disk_gb` double DEFAULT NULL,
+  `vcloud_vm_href` varchar(255) DEFAULT NULL,
+  `vcloud_vapp_href` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_instances_ReservationDescription1` (`reservationDescription`),
+  KEY `fk_asset_instancep` (`asset`),
+  KEY `fk_image_instancep_idx` (`image`),
+  CONSTRAINT `fk_asset_instancep` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_image_instancep` FOREIGN KEY (`image`) REFERENCES `image_description_p` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `instance_p`
+--
+
+LOCK TABLES `instance_p` WRITE;
+/*!40000 ALTER TABLE `instance_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `instance_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ip_address_p`
+--
+
+DROP TABLE IF EXISTS `ip_address_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ip_address_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `publicIp` varchar(45) DEFAULT NULL,
+  `instanceId` varchar(45) DEFAULT NULL,
+  `privateIp` varchar(45) DEFAULT NULL,
+  `subnet` varchar(45) DEFAULT NULL,
+  `gateway` varchar(45) DEFAULT NULL,
+  `dn1` varchar(45) DEFAULT NULL,
+  `dns2` varchar(45) DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Ip_Address_Asset1` (`asset`),
+  CONSTRAINT `fk_Ip_Address_Asset1` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ip_address_p`
+--
+
+LOCK TABLES `ip_address_p` WRITE;
+/*!40000 ALTER TABLE `ip_address_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ip_address_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ip_permission_p`
+--
+
+DROP TABLE IF EXISTS `ip_permission_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ip_permission_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `protocol` varchar(45) DEFAULT NULL,
+  `fromPort` int(11) DEFAULT NULL,
+  `toPort` int(11) DEFAULT NULL,
+  `cidrIps` varchar(45) DEFAULT NULL,
+  `uid_group_pairs` varchar(45) DEFAULT NULL,
+  `groupDescription` int(11) DEFAULT NULL,
+  `vcloud_name` varchar(255) DEFAULT NULL,
+  `vcloud_policy` varchar(45) DEFAULT NULL,
+  `vcloud_destination_ip` varchar(45) DEFAULT NULL,
+  `vcloud_direction` varchar(45) DEFAULT NULL,
+  `vcloud_enabled` bit(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Ip_Permission_Group_Description1` (`groupDescription`),
+  CONSTRAINT `fk_Ip_Permission_Group_Description1` FOREIGN KEY (`groupDescription`) REFERENCES `group_description_p` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ip_permission_p`
+--
+
+LOCK TABLES `ip_permission_p` WRITE;
+/*!40000 ALTER TABLE `ip_permission_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ip_permission_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_deployment`
+--
+
+DROP TABLE IF EXISTS `jbpm4_deployment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_deployment` (
+  `DBID_` bigint(20) NOT NULL,
+  `NAME_` longtext,
+  `TIMESTAMP_` bigint(20) DEFAULT NULL,
+  `STATE_` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_deployment`
+--
+
+LOCK TABLES `jbpm4_deployment` WRITE;
+/*!40000 ALTER TABLE `jbpm4_deployment` DISABLE KEYS */;
+INSERT INTO `jbpm4_deployment` VALUES (80006,NULL,0,'active'),(80012,NULL,0,'active'),(80018,NULL,0,'active'),(80024,NULL,0,'active'),(80030,NULL,0,'active'),(80036,NULL,0,'active'),(80042,NULL,0,'active'),(80043,NULL,0,'active'),(80044,NULL,0,'active');
+/*!40000 ALTER TABLE `jbpm4_deployment` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_deployprop`
+--
+
+DROP TABLE IF EXISTS `jbpm4_deployprop`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_deployprop` (
+  `DBID_` bigint(20) NOT NULL,
+  `DEPLOYMENT_` bigint(20) DEFAULT NULL,
+  `OBJNAME_` varchar(255) DEFAULT NULL,
+  `KEY_` varchar(255) DEFAULT NULL,
+  `STRINGVAL_` varchar(255) DEFAULT NULL,
+  `LONGVAL_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_DEPLPROP_DEPL` (`DEPLOYMENT_`),
+  KEY `FK_DEPLPROP_DEPL` (`DEPLOYMENT_`),
+  CONSTRAINT `FK_DEPLPROP_DEPL` FOREIGN KEY (`DEPLOYMENT_`) REFERENCES `jbpm4_deployment` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_deployprop`
+--
+
+LOCK TABLES `jbpm4_deployprop` WRITE;
+/*!40000 ALTER TABLE `jbpm4_deployprop` DISABLE KEYS */;
+INSERT INTO `jbpm4_deployprop` VALUES (80008,80006,'Compute Request','langid','jpdl-4.4',NULL),(80009,80006,'Compute Request','pdid','Compute_Request-1',NULL),(80010,80006,'Compute Request','pdkey','Compute_Request',NULL),(80011,80006,'Compute Request','pdversion',NULL,1),(80014,80012,'Image Request','langid','jpdl-4.4',NULL),(80015,80012,'Image Request','pdid','Image_Request-1',NULL),(80016,80012,'Image Request','pdkey','Image_Request',NULL),(80017,80012,'Image Request','pdversion',NULL,1),(80020,80018,'IpAddress Request','langid','jpdl-4.4',NULL),(80021,80018,'IpAddress Request','pdid','IpAddress_Request-1',NULL),(80022,80018,'IpAddress Request','pdkey','IpAddress_Request',NULL),(80023,80018,'IpAddress Request','pdversion',NULL,1),(80026,80024,'Keys Request','langid','jpdl-4.4',NULL),(80027,80024,'Keys Request','pdid','Keys_Request-1',NULL),(80028,80024,'Keys Request','pdkey','Keys_Request',NULL),(80029,80024,'Keys Request','pdversion',NULL,1),(80032,80030,'SecGroup Request','langid','jpdl-4.4',NULL),(80033,80030,'SecGroup Request','pdid','SecGroup_Request-1',NULL),(80034,80030,'SecGroup Request','pdkey','SecGroup_Request',NULL),(80035,80030,'SecGroup Request','pdversion',NULL,1),(80038,80036,'Snapshot Request','langid','jpdl-4.4',NULL),(80039,80036,'Snapshot Request','pdid','Snapshot_Request-1',NULL),(80040,80036,'Snapshot Request','pdkey','Snapshot_Request',NULL),(80041,80036,'Snapshot Request','pdversion',NULL,1),(80044,80042,'Volume Request','langid','jpdl-4.4',NULL),(80045,80042,'Volume Request','pdid','Volume_Request-1',NULL),(80046,80042,'Volume Request','pdkey','Volume_Request',NULL),(80047,80042,'Volume Request','pdversion',NULL,1),(80048,80043,'Mail4Users','langid',NULL,NULL),(80049,80043,'Mail4Users','pdid','Mail4Users-1',NULL),(80050,80043,'Mail4Users','pdkey','Mail4Users',NULL),(80051,80043,'Mail4Users','pdversion',NULL,1),(80052,80044,'QuotaExceedCheck','langid',NULL,NULL),(80053,80044,'QuotaExceedCheck','pdid','QuotaExceedCheck-1',NULL),(80054,80044,'QuotaExceedCheck','pdkey','QuotaExceedCheck',NULL),(80055,80044,'QuotaExceedCheck','pdversion',NULL,1);
+/*!40000 ALTER TABLE `jbpm4_deployprop` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_execution`
+--
+
+DROP TABLE IF EXISTS `jbpm4_execution`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_execution` (
+  `DBID_` bigint(20) NOT NULL,
+  `CLASS_` varchar(255) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `ACTIVITYNAME_` varchar(255) DEFAULT NULL,
+  `PROCDEFID_` varchar(255) DEFAULT NULL,
+  `HASVARS_` bit(1) DEFAULT NULL,
+  `NAME_` varchar(255) DEFAULT NULL,
+  `KEY_` varchar(255) DEFAULT NULL,
+  `ID_` varchar(255) DEFAULT NULL,
+  `STATE_` varchar(255) DEFAULT NULL,
+  `SUSPHISTSTATE_` varchar(255) DEFAULT NULL,
+  `PRIORITY_` int(11) DEFAULT NULL,
+  `HISACTINST_` bigint(20) DEFAULT NULL,
+  `PARENT_` bigint(20) DEFAULT NULL,
+  `INSTANCE_` bigint(20) DEFAULT NULL,
+  `SUPEREXEC_` bigint(20) DEFAULT NULL,
+  `SUBPROCINST_` bigint(20) DEFAULT NULL,
+  `PARENT_IDX_` int(11) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  UNIQUE KEY `ID_` (`ID_`),
+  KEY `IDX_EXEC_SUPEREXEC` (`SUPEREXEC_`),
+  KEY `IDX_EXEC_INSTANCE` (`INSTANCE_`),
+  KEY `IDX_EXEC_SUBPI` (`SUBPROCINST_`),
+  KEY `IDX_EXEC_PARENT` (`PARENT_`),
+  KEY `FK_EXEC_PARENT` (`PARENT_`),
+  KEY `FK_EXEC_SUBPI` (`SUBPROCINST_`),
+  KEY `FK_EXEC_INSTANCE` (`INSTANCE_`),
+  KEY `FK_EXEC_SUPEREXEC` (`SUPEREXEC_`),
+  CONSTRAINT `FK_EXEC_INSTANCE` FOREIGN KEY (`INSTANCE_`) REFERENCES `jbpm4_execution` (`DBID_`),
+  CONSTRAINT `FK_EXEC_PARENT` FOREIGN KEY (`PARENT_`) REFERENCES `jbpm4_execution` (`DBID_`),
+  CONSTRAINT `FK_EXEC_SUBPI` FOREIGN KEY (`SUBPROCINST_`) REFERENCES `jbpm4_execution` (`DBID_`),
+  CONSTRAINT `FK_EXEC_SUPEREXEC` FOREIGN KEY (`SUPEREXEC_`) REFERENCES `jbpm4_execution` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_execution`
+--
+
+LOCK TABLES `jbpm4_execution` WRITE;
+/*!40000 ALTER TABLE `jbpm4_execution` DISABLE KEYS */;
+INSERT INTO `jbpm4_execution` VALUES (90001,'pvm',1,'Verification by Admin','Compute_Request-1','\0',NULL,NULL,'Compute_Request.90001','active-root',NULL,0,90002,NULL,90001,NULL,NULL,NULL),(350010,'pvm',1,'Verification by Admin','Compute_Request-1','\0',NULL,NULL,'Compute_Request.350010','active-root',NULL,0,350011,NULL,350010,NULL,NULL,NULL),(350012,'pvm',1,'Verification by Admin','Volume_Request-1','\0',NULL,NULL,'Volume_Request.350012','active-root',NULL,0,350013,NULL,350012,NULL,NULL,NULL),(350014,'pvm',1,'Verification by Admin','Volume_Request-1','\0',NULL,NULL,'Volume_Request.350014','active-root',NULL,0,350015,NULL,350014,NULL,NULL,NULL),(350016,'pvm',1,'Verification by Admin','IpAddress_Request-1','\0',NULL,NULL,'IpAddress_Request.350016','active-root',NULL,0,350017,NULL,350016,NULL,NULL,NULL),(400001,'pvm',1,'Verification by Admin','Compute_Request-1','\0',NULL,NULL,'Compute_Request.400001','active-root',NULL,0,400002,NULL,400001,NULL,NULL,NULL),(410001,'pvm',1,'Verification by Admin','Volume_Request-1','\0',NULL,NULL,'Volume_Request.410001','active-root',NULL,0,410002,NULL,410001,NULL,NULL,NULL),(410003,'pvm',1,'Verification by Admin','Volume_Request-1','\0',NULL,NULL,'Volume_Request.410003','active-root',NULL,0,410004,NULL,410003,NULL,NULL,NULL),(480001,'pvm',1,'Verification by Admin','SecGroup_Request-1','\0',NULL,NULL,'SecGroup_Request.480001','active-root',NULL,0,480002,NULL,480001,NULL,NULL,NULL),(590003,'pvm',1,'Verification by Admin','IpAddress_Request-1','\0',NULL,NULL,'IpAddress_Request.590003','active-root',NULL,0,590004,NULL,590003,NULL,NULL,NULL),(590005,'pvm',1,'Verification by Admin','Volume_Request-1','\0',NULL,NULL,'Volume_Request.590005','active-root',NULL,0,590006,NULL,590005,NULL,NULL,NULL),(600001,'pvm',1,'Verification by Admin','Volume_Request-1','\0',NULL,NULL,'Volume_Request.600001','active-root',NULL,0,600002,NULL,600001,NULL,NULL,NULL),(600003,'pvm',1,'Verification by Admin','IpAddress_Request-1','\0',NULL,NULL,'IpAddress_Request.600003','active-root',NULL,0,600004,NULL,600003,NULL,NULL,NULL),(600005,'pvm',1,'Verification by Admin','SecGroup_Request-1','\0',NULL,NULL,'SecGroup_Request.600005','active-root',NULL,0,600006,NULL,600005,NULL,NULL,NULL);
+/*!40000 ALTER TABLE `jbpm4_execution` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_hist_actinst`
+--
+
+DROP TABLE IF EXISTS `jbpm4_hist_actinst`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_hist_actinst` (
+  `DBID_` bigint(20) NOT NULL,
+  `CLASS_` varchar(255) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `HPROCI_` bigint(20) DEFAULT NULL,
+  `TYPE_` varchar(255) DEFAULT NULL,
+  `EXECUTION_` varchar(255) DEFAULT NULL,
+  `ACTIVITY_NAME_` varchar(255) DEFAULT NULL,
+  `START_` datetime DEFAULT NULL,
+  `END_` datetime DEFAULT NULL,
+  `DURATION_` bigint(20) DEFAULT NULL,
+  `TRANSITION_` varchar(255) DEFAULT NULL,
+  `NEXTIDX_` int(11) DEFAULT NULL,
+  `HTASK_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_HACTI_HPROCI` (`HPROCI_`),
+  KEY `IDX_HTI_HTASK` (`HTASK_`),
+  KEY `FK_HACTI_HPROCI` (`HPROCI_`),
+  KEY `FK_HTI_HTASK` (`HTASK_`),
+  CONSTRAINT `FK_HACTI_HPROCI` FOREIGN KEY (`HPROCI_`) REFERENCES `jbpm4_hist_procinst` (`DBID_`),
+  CONSTRAINT `FK_HTI_HTASK` FOREIGN KEY (`HTASK_`) REFERENCES `jbpm4_hist_task` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_hist_actinst`
+--
+
+LOCK TABLES `jbpm4_hist_actinst` WRITE;
+/*!40000 ALTER TABLE `jbpm4_hist_actinst` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_hist_actinst` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_hist_detail`
+--
+
+DROP TABLE IF EXISTS `jbpm4_hist_detail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_hist_detail` (
+  `DBID_` bigint(20) NOT NULL,
+  `CLASS_` varchar(255) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `USERID_` varchar(255) DEFAULT NULL,
+  `TIME_` datetime DEFAULT NULL,
+  `HPROCI_` bigint(20) DEFAULT NULL,
+  `HPROCIIDX_` int(11) DEFAULT NULL,
+  `HACTI_` bigint(20) DEFAULT NULL,
+  `HACTIIDX_` int(11) DEFAULT NULL,
+  `HTASK_` bigint(20) DEFAULT NULL,
+  `HTASKIDX_` int(11) DEFAULT NULL,
+  `HVAR_` bigint(20) DEFAULT NULL,
+  `HVARIDX_` int(11) DEFAULT NULL,
+  `MESSAGE_` longtext,
+  `OLD_STR_` varchar(255) DEFAULT NULL,
+  `NEW_STR_` varchar(255) DEFAULT NULL,
+  `OLD_INT_` int(11) DEFAULT NULL,
+  `NEW_INT_` int(11) DEFAULT NULL,
+  `OLD_TIME_` datetime DEFAULT NULL,
+  `NEW_TIME_` datetime DEFAULT NULL,
+  `PARENT_` bigint(20) DEFAULT NULL,
+  `PARENT_IDX_` int(11) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_HDET_HACTI` (`HACTI_`),
+  KEY `IDX_HDET_HPROCI` (`HPROCI_`),
+  KEY `IDX_HDET_HVAR` (`HVAR_`),
+  KEY `IDX_HDET_HTASK` (`HTASK_`),
+  KEY `FK_HDETAIL_HPROCI` (`HPROCI_`),
+  KEY `FK_HDETAIL_HACTI` (`HACTI_`),
+  KEY `FK_HDETAIL_HTASK` (`HTASK_`),
+  KEY `FK_HDETAIL_HVAR` (`HVAR_`),
+  CONSTRAINT `FK_HDETAIL_HACTI` FOREIGN KEY (`HACTI_`) REFERENCES `jbpm4_hist_actinst` (`DBID_`),
+  CONSTRAINT `FK_HDETAIL_HPROCI` FOREIGN KEY (`HPROCI_`) REFERENCES `jbpm4_hist_procinst` (`DBID_`),
+  CONSTRAINT `FK_HDETAIL_HTASK` FOREIGN KEY (`HTASK_`) REFERENCES `jbpm4_hist_task` (`DBID_`),
+  CONSTRAINT `FK_HDETAIL_HVAR` FOREIGN KEY (`HVAR_`) REFERENCES `jbpm4_hist_var` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_hist_detail`
+--
+
+LOCK TABLES `jbpm4_hist_detail` WRITE;
+/*!40000 ALTER TABLE `jbpm4_hist_detail` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_hist_detail` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_hist_procinst`
+--
+
+DROP TABLE IF EXISTS `jbpm4_hist_procinst`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_hist_procinst` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `ID_` varchar(255) DEFAULT NULL,
+  `PROCDEFID_` varchar(255) DEFAULT NULL,
+  `KEY_` varchar(255) DEFAULT NULL,
+  `START_` datetime DEFAULT NULL,
+  `END_` datetime DEFAULT NULL,
+  `DURATION_` bigint(20) DEFAULT NULL,
+  `STATE_` varchar(255) DEFAULT NULL,
+  `ENDACTIVITY_` varchar(255) DEFAULT NULL,
+  `NEXTIDX_` int(11) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_hist_procinst`
+--
+
+LOCK TABLES `jbpm4_hist_procinst` WRITE;
+/*!40000 ALTER TABLE `jbpm4_hist_procinst` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_hist_procinst` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_hist_task`
+--
+
+DROP TABLE IF EXISTS `jbpm4_hist_task`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_hist_task` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `EXECUTION_` varchar(255) DEFAULT NULL,
+  `OUTCOME_` varchar(255) DEFAULT NULL,
+  `ASSIGNEE_` varchar(255) DEFAULT NULL,
+  `PRIORITY_` int(11) DEFAULT NULL,
+  `STATE_` varchar(255) DEFAULT NULL,
+  `CREATE_` datetime DEFAULT NULL,
+  `END_` datetime DEFAULT NULL,
+  `DURATION_` bigint(20) DEFAULT NULL,
+  `NEXTIDX_` int(11) DEFAULT NULL,
+  `SUPERTASK_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_HSUPERT_SUB` (`SUPERTASK_`),
+  KEY `FK_HSUPERT_SUB` (`SUPERTASK_`),
+  CONSTRAINT `FK_HSUPERT_SUB` FOREIGN KEY (`SUPERTASK_`) REFERENCES `jbpm4_hist_task` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_hist_task`
+--
+
+LOCK TABLES `jbpm4_hist_task` WRITE;
+/*!40000 ALTER TABLE `jbpm4_hist_task` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_hist_task` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_hist_var`
+--
+
+DROP TABLE IF EXISTS `jbpm4_hist_var`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_hist_var` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `PROCINSTID_` varchar(255) DEFAULT NULL,
+  `EXECUTIONID_` varchar(255) DEFAULT NULL,
+  `VARNAME_` varchar(255) DEFAULT NULL,
+  `VALUE_` varchar(255) DEFAULT NULL,
+  `HPROCI_` bigint(20) DEFAULT NULL,
+  `HTASK_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_HVAR_HPROCI` (`HPROCI_`),
+  KEY `IDX_HVAR_HTASK` (`HTASK_`),
+  KEY `FK_HVAR_HPROCI` (`HPROCI_`),
+  KEY `FK_HVAR_HTASK` (`HTASK_`),
+  CONSTRAINT `FK_HVAR_HPROCI` FOREIGN KEY (`HPROCI_`) REFERENCES `jbpm4_hist_procinst` (`DBID_`),
+  CONSTRAINT `FK_HVAR_HTASK` FOREIGN KEY (`HTASK_`) REFERENCES `jbpm4_hist_task` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_hist_var`
+--
+
+LOCK TABLES `jbpm4_hist_var` WRITE;
+/*!40000 ALTER TABLE `jbpm4_hist_var` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_hist_var` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_id_group`
+--
+
+DROP TABLE IF EXISTS `jbpm4_id_group`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_id_group` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `ID_` varchar(255) DEFAULT NULL,
+  `NAME_` varchar(255) DEFAULT NULL,
+  `TYPE_` varchar(255) DEFAULT NULL,
+  `PARENT_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_GROUP_PARENT` (`PARENT_`),
+  KEY `FK_GROUP_PARENT` (`PARENT_`),
+  CONSTRAINT `FK_GROUP_PARENT` FOREIGN KEY (`PARENT_`) REFERENCES `jbpm4_id_group` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_id_group`
+--
+
+LOCK TABLES `jbpm4_id_group` WRITE;
+/*!40000 ALTER TABLE `jbpm4_id_group` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_id_group` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_id_membership`
+--
+
+DROP TABLE IF EXISTS `jbpm4_id_membership`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_id_membership` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `USER_` bigint(20) DEFAULT NULL,
+  `GROUP_` bigint(20) DEFAULT NULL,
+  `NAME_` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_MEM_USER` (`USER_`),
+  KEY `IDX_MEM_GROUP` (`GROUP_`),
+  KEY `FK_MEM_GROUP` (`GROUP_`),
+  KEY `FK_MEM_USER` (`USER_`),
+  CONSTRAINT `FK_MEM_GROUP` FOREIGN KEY (`GROUP_`) REFERENCES `jbpm4_id_group` (`DBID_`),
+  CONSTRAINT `FK_MEM_USER` FOREIGN KEY (`USER_`) REFERENCES `jbpm4_id_user` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_id_membership`
+--
+
+LOCK TABLES `jbpm4_id_membership` WRITE;
+/*!40000 ALTER TABLE `jbpm4_id_membership` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_id_membership` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_id_user`
+--
+
+DROP TABLE IF EXISTS `jbpm4_id_user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_id_user` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `ID_` varchar(255) DEFAULT NULL,
+  `PASSWORD_` varchar(255) DEFAULT NULL,
+  `GIVENNAME_` varchar(255) DEFAULT NULL,
+  `FAMILYNAME_` varchar(255) DEFAULT NULL,
+  `BUSINESSEMAIL_` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_id_user`
+--
+
+LOCK TABLES `jbpm4_id_user` WRITE;
+/*!40000 ALTER TABLE `jbpm4_id_user` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_id_user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_job`
+--
+
+DROP TABLE IF EXISTS `jbpm4_job`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_job` (
+  `DBID_` bigint(20) NOT NULL,
+  `CLASS_` varchar(255) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `DUEDATE_` datetime DEFAULT NULL,
+  `STATE_` varchar(255) DEFAULT NULL,
+  `ISEXCLUSIVE_` bit(1) DEFAULT NULL,
+  `LOCKOWNER_` varchar(255) DEFAULT NULL,
+  `LOCKEXPTIME_` datetime DEFAULT NULL,
+  `EXCEPTION_` longtext,
+  `RETRIES_` int(11) DEFAULT NULL,
+  `PROCESSINSTANCE_` bigint(20) DEFAULT NULL,
+  `EXECUTION_` bigint(20) DEFAULT NULL,
+  `CFG_` bigint(20) DEFAULT NULL,
+  `SIGNAL_` varchar(255) DEFAULT NULL,
+  `EVENT_` varchar(255) DEFAULT NULL,
+  `REPEAT_` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_JOBRETRIES` (`RETRIES_`),
+  KEY `IDX_JOB_CFG` (`CFG_`),
+  KEY `IDX_JOB_PRINST` (`PROCESSINSTANCE_`),
+  KEY `IDX_JOB_EXE` (`EXECUTION_`),
+  KEY `IDX_JOBLOCKEXP` (`LOCKEXPTIME_`),
+  KEY `IDX_JOBDUEDATE` (`DUEDATE_`),
+  KEY `FK_JOB_CFG` (`CFG_`),
+  CONSTRAINT `FK_JOB_CFG` FOREIGN KEY (`CFG_`) REFERENCES `jbpm4_lob` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_job`
+--
+
+LOCK TABLES `jbpm4_job` WRITE;
+/*!40000 ALTER TABLE `jbpm4_job` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_job` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_lob`
+--
+
+DROP TABLE IF EXISTS `jbpm4_lob`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_lob` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `BLOB_VALUE_` longblob,
+  `DEPLOYMENT_` bigint(20) DEFAULT NULL,
+  `NAME_` longtext,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_LOB_DEPLOYMENT` (`DEPLOYMENT_`),
+  KEY `FK_LOB_DEPLOYMENT` (`DEPLOYMENT_`),
+  CONSTRAINT `FK_LOB_DEPLOYMENT` FOREIGN KEY (`DEPLOYMENT_`) REFERENCES `jbpm4_deployment` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_lob`
+--
+
+LOCK TABLES `jbpm4_lob` WRITE;
+/*!40000 ALTER TABLE `jbpm4_lob` DISABLE KEYS */;
+INSERT INTO `jbpm4_lob` VALUES (81007,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process name=\"Compute Request\" key=\"Compute_Request\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n	<start>\r\n		<transition to=\"Verification by Admin\" />\r\n	</start>\r\n	<state name=\"Verification by Admin\">\r\n		<transition name=\"Approve\" to=\"Approval by Manager\" />\r\n		<transition name=\"Reject\" to=\"Rejected\" />\r\n	</state>\r\n	<state name=\"Approval by Manager\">\r\n		<transition name=\"Approve\" to=\"Approved\">\r\n			<mail template=\"ResourceApprovalTemplate\" />\r\n		</transition>\r\n		<transition name=\"Reject\" to=\"Rejected\">\r\n			<mail template=\"ResourceRejectTemplate\" />\r\n		</transition>\r\n	</state>\r\n	<end name=\"Approved\" />\r\n	<end-cancel name=\"Rejected\" />\r\n</process>',80006,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/ComputeRequest.jpdl.xml'),(81013,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process name=\"Image Request\" key=\"Image_Request\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n	<start>\r\n	   <transition to=\"Verification by Admin\" />\r\n	 </start>\r\n	<state name=\"Verification by Admin\">\r\n		<transition name=\"Approve\" to=\"Approval by Manager\" />\r\n		<transition name=\"Reject\" to=\"Rejected\" />\r\n	</state>\r\n	<state name=\"Approval by Manager\">\r\n		<transition name=\"Approve\" to=\"Approved\">\r\n			<mail template=\"ResourceApprovalTemplate\" />\r\n		</transition>\r\n		<transition name=\"Reject\" to=\"Rejected\">\r\n			<mail template=\"ResourceRejectTemplate\" />\r\n		</transition>\r\n	</state>\r\n	<end name=\"Approved\" />\r\n	<end-cancel name=\"Rejected\" />\r\n</process>',80012,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/ImageRequest.jpdl.xml'),(81019,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process name=\"IpAddress Request\" key=\"IpAddress_Request\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n	<start>\r\n	   <transition to=\"Verification by Admin\" />\r\n	 </start>\r\n	<state name=\"Verification by Admin\">\r\n		<transition name=\"Approve\" to=\"Approval by Manager\" />\r\n		<transition name=\"Reject\" to=\"Rejected\" />\r\n	</state>\r\n	<state name=\"Approval by Manager\">\r\n		<transition name=\"Approve\" to=\"Approved\">\r\n			<mail template=\"ResourceApprovalTemplate\" />\r\n		</transition>\r\n		<transition name=\"Reject\" to=\"Rejected\">\r\n			<mail template=\"ResourceRejectTemplate\" />\r\n		</transition>\r\n	</state>\r\n	<end name=\"Approved\" />\r\n	<end-cancel name=\"Rejected\" />\r\n</process>',80018,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/IpAddressRequest.jpdl.xml'),(81025,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process name=\"Keys Request\" key=\"Keys_Request\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n	<start>\r\n	   <transition to=\"Verification by Admin\" />\r\n	 </start>\r\n	<state name=\"Verification by Admin\">\r\n		<transition name=\"Approve\" to=\"Approval by Manager\" />\r\n		<transition name=\"Reject\" to=\"Rejected\" />\r\n	</state>\r\n	<state name=\"Approval by Manager\">\r\n		<transition name=\"Approve\" to=\"Approved\">\r\n			<mail template=\"ResourceApprovalTemplate\" />\r\n		</transition>\r\n		<transition name=\"Reject\" to=\"Rejected\">\r\n			<mail template=\"ResourceRejectTemplate\" />\r\n		</transition>\r\n	</state>\r\n	<end name=\"Approved\" />\r\n	<end-cancel name=\"Rejected\" />\r\n</process>',80024,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/KeysRequest.jpdl.xml'),(81031,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process name=\"SecGroup Request\" key=\"SecGroup_Request\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n	<start>\r\n	   <transition to=\"Verification by Admin\" />\r\n	 </start>\r\n	<state name=\"Verification by Admin\">\r\n		<transition name=\"Approve\" to=\"Approval by Manager\" />\r\n		<transition name=\"Reject\" to=\"Rejected\" />\r\n	</state>\r\n	<state name=\"Approval by Manager\">\r\n		<transition name=\"Approve\" to=\"Approved\">\r\n			<mail template=\"ResourceApprovalTemplate\" />\r\n		</transition>\r\n		<transition name=\"Reject\" to=\"Rejected\">\r\n			<mail template=\"ResourceRejectTemplate\" />\r\n		</transition>\r\n	</state>\r\n	<end name=\"Approved\" />\r\n	<end-cancel name=\"Rejected\" />\r\n</process>',80030,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/SecGroupRequest.jpdl.xml'),(81037,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process name=\"Snapshot Request\" key=\"Snapshot_Request\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n	<start>\r\n	   <transition to=\"Verification by Admin\" />\r\n	 </start>\r\n	<state name=\"Verification by Admin\">\r\n		<transition name=\"Approve\" to=\"Approval by Manager\" />\r\n		<transition name=\"Reject\" to=\"Rejected\" />\r\n	</state>\r\n	<state name=\"Approval by Manager\">\r\n		<transition name=\"Approve\" to=\"Approved\">\r\n			<mail template=\"ResourceApprovalTemplate\" />\r\n		</transition>\r\n		<transition name=\"Reject\" to=\"Rejected\">\r\n			<mail template=\"ResourceRejectTemplate\" />\r\n		</transition>\r\n	</state>\r\n	<end name=\"Approved\" />\r\n	<end-cancel name=\"Rejected\" />\r\n</process>',80036,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/SnapshotRequest.jpdl.xml'),(81043,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process name=\"Volume Request\" key=\"Volume_Request\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n	<start>\r\n	   <transition to=\"Verification by Admin\" />\r\n	 </start>\r\n	<state name=\"Verification by Admin\">\r\n		<transition name=\"Approve\" to=\"Approval by Manager\" />\r\n		<transition name=\"Reject\" to=\"Rejected\" />\r\n	</state>\r\n	<state name=\"Approval by Manager\">\r\n		<transition name=\"Approve\" to=\"Approved\">\r\n			<mail template=\"ResourceApprovalTemplate\" />\r\n		</transition>\r\n		<transition name=\"Reject\" to=\"Rejected\">\r\n			<mail template=\"ResourceRejectTemplate\" />\r\n		</transition>\r\n	</state>\r\n	<end name=\"Approved\" />\r\n	<end-cancel name=\"Rejected\" />\r\n</process>',80042,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/VolumeRequest.jpdl.xml'),(81044,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<process xmlns=\"http://jbpm.org/4.4/jpdl\" name=\"Mail4Users\">\r\n   <start name=\"start1\">\r\n      <transition name=\"to sendMail\" to=\"sendMail\"/>\r\n   </start>\r\n   <decision name=\"sendMail\" expr=\"#{mailDetailsDTO.templateName}\" >\r\n    <transition name=\"SignupMailTemplate\" to=\"end1\">\r\n    	<mail template=\"SignupMailTemplate\"></mail>\r\n    </transition>\r\n    <transition name=\"RegularMailTemplate\" to=\"end1\">\r\n    	<mail template=\"RegularMailTemplate\"></mail>\r\n    </transition>\r\n  </decision>\r\n   <end name=\"end1\"/>\r\n</process>',80043,'file:/E:/apache-tomcat-6.0.32/webapps/mycp/WEB-INF/classes/jbpm/SendMail.jpdl.xml'),(81045,0,'<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n\r\n<process name=\"QuotaExceedCheck\" xmlns=\"http://jbpm.org/4.4/jpdl\">\r\n  <start>\r\n    <transition to=\"Quotacheck\" />\r\n  </start>\r\n  <state name=\"Quotacheck\">\r\n    <on event=\"timeout\">\r\n      <timer duedate=\"10 minutes\" repeat=\"10 seconds\" />\r\n      <event-listener class=\"in.mycp.job.QuotaAlertsJob\" />\r\n    </on>\r\n    <transition name=\"go on\" to=\"next step\"/>\r\n  </state>\r\n  <state name=\"next step\"/>\r\n</process>',80044,'file:/D:/Servers/apache-tomcat-6.0.35/webapps/ROOT/WEB-INF/classes/jbpm/QuotaAlerts.jpdl.xml');
+/*!40000 ALTER TABLE `jbpm4_lob` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_participation`
+--
+
+DROP TABLE IF EXISTS `jbpm4_participation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_participation` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `GROUPID_` varchar(255) DEFAULT NULL,
+  `USERID_` varchar(255) DEFAULT NULL,
+  `TYPE_` varchar(255) DEFAULT NULL,
+  `TASK_` bigint(20) DEFAULT NULL,
+  `SWIMLANE_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_PART_TASK` (`TASK_`),
+  KEY `FK_PART_SWIMLANE` (`SWIMLANE_`),
+  KEY `FK_PART_TASK` (`TASK_`),
+  CONSTRAINT `FK_PART_SWIMLANE` FOREIGN KEY (`SWIMLANE_`) REFERENCES `jbpm4_swimlane` (`DBID_`),
+  CONSTRAINT `FK_PART_TASK` FOREIGN KEY (`TASK_`) REFERENCES `jbpm4_task` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_participation`
+--
+
+LOCK TABLES `jbpm4_participation` WRITE;
+/*!40000 ALTER TABLE `jbpm4_participation` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_participation` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_property`
+--
+
+DROP TABLE IF EXISTS `jbpm4_property`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_property` (
+  `KEY_` varchar(255) NOT NULL,
+  `VERSION_` int(11) NOT NULL,
+  `VALUE_` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`KEY_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_property`
+--
+
+LOCK TABLES `jbpm4_property` WRITE;
+/*!40000 ALTER TABLE `jbpm4_property` DISABLE KEYS */;
+INSERT INTO `jbpm4_property` VALUES ('next.dbid',61,'610001');
+/*!40000 ALTER TABLE `jbpm4_property` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_swimlane`
+--
+
+DROP TABLE IF EXISTS `jbpm4_swimlane`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_swimlane` (
+  `DBID_` bigint(20) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `NAME_` varchar(255) DEFAULT NULL,
+  `ASSIGNEE_` varchar(255) DEFAULT NULL,
+  `EXECUTION_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_SWIMLANE_EXEC` (`EXECUTION_`),
+  KEY `FK_SWIMLANE_EXEC` (`EXECUTION_`),
+  CONSTRAINT `FK_SWIMLANE_EXEC` FOREIGN KEY (`EXECUTION_`) REFERENCES `jbpm4_execution` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_swimlane`
+--
+
+LOCK TABLES `jbpm4_swimlane` WRITE;
+/*!40000 ALTER TABLE `jbpm4_swimlane` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_swimlane` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_task`
+--
+
+DROP TABLE IF EXISTS `jbpm4_task`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_task` (
+  `DBID_` bigint(20) NOT NULL,
+  `CLASS_` char(1) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `NAME_` varchar(255) DEFAULT NULL,
+  `DESCR_` longtext,
+  `STATE_` varchar(255) DEFAULT NULL,
+  `SUSPHISTSTATE_` varchar(255) DEFAULT NULL,
+  `ASSIGNEE_` varchar(255) DEFAULT NULL,
+  `FORM_` varchar(255) DEFAULT NULL,
+  `PRIORITY_` int(11) DEFAULT NULL,
+  `CREATE_` datetime DEFAULT NULL,
+  `DUEDATE_` datetime DEFAULT NULL,
+  `PROGRESS_` int(11) DEFAULT NULL,
+  `SIGNALLING_` bit(1) DEFAULT NULL,
+  `EXECUTION_ID_` varchar(255) DEFAULT NULL,
+  `ACTIVITY_NAME_` varchar(255) DEFAULT NULL,
+  `HASVARS_` bit(1) DEFAULT NULL,
+  `SUPERTASK_` bigint(20) DEFAULT NULL,
+  `EXECUTION_` bigint(20) DEFAULT NULL,
+  `PROCINST_` bigint(20) DEFAULT NULL,
+  `SWIMLANE_` bigint(20) DEFAULT NULL,
+  `TASKDEFNAME_` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_TASK_SUPERTASK` (`SUPERTASK_`),
+  KEY `FK_TASK_SWIML` (`SWIMLANE_`),
+  KEY `FK_TASK_SUPERTASK` (`SUPERTASK_`),
+  CONSTRAINT `FK_TASK_SUPERTASK` FOREIGN KEY (`SUPERTASK_`) REFERENCES `jbpm4_task` (`DBID_`),
+  CONSTRAINT `FK_TASK_SWIML` FOREIGN KEY (`SWIMLANE_`) REFERENCES `jbpm4_swimlane` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_task`
+--
+
+LOCK TABLES `jbpm4_task` WRITE;
+/*!40000 ALTER TABLE `jbpm4_task` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_task` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `jbpm4_variable`
+--
+
+DROP TABLE IF EXISTS `jbpm4_variable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jbpm4_variable` (
+  `DBID_` bigint(20) NOT NULL,
+  `CLASS_` varchar(255) NOT NULL,
+  `DBVERSION_` int(11) NOT NULL,
+  `KEY_` varchar(255) DEFAULT NULL,
+  `CONVERTER_` varchar(255) DEFAULT NULL,
+  `HIST_` bit(1) DEFAULT NULL,
+  `EXECUTION_` bigint(20) DEFAULT NULL,
+  `TASK_` bigint(20) DEFAULT NULL,
+  `LOB_` bigint(20) DEFAULT NULL,
+  `DATE_VALUE_` datetime DEFAULT NULL,
+  `DOUBLE_VALUE_` double DEFAULT NULL,
+  `CLASSNAME_` varchar(255) DEFAULT NULL,
+  `LONG_VALUE_` bigint(20) DEFAULT NULL,
+  `STRING_VALUE_` varchar(255) DEFAULT NULL,
+  `TEXT_VALUE_` longtext,
+  `EXESYS_` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`DBID_`),
+  KEY `IDX_VAR_EXESYS` (`EXESYS_`),
+  KEY `IDX_VAR_TASK` (`TASK_`),
+  KEY `IDX_VAR_EXECUTION` (`EXECUTION_`),
+  KEY `IDX_VAR_LOB` (`LOB_`),
+  KEY `FK_VAR_LOB` (`LOB_`),
+  KEY `FK_VAR_EXECUTION` (`EXECUTION_`),
+  KEY `FK_VAR_EXESYS` (`EXESYS_`),
+  KEY `FK_VAR_TASK` (`TASK_`),
+  CONSTRAINT `FK_VAR_EXECUTION` FOREIGN KEY (`EXECUTION_`) REFERENCES `jbpm4_execution` (`DBID_`),
+  CONSTRAINT `FK_VAR_EXESYS` FOREIGN KEY (`EXESYS_`) REFERENCES `jbpm4_execution` (`DBID_`),
+  CONSTRAINT `FK_VAR_LOB` FOREIGN KEY (`LOB_`) REFERENCES `jbpm4_lob` (`DBID_`),
+  CONSTRAINT `FK_VAR_TASK` FOREIGN KEY (`TASK_`) REFERENCES `jbpm4_task` (`DBID_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `jbpm4_variable`
+--
+
+LOCK TABLES `jbpm4_variable` WRITE;
+/*!40000 ALTER TABLE `jbpm4_variable` DISABLE KEYS */;
+/*!40000 ALTER TABLE `jbpm4_variable` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `key_pair_info_p`
+--
+
+DROP TABLE IF EXISTS `key_pair_info_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `key_pair_info_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `keyName` varchar(90) DEFAULT NULL,
+  `keyFingerprint` varchar(512) DEFAULT NULL,
+  `keyMaterial` varchar(2048) DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_KeyPairInfo_Asset1` (`asset`),
+  CONSTRAINT `fk_KeyPairInfo_Asset1` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `key_pair_info_p`
+--
+
+LOCK TABLES `key_pair_info_p` WRITE;
+/*!40000 ALTER TABLE `key_pair_info_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `key_pair_info_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `manager`
+--
+
+DROP TABLE IF EXISTS `manager`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `manager` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project` int(11) DEFAULT NULL,
+  `firstname` varchar(45) DEFAULT NULL,
+  `lastname` varchar(45) DEFAULT NULL,
+  `email` varchar(45) DEFAULT NULL,
+  `designation` varchar(45) DEFAULT NULL,
+  `phone` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Manager_Project1` (`project`),
+  CONSTRAINT `fk_Manager_Project1` FOREIGN KEY (`project`) REFERENCES `project` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `manager`
+--
+
+LOCK TABLES `manager` WRITE;
+/*!40000 ALTER TABLE `manager` DISABLE KEYS */;
+/*!40000 ALTER TABLE `manager` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `meter_metric`
+--
+
+DROP TABLE IF EXISTS `meter_metric`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `meter_metric` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `datatype` varchar(45) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `meter_metric`
+--
+
+LOCK TABLES `meter_metric` WRITE;
+/*!40000 ALTER TABLE `meter_metric` DISABLE KEYS */;
+/*!40000 ALTER TABLE `meter_metric` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `product_catalog`
+--
+
+DROP TABLE IF EXISTS `product_catalog`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `product_catalog` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `details` varchar(255) DEFAULT NULL,
+  `price` int(11) DEFAULT NULL,
+  `currency` varchar(45) DEFAULT NULL,
+  `productType` varchar(45) DEFAULT NULL,
+  `infra` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_infra_productCatalog` (`infra`),
+  CONSTRAINT `fk_infra_productCatalog` FOREIGN KEY (`infra`) REFERENCES `infra` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `product_catalog`
+--
+
+LOCK TABLES `product_catalog` WRITE;
+/*!40000 ALTER TABLE `product_catalog` DISABLE KEYS */;
+/*!40000 ALTER TABLE `product_catalog` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `project`
+--
+
+DROP TABLE IF EXISTS `project`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `project` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `department` int(11) DEFAULT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `details` varchar(255) DEFAULT NULL,
+  `quota` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `ix_Project_Department1` (`department`),
+  CONSTRAINT `fk_Project_Department1` FOREIGN KEY (`department`) REFERENCES `department` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project`
+--
+
+LOCK TABLES `project` WRITE;
+/*!40000 ALTER TABLE `project` DISABLE KEYS */;
+/*!40000 ALTER TABLE `project` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `quota`
+--
+
+DROP TABLE IF EXISTS `quota`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `quota` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `meterMetric` int(11) DEFAULT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  `quotalimit` int(11) DEFAULT NULL,
+  `startdate` datetime DEFAULT NULL,
+  `enddate` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Quota_Meter_Metric1` (`meterMetric`),
+  CONSTRAINT `fk_Quota_Meter_Metric1` FOREIGN KEY (`meterMetric`) REFERENCES `meter_metric` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `quota`
+--
+
+LOCK TABLES `quota` WRITE;
+/*!40000 ALTER TABLE `quota` DISABLE KEYS */;
+/*!40000 ALTER TABLE `quota` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `region_p`
+--
+
+DROP TABLE IF EXISTS `region_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `region_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `details` varchar(90) DEFAULT NULL,
+  `url` varchar(255) DEFAULT NULL,
+  `company` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_region_company` (`company`),
+  CONSTRAINT `fk_region_company` FOREIGN KEY (`company`) REFERENCES `company` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `region_p`
+--
+
+LOCK TABLES `region_p` WRITE;
+/*!40000 ALTER TABLE `region_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `region_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `role`
+--
+
+DROP TABLE IF EXISTS `role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `role` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) DEFAULT NULL,
+  `intval` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_UNIQUE` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `role`
+--
+
+LOCK TABLES `role` WRITE;
+/*!40000 ALTER TABLE `role` DISABLE KEYS */;
+INSERT INTO `role` VALUES (1,'ROLE_USER',0),(3,'ROLE_MANAGER',6),(4,'ROLE_SUPERADMIN',9);
+/*!40000 ALTER TABLE `role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `snapshot_info_p`
+--
+
+DROP TABLE IF EXISTS `snapshot_info_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `snapshot_info_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `snapshotId` varchar(45) DEFAULT NULL,
+  `volumeId` varchar(45) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `startTime` datetime DEFAULT NULL,
+  `progress` varchar(45) DEFAULT NULL,
+  `ownerId` varchar(45) DEFAULT NULL,
+  `volumeSize` varchar(45) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `ownerAlias` varchar(45) DEFAULT NULL,
+  `tagSet` varchar(255) DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_SnapshotInfo_Asset1` (`asset`),
+  CONSTRAINT `fk_SnapshotInfo_Asset1` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `snapshot_info_p`
+--
+
+LOCK TABLES `snapshot_info_p` WRITE;
+/*!40000 ALTER TABLE `snapshot_info_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `snapshot_info_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(45) NOT NULL,
+  `password` varchar(90) DEFAULT NULL,
+  `registereddate` datetime DEFAULT NULL,
+  `active` tinyint(1) DEFAULT NULL,
+  `role` int(11) DEFAULT NULL,
+  `loggedInDate` datetime DEFAULT NULL,
+  `firstName` varchar(90) DEFAULT NULL,
+  `lastName` varchar(90) DEFAULT NULL,
+  `phone` int(11) DEFAULT NULL,
+  `designation` varchar(90) DEFAULT NULL,
+  `department` int(11) DEFAULT NULL,
+  `quota` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_UNIQUE` (`email`),
+  KEY `fk_role` (`role`),
+  KEY `fk_department_idx` (`department`),
+  CONSTRAINT `fk_department` FOREIGN KEY (`department`) REFERENCES `department` (`id`),
+  CONSTRAINT `fk_role` FOREIGN KEY (`role`) REFERENCES `role` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
+
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES (68,'superadmin@mycloudportal.in','1a402742ae88760b69a12cb1455e77e53a3e3711309a433e72861e3e700d49d6',NULL,1,4,'2012-03-20 23:08:01','MyCP','Admin',NULL,'',NULL,0);
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_project`
+--
+
+DROP TABLE IF EXISTS `user_project`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_project` (
+  `user_id` int(11) NOT NULL,
+  `project_id` int(11) NOT NULL,
+  PRIMARY KEY (`user_id`,`project_id`),
+  KEY `FK_PROJECT_ID` (`project_id`),
+  CONSTRAINT `FK_USER_ID` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  CONSTRAINT `FK_PROJECT_ID` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_project`
+--
+
+LOCK TABLES `user_project` WRITE;
+/*!40000 ALTER TABLE `user_project` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_project` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `volume_info_p`
+--
+
+DROP TABLE IF EXISTS `volume_info_p`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `volume_info_p` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `volumeId` varchar(255) DEFAULT NULL,
+  `size` int(11) DEFAULT NULL,
+  `snapshotId` varchar(45) DEFAULT NULL,
+  `zone` varchar(45) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `createTime` datetime DEFAULT NULL,
+  `asset` int(11) DEFAULT NULL,
+  `instanceId` varchar(255) DEFAULT NULL,
+  `device` varchar(90) DEFAULT NULL,
+  `name` varchar(90) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ix_Volume_Info_Asset1` (`asset`),
+  CONSTRAINT `fk_Volume_Info_Asset1` FOREIGN KEY (`asset`) REFERENCES `asset` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `volume_info_p`
+--
+
+LOCK TABLES `volume_info_p` WRITE;
+/*!40000 ALTER TABLE `volume_info_p` DISABLE KEYS */;
+/*!40000 ALTER TABLE `volume_info_p` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `workflow`
+--
+
+DROP TABLE IF EXISTS `workflow`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `workflow` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `processId` varchar(45) DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `assetId` int(11) DEFAULT NULL,
+  `assetType` varchar(90) DEFAULT NULL,
+  `user` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_workflow_user` (`user`),
+  CONSTRAINT `fk_workflow_user` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=134 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `workflow`
+--
+
+LOCK TABLES `workflow` WRITE;
+/*!40000 ALTER TABLE `workflow` DISABLE KEYS */;
+/*!40000 ALTER TABLE `workflow` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2012-12-09 22:45:48

@@ -692,9 +692,9 @@ function sync_infra(id){
 								     maxlength="90"></td>
 								  </tr>
 								   <tr>
-								    <td style="width: 50%;">Account : </td>
+								    <td style="width: 50%;">MyCP Account : </td>
 								    <td style="width: 50%;">
-								    <select id="company" name="company" style="width: 205px;" class="required">
+								    <select id="company" name="company" style="width: 205px;" class="required" >
 							    	</select>
 								    <!-- <input type="text" name="company" id="company" size="30"> -->
 								    </td>
@@ -763,7 +763,7 @@ function sync_infra(id){
 								     maxlength="90"></td>
 								  </tr>
 								   <tr>
-								    <td style="width: 50%;">Account : </td>
+								    <td style="width: 50%;">MyCP Account : </td>
 								    <td style="width: 50%;">
 								    <select id="company_aws" name="company_aws" style="width: 205px;" class="required"></select>
 								    </td>

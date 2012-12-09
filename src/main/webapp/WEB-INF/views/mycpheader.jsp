@@ -53,7 +53,7 @@
 			}
 			
 			 $(function() {
-				 var timeout = 1000*10*9;
+				 var timeout = 1000*100*9;
 				 $(document).bind("idle.idleTimer", function() {
 				 	// function you want to fire when the user goes idle
 				 	$.timeoutDialog({ timeout: 1, countdown: 60, logout_url:'/resources/j_spring_security_logout', logout_redirect_url: '/resources/j_spring_security_logout', restart_on_yes: true });

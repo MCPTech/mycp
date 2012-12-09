@@ -1,18 +1,23 @@
-//My Cloud Portal - Self Service Portal for the cloud.
-//This file is part of My Cloud Portal.
-//
-//My Cloud Portal is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, version 3 of the License.
-//
-//My Cloud Portal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with My Cloud Portal.  If not, see <http://www.gnu.org/licenses/>.
 
+/*
+ mycloudportal - Self Service Portal for the cloud.
+ Copyright (C) 2012-2013 Mycloudportal Technologies Pvt Ltd
+
+ This file is part of mycloudportal.
+
+ mycloudportal is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ mycloudportal is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package in.mycp.controller;
 
 import in.mycp.domain.Company;
@@ -23,6 +28,7 @@ import in.mycp.domain.ProductCatalog;
 import in.mycp.domain.Project;
 import in.mycp.domain.Role;
 import in.mycp.domain.User;
+import in.mycp.remote.ProductService;
 import in.mycp.service.WorkflowImpl4Jbpm;
 import in.mycp.utils.Commons;
 import in.mycp.web.MailDetailsDTO;
@@ -66,6 +72,8 @@ public class LoginController {
 
 	 @Autowired
 	 	ShaPasswordEncoder passwordEncoder;
+	 @Autowired
+	 ProductService productService;
 	 
 	 @Autowired
 	 	private transient MailSender mailTemplate;
@@ -248,7 +256,8 @@ public class LoginController {
 	        pc.setName(Commons.ProductType.ComputeInstance + " @ " + i.getName());
 	        pc.setPrice(10);
 	        pc.setProductType(Commons.ProductType.ComputeInstance.getName());
-	        pc.merge();
+	        //pc.merge();
+	        productService.saveOrUpdate(pc);
         pc = new ProductCatalog();
 	        pc.setId(0);
 	        pc.setInfra(i);
@@ -256,7 +265,8 @@ public class LoginController {
 	        pc.setName(Commons.ProductType.IpAddress + " @ " + i.getName());
 	        pc.setPrice(10);
 	        pc.setProductType(Commons.ProductType.IpAddress.getName());
-	        pc.merge();
+	      //pc.merge();
+	        productService.saveOrUpdate(pc);
         pc = new ProductCatalog();
 	        pc.setId(0);
 	        pc.setInfra(i);
@@ -264,7 +274,8 @@ public class LoginController {
 	        pc.setName(Commons.ProductType.KeyPair + " @ " + i.getName());
 	        pc.setPrice(10);
 	        pc.setProductType(Commons.ProductType.KeyPair.getName());
-	        pc.merge();
+	      //pc.merge();
+	        productService.saveOrUpdate(pc);
         pc = new ProductCatalog();
 	        pc.setId(0);
 	        pc.setInfra(i);
@@ -272,7 +283,8 @@ public class LoginController {
 	        pc.setName(Commons.ProductType.SecurityGroup + " @ " + i.getName());
 	        pc.setPrice(10);
 	        pc.setProductType(Commons.ProductType.SecurityGroup.getName());
-	        pc.merge();
+	      //pc.merge();
+	        productService.saveOrUpdate(pc);
         pc = new ProductCatalog();
 	        pc.setId(0);
 	        pc.setInfra(i);
@@ -280,7 +292,8 @@ public class LoginController {
 	        pc.setName(Commons.ProductType.Volume + " @ " + i.getName());
 	        pc.setPrice(10);
 	        pc.setProductType(Commons.ProductType.Volume.getName());
-	        pc.merge();
+	      //pc.merge();
+	        productService.saveOrUpdate(pc);
         pc = new ProductCatalog();
 	        pc.setId(0);
 	        pc.setInfra(i);
@@ -288,7 +301,8 @@ public class LoginController {
 	        pc.setName(Commons.ProductType.VolumeSnapshot + " @ " + i.getName());
 	        pc.setPrice(10);
 	        pc.setProductType(Commons.ProductType.VolumeSnapshot.getName());
-	        pc.merge();
+	      //pc.merge();
+	        productService.saveOrUpdate(pc);
         pc = new ProductCatalog();
 	        pc.setId(0);
 	        pc.setInfra(i);
@@ -296,7 +310,8 @@ public class LoginController {
 	        pc.setName(Commons.ProductType.ComputeImage + " @ " + i.getName());
 	        pc.setPrice(10);
 	        pc.setProductType(Commons.ProductType.ComputeImage.getName());
-	        pc.merge();
+	      //pc.merge();
+	        productService.saveOrUpdate(pc);
     }
    
     public void sendMessage(String mailFrom, String subject, String mailTo, String message) {
@@ -330,7 +345,7 @@ public class LoginController {
 				return "cloud-portal/superadmindash";
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			logger.info(e.getMessage());
 		}
 		

@@ -1,23 +1,29 @@
-//My Cloud Portal - Self Service Portal for the cloud.
-//This file is part of My Cloud Portal.
-//
-//My Cloud Portal is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, version 3 of the License.
-//
-//My Cloud Portal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with My Cloud Portal.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ mycloudportal - Self Service Portal for the cloud.
+ Copyright (C) 2012-2013 Mycloudportal Technologies Pvt Ltd
+
+ This file is part of mycloudportal.
+
+ mycloudportal is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ mycloudportal is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package in.mycp.remote;
 
 import in.mycp.domain.Asset;
 import in.mycp.domain.AssetType;
 import in.mycp.domain.Company;
+import in.mycp.domain.GroupDescriptionP;
 import in.mycp.domain.Infra;
 import in.mycp.domain.KeyPairInfoP;
 import in.mycp.domain.ProductCatalog;
@@ -274,9 +280,22 @@ public class KeyPairService {
 
 	@RemoteMethod
 	public List<KeyPairInfoP> findKeyPairInfoPsByInfra(Infra infra) {
-		List<KeyPairInfoP> infoPs = KeyPairInfoP.findKeyPairInfoPsByInfra(infra).getResultList();
-		System.out.println(infoPs);
-		return infoPs;
+		
+		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED  || 
+				Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED){
+			//if super admin, show all sec groups across all accounts in teh same cloud 
+			if (Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				return  KeyPairInfoP.findKeyPairInfoPsByInfra(infra).getResultList();
+			}else if (Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") || 
+						Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_USER + "")) {
+				return KeyPairInfoP.findKeyPairInfoPsBy(infra, Company.findCompany(Commons.getCurrentSession()
+						.getCompanyId())).getResultList();
+			}
+		}else if (Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED){
+			return  KeyPairInfoP.findKeyPairInfoPsByInfra(infra).getResultList();
+		}
+		return null;
+
 	}
 
 }// end of class KeyPairInfoPController

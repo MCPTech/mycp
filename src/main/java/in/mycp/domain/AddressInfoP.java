@@ -162,24 +162,32 @@ public class AddressInfoP {
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
-    public static TypedQuery<AddressInfoP> findAddressInfoPsByAsset(Asset asset) {
+
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByAsset4Report(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset = :asset ", AddressInfoP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByAsset(Asset asset) {
         if (asset == null) throw new IllegalArgumentException("The asset argument is required");
         EntityManager em = entityManager();
         TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.asset = :asset and  o.asset.active = 1", AddressInfoP.class);
         q.setParameter("asset", asset);
         return q;
     }
-    
-    public static TypedQuery<AddressInfoP> findAddressInfoPsByInstanceIdEquals(String instanceId) {
+
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByInstanceIdEquals(String instanceId) {
         if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
         EntityManager em = entityManager();
         TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.instanceId = :instanceId and  o.asset.active = 1", AddressInfoP.class);
         q.setParameter("instanceId", instanceId);
         return q;
     }
-    
-    public static TypedQuery<AddressInfoP> findAddressInfoPsByInstanceIdLike(String instanceId) {
+
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByInstanceIdLike(String instanceId) {
         if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
         instanceId = instanceId.replace('*', '%');
         if (instanceId.charAt(0) != '%') {
@@ -193,8 +201,8 @@ public class AddressInfoP {
         q.setParameter("instanceId", instanceId);
         return q;
     }
-    
-    public static TypedQuery<AddressInfoP> findAddressInfoPsByPublicIpEquals(String publicIp) {
+
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByPublicIpEquals(String publicIp) {
         if (publicIp == null || publicIp.length() == 0) throw new IllegalArgumentException("The publicIp argument is required");
         EntityManager em = entityManager();
         TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.publicIp = :publicIp and  o.asset.active = 1", AddressInfoP.class);

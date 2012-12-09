@@ -33,4 +33,20 @@ public class IpPermissionP {
         q.setParameter("sourcePort", sourcePort);
         return q;
     }
+
+    public static TypedQuery<in.mycp.domain.IpPermissionP> findIpPermissionPsByParams(GroupDescriptionP groupDescription, String protocol, String sourceIp, Integer sourcePort, String direction, String policy) {
+        if (groupDescription == null) throw new IllegalArgumentException("The groupDescription argument is required");
+        if (protocol == null || protocol.length() == 0) throw new IllegalArgumentException("The protocol argument is required");
+        if (sourcePort == null) throw new IllegalArgumentException("The sourcePort argument is required");
+        if (sourceIp == null) throw new IllegalArgumentException("The sourceIp argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<IpPermissionP> q = em.createQuery("SELECT o FROM IpPermissionP AS o WHERE o.groupDescription = :groupDescription " + " AND o.protocol = :protocol  AND o.cidrIps = :sourceIp AND o.fromPort = :sourcePort " + "AND o.vcloudDirection = :direction AND o.vcloudPolicy = :policy", IpPermissionP.class);
+        q.setParameter("groupDescription", groupDescription);
+        q.setParameter("protocol", protocol);
+        q.setParameter("sourceIp", sourceIp);
+        q.setParameter("sourcePort", sourcePort);
+        q.setParameter("direction", direction);
+        q.setParameter("policy", policy);
+        return q;
+    }
 }

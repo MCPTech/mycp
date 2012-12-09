@@ -1,18 +1,23 @@
-//My Cloud Portal - Self Service Portal for the cloud.
-//This file is part of My Cloud Portal.
-//
-//My Cloud Portal is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, version 3 of the License.
-//
-//My Cloud Portal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with My Cloud Portal.  If not, see <http://www.gnu.org/licenses/>.
 
+/*
+ mycloudportal - Self Service Portal for the cloud.
+ Copyright (C) 2012-2013 Mycloudportal Technologies Pvt Ltd
+
+ This file is part of mycloudportal.
+
+ mycloudportal is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ mycloudportal is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package in.mycp.controller;
 
 import javax.servlet.http.HttpServletRequest;

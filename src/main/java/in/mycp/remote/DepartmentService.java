@@ -1,17 +1,22 @@
-//My Cloud Portal - Self Service Portal for the cloud.
-//This file is part of My Cloud Portal.
-//
-//My Cloud Portal is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, version 3 of the License.
-//
-//My Cloud Portal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with My Cloud Portal.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ mycloudportal - Self Service Portal for the cloud.
+ Copyright (C) 2012-2013 Mycloudportal Technologies Pvt Ltd
+
+ This file is part of mycloudportal.
+
+ mycloudportal is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ mycloudportal is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package in.mycp.remote;
 
@@ -56,7 +61,7 @@ public class DepartmentService {
 					Commons.getCurrentUser().getEmail());
 			if(instance.getId()>0){
 				Department department = findById(instance.getId());
-				if(department.getQuota().intValue() != instance.getQuota().intValue()){
+				if(department.getQuota()!=null && department.getQuota().intValue() != instance.getQuota().intValue()){
 					accountLogService.saveLogAndSendMail("Department '"+instance.getName()+"' Quota updated from '"+department.getQuota()+"' to '"+instance.getQuota()+"'", "Department '"+instance.getName()+"' Quota updated", 1, "gangu96@yahoo.co.in");
 				}
 			}

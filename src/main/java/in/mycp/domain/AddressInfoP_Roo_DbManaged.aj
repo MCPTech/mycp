@@ -33,6 +33,9 @@ privileged aspect AddressInfoP_Roo_DbManaged {
     @Column(name = "status", length = 45)
     private String AddressInfoP.status;
     
+    @Column(name = "automatic")
+    private Boolean AddressInfoP.automatic;
+    
     public Asset AddressInfoP.getAsset() {
         return asset;
     }
@@ -87,6 +90,14 @@ privileged aspect AddressInfoP_Roo_DbManaged {
     
     public void AddressInfoP.setStatus(String status) {
         this.status = status;
+    }
+    
+    public Boolean AddressInfoP.getAutomatic() {
+        return automatic;
+    }
+    
+    public void AddressInfoP.setAutomatic(Boolean automatic) {
+        this.automatic = automatic;
     }
     
 }

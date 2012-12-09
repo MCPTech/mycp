@@ -8,6 +8,7 @@ import org.springframework.roo.addon.dbre.RooDbManaged;
 import org.springframework.roo.addon.javabean.RooJavaBean;
 import org.springframework.roo.addon.jpa.activerecord.RooJpaActiveRecord;
 import org.springframework.roo.addon.tostring.RooToString;
+import org.springframework.transaction.annotation.Transactional;
 
 @RooJavaBean
 @RooToString
@@ -34,5 +35,13 @@ public class ProductCatalog {
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Transactional
+    public in.mycp.domain.ProductCatalog merge() {
+        if (this.entityManager == null) this.entityManager = entityManager();
+        ProductCatalog merged = this.entityManager.merge(this);
+        this.entityManager.flush();
+        return merged;
     }
 }

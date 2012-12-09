@@ -456,7 +456,7 @@ function afterSave_compute(){
 								<p id="contactArea_compute" class="contactArea" >
 								<input type="hidden" id="id" name="id">
 								
-								<table style="width: 65%;" cellpadding="5" cellspacing="5">
+								<table style="width: 100%;" cellpadding="5" cellspacing="5">
 								  <tr>
 								    <td style="width: 50%;">Product : </td>
 								    <td style="width: 50%;">
@@ -506,26 +506,7 @@ function afterSave_compute(){
 				dwr.util.removeAllOptions('groupName');
 				dwr.util.addOptions('groupName', q, 'name', 'name');
 			});
-			/*KeyPairInfoP.findAll4List(function(p){
-				dwr.util.removeAllOptions('keyName');
-				dwr.util.addOptions('keyName', p, 'id', 'keyName');
-				//dwr.util.setValue(id, sel);
-			});*/
-			/*
-			ImageDescriptionP.findAll4List(0,100,function(p){
-				
-				dwr.util.removeAllOptions('imageId');
-				dwr.util.addOptions('imageId', p, 'imageId', function(p) {
-					return p.imageId+' @ '+p.imageLocation;
-				});
-				
-			});
-			*/
-			/*GroupDescriptionP.findAll4List(function(p){
-				dwr.util.removeAllOptions('groupName');
-				dwr.util.addOptions('groupName', p, 'name', 'name');
-				//dwr.util.setValue(id, sel);
-			});*/
+			
 			ProjectService.findAll(function(p){
 				dwr.util.removeAllOptions('projectId');
 				//dwr.util.addOptions('project', p, 'id', 'name');
@@ -536,6 +517,7 @@ function afterSave_compute(){
 			
 			var text2Search = dwr.util.getValue("SearchField");
 			ImageDescriptionP.findAll(s.infra, 0,100,text2Search,function(p){
+				//alert(dwr.util.toDescriptiveString(p,3));
 				dwr.util.removeAllOptions('image');
 				dwr.util.addOptions('image', p, 'id', 'imageDesc');
 				//dwr.util.setValue(id, sel);

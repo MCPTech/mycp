@@ -27,12 +27,12 @@ privileged aspect Infra_Roo_DbManaged {
     private Set<ProductCatalog> Infra.productCatalogs;
     
     @ManyToOne
-    @JoinColumn(name = "company", referencedColumnName = "id")
-    private Company Infra.company;
+    @JoinColumn(name = "infraType", referencedColumnName = "id", nullable = false)
+    private InfraType Infra.infraType;
     
     @ManyToOne
-    @JoinColumn(name = "infraType", referencedColumnName = "id")
-    private InfraType Infra.infraType;
+    @JoinColumn(name = "company", referencedColumnName = "id")
+    private Company Infra.company;
     
     @Column(name = "accessId", length = 90)
     private String Infra.accessId;
@@ -99,20 +99,20 @@ privileged aspect Infra_Roo_DbManaged {
         this.productCatalogs = productCatalogs;
     }
     
-    public Company Infra.getCompany() {
-        return company;
-    }
-    
-    public void Infra.setCompany(Company company) {
-        this.company = company;
-    }
-    
     public InfraType Infra.getInfraType() {
         return infraType;
     }
     
     public void Infra.setInfraType(InfraType infraType) {
         this.infraType = infraType;
+    }
+    
+    public Company Infra.getCompany() {
+        return company;
+    }
+    
+    public void Infra.setCompany(Company company) {
+        this.company = company;
     }
     
     public String Infra.getAccessId() {

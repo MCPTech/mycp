@@ -363,7 +363,10 @@
 			//dwr.util.setValue(id, sel);
 			
 		});
+
+
 	});
+	
 
 		$("#popupContactClose_secgroup").click(function(){
 			viewed_secgroup = -1;

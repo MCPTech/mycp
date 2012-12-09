@@ -1,20 +1,14 @@
-/*
- * Date Format 1.2.3
- * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
- * MIT license
- *
- * Includes enhancements by Scott Trenda <scott.trenda.net>
- * and Kris Kowal <cixar.com/~kris.kowal/>
- *
- * Accepts a date, a mask, or a date and a mask.
- * Returns a formatted version of the given date.
- * The date defaults to the current date/time.
- * The mask defaults to dateFormat.masks.default.
- */
 
 	var INFRA_TYPE_EUCA=1;
 	var INFRA_TYPE_AWS=2;
 	var INFRA_TYPE_VCLOUD=3;
+	
+	var PRIVATE_CLOUD_EDITION_ENABLED=1;
+	var HOSTED_EDITION_ENABLED=2;
+	var SERVICE_PROVIDER_EDITION_ENABLED=3;
+	
+	EDITION_ENABLED=SERVICE_PROVIDER_EDITION_ENABLED;
+	
 	
 var dateFormat = function () {
 	var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,

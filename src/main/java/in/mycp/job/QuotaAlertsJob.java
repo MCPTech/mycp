@@ -1,5 +1,21 @@
-/**
- * 
+/*
+ mycloudportal - Self Service Portal for the cloud.
+ Copyright (C) 2012-2013 Mycloudportal Technologies Pvt Ltd
+
+ This file is part of mycloudportal.
+
+ mycloudportal is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ mycloudportal is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
  */
 package in.mycp.job;
 
@@ -49,7 +65,7 @@ public class QuotaAlertsJob implements EventListener {
 			//System.out.println("company : "+company.getName());
 			try{
 				long companyAssetCost = reportService.getAllAssetCosts("company", company.getId()).getTotalCost();
-				if(company.getQuota()>0){
+				if(company.getQuota()!=null && company.getQuota()>0){
 					if(company.getQuota() <= companyAssetCost){
 						throw new Exception("Company '"+company.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 					}else if( company.getQuota()-companyAssetCost <= company.getMinBal() ){
@@ -61,32 +77,37 @@ public class QuotaAlertsJob implements EventListener {
 				for (Department department : lstdeDepartments) {
 					//System.out.println("department : "+department.getName());
 					long deptAssetCost = reportService.getAllAssetCosts("department", department.getId()).getTotalCost();
+					if(department.getQuota() !=null){
 					long minQuota = Math.round(0.1 * department.getQuota());
 					if(department.getQuota()<=deptAssetCost){
 						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 					}else if(department.getQuota()>0 && (department.getQuota()-deptAssetCost <= minQuota))
 						throw new Exception("Department '"+department.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
-					
+					}
 					Set<Project> lstProjects = department.getProjects();
 					for (Project project : lstProjects) {
 						//System.out.println("project : "+project.getName());
 						long projAssetCost = reportService.getAllAssetCosts("project", project.getId()).getTotalCost();
-						minQuota = Math.round(0.1 * project.getQuota());
+						if(project.getQuota() !=null){
+						long minQuota = Math.round(0.1 * project.getQuota());
 						if(project.getQuota()<=projAssetCost)
 							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_EXCEED_MSG);
 						else if(project.getQuota()>0 && (project.getQuota()-projAssetCost <= minQuota))
 							throw new Exception("Project '"+project.getName()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
+						}
 						
 					}
 					Set<User> stUsers = department.getUsers();
 					for (User user : stUsers) {
 						//System.out.println("user : "+user.getEmail());
 						long userAssetCost = reportService.getAllAssetCosts("user", user.getId()).getTotalCost();
-						minQuota = Math.round(0.1 * user.getQuota());
+						if(user.getQuota()!=null){
+						long minQuota = Math.round(0.1 * user.getQuota());
 						if(user.getQuota()<=userAssetCost){
 							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_EXCEED_MSG);
 						}else if(user.getQuota()>0 && user.getQuota()-userAssetCost <= minQuota)
 							throw new Exception("User '"+user.getEmail()+"' "+Commons.QUOTA_ABOUTTO_EXCEED_MSG);
+						}
 					}
 				}
 			}catch(Exception ex){

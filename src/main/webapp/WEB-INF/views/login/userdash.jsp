@@ -170,7 +170,7 @@
 			WorkflowService.findAll(findAll_workflow);
 			DashboardService.getAllAssetCount(findAll_Asset);
 			ReportService.getAllAssetCosts(findAll_AssetCosts);
-			ProductService.findAll(findAll_product);
+			ProductService.findAll4Dashboard(findAll_product);
 			InfraService.findAll4Dashboard(findAll_infra);
 			
 			jQuery('.jcarousalClass').jcarousel({

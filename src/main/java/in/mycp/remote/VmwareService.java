@@ -1,18 +1,23 @@
 
-//My Cloud Portal - Self Service Portal for the cloud.
-//This file is part of My Cloud Portal.
-//
-//My Cloud Portal is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, version 3 of the License.
-//
-//My Cloud Portal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with My Cloud Portal.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ mycloudportal - Self Service Portal for the cloud.
+ Copyright (C) 2012-2013 Mycloudportal Technologies Pvt Ltd
+
+ This file is part of mycloudportal.
+
+ mycloudportal is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ mycloudportal is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package in.mycp.remote;
 
@@ -118,24 +123,42 @@ public class VmwareService {
 		return null;
 	}
 	
-	public String getPrototcolAsString(FirewallRuleProtocols firewallRule){
-		if(firewallRule.isAny()){
+	public String getPrototcolAsString(FirewallRuleProtocols firewallRuleProtocol){
+		try{
+			
+			boolean any = false;
+			boolean icmp = false;
+			boolean tcp = false;
+			boolean udp = false;
+			
+			try {if(firewallRuleProtocol.isAny()){any = true;}} catch (Exception e) {}
+			try {if(firewallRuleProtocol.isIcmp()){icmp = true;}} catch (Exception e) {}
+			try {if(firewallRuleProtocol.isTcp()){tcp = true;}} catch (Exception e) {}
+			try {if(firewallRuleProtocol.isUdp()){udp = true;}} catch (Exception e) {}
+			
+			
+		if(any){
 			return Commons.PROTOCOL_TYPE_ANY;
-		}else if(firewallRule.isTcp() && !firewallRule.isIcmp() && !firewallRule.isUdp()){
+		}else if(
+				tcp && !icmp && !udp ){
 			return Commons.PROTOCOL_TYPE_TCP;
-		}else if(!firewallRule.isTcp() && firewallRule.isIcmp() && !firewallRule.isUdp()){
+		}else if(!tcp  && icmp && !udp){
 			return Commons.PROTOCOL_TYPE_ICMP;
-		}else if(!firewallRule.isTcp() && !firewallRule.isIcmp() && firewallRule.isUdp()){
+		}else if(!tcp  && !icmp && udp){
 			return Commons.PROTOCOL_TYPE_UDP;
-		}else if(firewallRule.isTcp() && firewallRule.isIcmp() && !firewallRule.isUdp()){
+		}else if(tcp  && icmp && !udp){
 			return Commons.PROTOCOL_TYPE_TCP_ICMP;
-		}else if(firewallRule.isTcp() && !firewallRule.isIcmp() && firewallRule.isUdp()){
+		}else if(tcp  && !icmp && udp){
 			return Commons.PROTOCOL_TYPE_TCP_UDP;
-		}else if(!firewallRule.isTcp() && firewallRule.isIcmp() && firewallRule.isUdp()){
+		}else if(!tcp  && icmp && udp){
 			return Commons.PROTOCOL_TYPE_UDP_ICMP;
 		}else {
 			return "";
 		}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return "";
 	}//getPrototcolAsString
 		
 	
@@ -239,6 +262,25 @@ public class VmwareService {
 		//String ownerId = "";
 		List<String> params = new ArrayList<String>();
 
+		syncGroupDescription( params,vcloudClient,infra,assetTypeSecurityGroup,currentUser,secGroupProduct,company,start);
+		
+		syncIpAddress(params,vcloudClient,infra,assetTypeIpAddress, currentUser,ipaddressProduct, company,start);
+		syncVolumes(params,vcloudClient,infra,assetTypeVolume,currentUser,volumeProduct,company,start);
+		//no snapshots in vcloud
+		Hashtable<String, SnapshotInfo> snapshotsFromCloud = new Hashtable<String, SnapshotInfo>();
+		
+		syncImages(params,vcloudClient,infra,assetTypeComputeImage,currentUser,imageProduct, company,start); 
+		
+		syncInstances(params,vcloudClient,infra,assetTypeComputeInstance,currentUser,computeProduct,company,start);
+		
+		//no keypair in vcloud
+		Hashtable<String, KeyPairInfo> keysFromCloud = new Hashtable<String, KeyPairInfo>();
+
+	}// end of sync
+
+	
+	public void syncGroupDescription(List<String> params,VcloudClient vcloudClient,Infra infra,AssetType assetTypeSecurityGroup,
+			User currentUser,ProductCatalog secGroupProduct, Company company,Date start){
 		try {
 			params = new ArrayList<String>();
 			logger.info("Available Security groups @" + (new Date().getTime() - start.getTime()) / 1000 + " S");
@@ -253,7 +295,8 @@ public class VmwareService {
 					//System.out.println("adminOrgNetwork.getReference().getName() = "+adminOrgNetwork.getReference().getName());
 					
 					try {
-						List<GroupDescriptionP> groups = GroupDescriptionP.findGroupDescriptionPsBy(infra, adminOrgNetwork.getReference().getName(), company).getResultList();
+						List<GroupDescriptionP> groups = GroupDescriptionP.findGroupDescriptionPsBy(infra, adminOrgNetwork.getReference().getName(), 
+								adminOrgNetwork.getReference().getHref()).getResultList();
 						inner: for (Iterator iterator2 = groups.iterator(); iterator2.hasNext();) {
 							GroupDescriptionP groupDescriptionP = (GroupDescriptionP) iterator2.next();
 							// check if this security group is for this cloud or for
@@ -308,7 +351,8 @@ public class VmwareService {
 											IpPermissionP ipPermissionP = null;
 											try {
 												ipPermissionP = IpPermissionP.findIpPermissionPsByParams(descriptionP, getPrototcolAsString(firewallRule.getProtocols()), 
-														firewallRule.getSourceIp(), firewallRule.getSourcePort()).getSingleResult();
+														firewallRule.getSourceIp(), firewallRule.getSourcePort(),
+														firewallRule.getDirection(),firewallRule.getPolicy()).getSingleResult();
 											} catch (Exception e) {
 												e.printStackTrace();
 												logger.error(e.getMessage());
@@ -345,7 +389,7 @@ public class VmwareService {
 											descriptionP = descriptionP.merge();
 										}catch(Exception e){
 											logger.error(e.getMessage());
-											//e.printStackTrace();
+											e.printStackTrace();
 										}
 
 									}//for (FirewallRuleType firewallRule : firewallService.getFirewallRule())
@@ -410,7 +454,11 @@ public class VmwareService {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
+	}
+	
+	
+	public void syncIpAddress(List<String> params,VcloudClient vcloudClient,Infra infra,AssetType assetTypeIpAddress, 
+			User currentUser,ProductCatalog ipaddressProduct, Company company,Date start){
 		/*
 		 * IP Address import
 		 * 
@@ -589,8 +637,11 @@ public class VmwareService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
+	}
+	
+	public void syncVolumes(List<String> params,VcloudClient vcloudClient,Infra infra,AssetType assetTypeVolume, 
+			User currentUser,ProductCatalog volumeProduct, Company company,Date start) {
+
 
 		Hashtable<String, VirtualDisk> volumesFromCloud = new Hashtable<String, VirtualDisk>();
 
@@ -673,6 +724,7 @@ public class VmwareService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		try{
 		List<VolumeInfoP> vols = null;
 
 		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
@@ -710,10 +762,14 @@ public class VmwareService {
 				e.printStackTrace();
 			}
 
-		}
-
-		//no snapshots in vcloud
-		Hashtable<String, SnapshotInfo> snapshotsFromCloud = new Hashtable<String, SnapshotInfo>();
+		}	
+	}catch(Exception e){
+	e.printStackTrace();			
+	}
+	}//end of method
+	
+	public void syncImages(List<String> params,VcloudClient vcloudClient,Infra infra,AssetType assetTypeComputeImage,
+			User currentUser,ProductCatalog imageProduct, Company company,Date start) {
 
 		//images are templates in vcloud
 		Hashtable<String, VappTemplate> imagesFromCloud = new Hashtable<String, VappTemplate>();
@@ -846,6 +902,11 @@ public class VmwareService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}//end syncImages
+	
+	public void syncInstances(List<String> params,VcloudClient vcloudClient,Infra infra,AssetType assetTypeComputeInstance,
+			User currentUser,ProductCatalog computeProduct, Company company,Date start) {
+		
 
 		Hashtable<String, VM> instancesFromCloud = new Hashtable<String, VM>();
 
@@ -1113,12 +1174,8 @@ public class VmwareService {
 			e.printStackTrace();
 		}
 
-		//no keypair in vcloud
-		Hashtable<String, KeyPairInfo> keysFromCloud = new Hashtable<String, KeyPairInfo>();
-
-	}// end of sync
-
-	
+		
+	}//end syncInstances
 
 }// end of class
 

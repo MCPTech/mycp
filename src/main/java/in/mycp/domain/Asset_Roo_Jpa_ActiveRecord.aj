@@ -4,7 +4,6 @@
 package in.mycp.domain;
 
 import in.mycp.domain.Asset;
-import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +19,10 @@ privileged aspect Asset_Roo_Jpa_ActiveRecord {
         return em;
     }
     
-    
-    
     public static Asset Asset.findAsset(Integer id) {
         if (id == null) return null;
         return entityManager().find(Asset.class, id);
     }
-    
-   
     
     @Transactional
     public void Asset.persist() {

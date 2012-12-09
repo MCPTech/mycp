@@ -219,19 +219,37 @@ public class GroupDescriptionP {
         return q;
     }
 
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsBy(Infra infra, String name, String description) {
+        if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name and  o.asset.active = 1 " + " and o.asset.productCatalog.infra = :infra and o.descripton = :descripton  ", GroupDescriptionP.class);
+        q.setParameter("name", name);
+        q.setParameter("infra", infra);
+        q.setParameter("descripton", description);
+        return q;
+    }
+
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
-    public static TypedQuery<GroupDescriptionP> findGroupDescriptionPsByAsset(Asset asset) {
+
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsByAsset4Report(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = GroupDescriptionP.entityManager();
+        TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.asset = :asset ", GroupDescriptionP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsByAsset(Asset asset) {
         if (asset == null) throw new IllegalArgumentException("The asset argument is required");
         EntityManager em = GroupDescriptionP.entityManager();
         TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.asset = :asset and  o.asset.active = 1", GroupDescriptionP.class);
         q.setParameter("asset", asset);
         return q;
     }
-    
-    public static TypedQuery<GroupDescriptionP> findGroupDescriptionPsByDescriptonLike(String descripton) {
+
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsByDescriptonLike(String descripton) {
         if (descripton == null || descripton.length() == 0) throw new IllegalArgumentException("The descripton argument is required");
         descripton = descripton.replace('*', '%');
         if (descripton.charAt(0) != '%') {
@@ -245,16 +263,16 @@ public class GroupDescriptionP {
         q.setParameter("descripton", descripton);
         return q;
     }
-    
-    public static TypedQuery<GroupDescriptionP> findGroupDescriptionPsByNameEquals(String name) {
+
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsByNameEquals(String name) {
         if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
         EntityManager em = GroupDescriptionP.entityManager();
         TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name and  o.asset.active = 1", GroupDescriptionP.class);
         q.setParameter("name", name);
         return q;
     }
-    
-    public static TypedQuery<GroupDescriptionP> findGroupDescriptionPsByOwnerEquals(String owner) {
+
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsByOwnerEquals(String owner) {
         if (owner == null || owner.length() == 0) throw new IllegalArgumentException("The owner argument is required");
         EntityManager em = GroupDescriptionP.entityManager();
         TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.owner = :owner and  o.asset.active = 1", GroupDescriptionP.class);

@@ -174,16 +174,24 @@ public class VolumeInfoP {
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
-    public static TypedQuery<VolumeInfoP> findVolumeInfoPsByAsset(Asset asset) {
+
+    public static TypedQuery<in.mycp.domain.VolumeInfoP> findVolumeInfoPsByAsset4Report(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset = :asset  ", VolumeInfoP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+
+    public static TypedQuery<in.mycp.domain.VolumeInfoP> findVolumeInfoPsByAsset(Asset asset) {
         if (asset == null) throw new IllegalArgumentException("The asset argument is required");
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.asset = :asset and  o.asset.active = 1 ", VolumeInfoP.class);
         q.setParameter("asset", asset);
         return q;
     }
-    
-    public static TypedQuery<VolumeInfoP> findVolumeInfoPsByVolumeIdEquals(String volumeId) {
+
+    public static TypedQuery<in.mycp.domain.VolumeInfoP> findVolumeInfoPsByVolumeIdEquals(String volumeId) {
         if (volumeId == null || volumeId.length() == 0) throw new IllegalArgumentException("The volumeId argument is required");
         EntityManager em = entityManager();
         TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId and  o.asset.active = 1 ", VolumeInfoP.class);

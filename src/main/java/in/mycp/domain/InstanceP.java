@@ -143,24 +143,22 @@ public class InstanceP {
     }
 
     public static Number findInstanceCountByCompany(Company company, String status) {
-    	{
-	    	String queryStr = "SELECT i FROM InstanceP i where i.state = :status and  i.asset.active = 1 ";
-	        if (company != null) {
-	            queryStr = queryStr + "  and i.asset.user.department.company = :company";
-	        }
-	        Query q = entityManager().createQuery(queryStr);
-	        q.setParameter("status", status);
-	        if (company != null) {
-	            q.setParameter("company", company);
-	        }
-	        List l = q.getResultList();
-	        for (Iterator iterator = l.iterator(); iterator.hasNext(); ) {
-				InstanceP ins = (InstanceP) iterator.next();
-				System.out.println("ins.getInstanceId() = "+ins.getInstanceId());
-			}
-	        
-    	}
-    	
+        {
+            String queryStr = "SELECT i FROM InstanceP i where i.state = :status and  i.asset.active = 1 ";
+            if (company != null) {
+                queryStr = queryStr + "  and i.asset.user.department.company = :company";
+            }
+            Query q = entityManager().createQuery(queryStr);
+            q.setParameter("status", status);
+            if (company != null) {
+                q.setParameter("company", company);
+            }
+            List l = q.getResultList();
+            for (Iterator iterator = l.iterator(); iterator.hasNext(); ) {
+                InstanceP ins = (InstanceP) iterator.next();
+                System.out.println("ins.getInstanceId() = " + ins.getInstanceId());
+            }
+        }
         String queryStr = "SELECT COUNT(i.id) FROM InstanceP i where i.state = :status and  i.asset.active = 1 ";
         if (company != null) {
             queryStr = queryStr + "  and i.asset.user.department.company = :company";
@@ -195,32 +193,40 @@ public class InstanceP {
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
-    
-    public static TypedQuery<InstanceP> findInstancePsByAsset(Asset asset) {
+
+    public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsByAsset4Report(Asset asset) {
+        if (asset == null) throw new IllegalArgumentException("The asset argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.asset = :asset ", InstanceP.class);
+        q.setParameter("asset", asset);
+        return q;
+    }
+
+    public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsByAsset(Asset asset) {
         if (asset == null) throw new IllegalArgumentException("The asset argument is required");
         EntityManager em = entityManager();
         TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.asset = :asset and  o.asset.active = 1 ", InstanceP.class);
         q.setParameter("asset", asset);
         return q;
     }
-    
-    public static TypedQuery<InstanceP> findInstancePsByInstanceIdEquals(String instanceId) {
+
+    public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsByInstanceIdEquals(String instanceId) {
         if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
         EntityManager em = entityManager();
         TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.instanceId = :instanceId and  o.asset.active = 1 ", InstanceP.class);
         q.setParameter("instanceId", instanceId);
         return q;
     }
-    
-    public static TypedQuery<InstanceP> findInstancePsByKeyNameNotEquals(String keyName) {
+
+    public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsByKeyNameNotEquals(String keyName) {
         if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
         EntityManager em = entityManager();
         TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.keyName != :keyName and  o.asset.active = 1 ", InstanceP.class);
         q.setParameter("keyName", keyName);
         return q;
     }
-    
-    public static TypedQuery<InstanceP> findInstancePsByReservationDescription(Integer reservationDescription) {
+
+    public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsByReservationDescription(Integer reservationDescription) {
         if (reservationDescription == null) throw new IllegalArgumentException("The reservationDescription argument is required");
         EntityManager em = entityManager();
         TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.reservationDescription = :reservationDescription and  o.asset.active = 1 ", InstanceP.class);
