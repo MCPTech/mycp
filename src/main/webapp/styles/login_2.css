@@ -1,0 +1,564 @@
+.page-width {
+	width: 100%
+}
+
+#footer-logged-out {
+	padding: 60px 0 40px
+}
+
+#footer-logged-out ul {
+	text-align: center
+}
+
+#footer-logged-out ul li {
+	display: inline-block;
+	margin: 0 10px
+}
+
+#footer-logged-out a {
+	color: #999
+}
+
+#box-wrapper {
+	margin: 0 auto;
+	text-align: left;
+	margin-bottom: 100px;
+	width: 800px;
+	text-align: center
+}
+
+#box-wrapper h1 {
+	background: url(/images/podio-logo-large.gif?1347364551) no-repeat
+		center center;
+	width: 125px;
+	height: 13px;
+	text-indent: -1000em;
+	overflow: hidden;
+	display: inline-block;
+	margin: 20px 0 50px 0;
+	height: 41px
+}
+
+#box-wrapper h1 a {
+	width: 100%;
+	height: 100%;
+	display: block
+}
+
+#box-wrapper>.content {
+	background-color: #FFFFFF;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-o-border-radius: 5px;
+	-ms-border-radius: 5px;
+	border-radius: 5px;
+	-moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	-webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	-o-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	margin: 0 auto 20px auto;
+	width: 800px
+}
+
+#box-wrapper>.content.v2 header {
+	height: 110px
+}
+
+#box-wrapper>.content span {
+	font-size: 12px;
+	font-size: 1.2rem
+}
+
+#box-wrapper>.content>form {
+	text-align: left;
+	width: 310px;
+	margin: 0 auto;
+	padding: 20px;
+	position: relative;
+	margin-bottom: 15px
+}
+
+
+#box-wrapper>.content>form label {
+	float: left;
+	padding-right: 5px;
+	margin: 0
+}
+
+#box-wrapper>.content>form label.hint {
+	float: right;
+	color: #999999;
+	font-size: 11px;
+	font-size: 1.1rem;
+	font-weight: normal
+}
+
+#box-wrapper>.content>form em {
+	line-height: 14px
+}
+
+#box-wrapper>.content>form dl {
+	position: relative;
+	padding: 0 5px 0 5px
+}
+
+#box-wrapper>.content>form dl dd {
+	margin-bottom: 10px;
+	clear: both;
+	position: relative;
+	width: 100%
+}
+
+#box-wrapper>.content>form dl dd.tos {
+	margin: 18px 0 0 0;
+	width: 20px;
+	overflow: hidden
+}
+
+#box-wrapper>.content>form dl dt {
+	position: relative
+}
+
+#box-wrapper>.content>form dl dt.tos {
+	margin-top: 18px;
+	margin-bottom: 20px
+}
+
+#box-wrapper>.content>form dl dt.tos label {
+	float: none;
+	font-weight: normal;
+	margin-bottom: 0;
+	line-height: 15px
+}
+
+#box-wrapper>.content>form button {
+	float: right;
+	margin-right: 0;
+	margin-bottom: 30px
+}
+
+#box-wrapper .content-foot {
+	background-color: #F6F6F6;
+	border-top: 1px solid #DBDBDA;
+	padding: 20px
+}
+
+#box-wrapper footer {
+	width: 380px;
+	margin: 0 auto;
+	float: none;
+	text-align: center;
+	color: #9f9f9f;
+	text-align: center;
+	height: 16px;
+	line-height: 16px
+}
+
+#box-wrapper footer div {
+	display: inline-block
+}
+
+#box-wrapper footer strong {
+	color: #555;
+	font-weight: bold
+}
+
+#box-wrapper footer .login-tip {
+	margin-bottom: 20px
+}
+
+#box-wrapper footer .icon-16 {
+	position: relative;
+	top: -2px
+}
+
+#box-wrapper footer>div {
+	float: none;
+	overflow: hidden
+}
+
+#box-wrapper footer>div>div {
+	float: none
+}
+
+#box-wrapper.small-box {
+	width: 450px
+}
+
+#box-wrapper.small-box .content {
+	width: 100%;
+	overflow: hidden;
+	padding-bottom: 20px
+}
+
+#box-wrapper.small-box .content form {
+	width: auto
+}
+
+#box-wrapper.small-box .content button {
+	margin-bottom: 0;
+	margin-top: 10px;
+	padding: 5px 10px;
+	height: auto
+}
+
+#box-wrapper.small-box .content input {
+	width: 100% !important
+}
+
+@
+-moz-document url-prefix (){ #signup-box form dl dt.tos,#signup-box form
+	dl dd.tos{margin-top:16px
+	
+}
+
+}
+
+#box-wrapper.tnol h1 {
+	margin: 20px 0 0 0
+}
+
+#box-wrapper.tnol .form-messages {
+	margin-top: 0 !important
+}
+
+#box-wrapper.tnol.signup-box.initial {
+	width: 460px
+}
+
+#box-wrapper.tnol.signup-box.initial>.content {
+	width: 420px
+}
+
+#box-wrapper.tnol.signup-box.initial>.content form {
+	padding: 40px 65px 20px 65px
+}
+
+#box-wrapper.tnol.signup-box.initial>.content form button.nextbutton {
+	width: 100%;
+	height: 35px;
+	font-size: 14px;
+	font-size: 1.4rem
+}
+
+#box-wrapper.tnol.signup-box.initial>.content form dl {
+	padding: 0
+}
+
+#box-wrapper.tnol.signup-box>.content {
+	width: 528px
+}
+
+#box-wrapper.tnol.signup-box>.content .content-wrapper {
+	padding: 20px
+}
+
+#box-wrapper.tnol.signup-box>.content .content-wrapper .envelope {
+	position: relative;
+	left: -40px
+}
+
+#box-wrapper.tnol.signup-box>.content .breadcrumb {
+	margin-bottom: 10px
+}
+
+#box-wrapper.tnol.signup-box>.content .breadcrumb dl {
+	overflow: hidden;
+	padding: 20px;
+	border-bottom: 1px solid #c9cacb
+}
+
+#box-wrapper.tnol.signup-box>.content .breadcrumb dl dt,#box-wrapper.tnol.signup-box>.content .breadcrumb dl dd
+	{
+	float: left
+}
+
+#box-wrapper.tnol.signup-box>.content .breadcrumb dl dt {
+	width: 17px;
+	height: 17px;
+	margin-right: 6px;
+	background-color: #c9cacb;
+	color: #FFF;
+	-moz-border-radius: 16px;
+	-webkit-border-radius: 16px;
+	-o-border-radius: 16px;
+	-ms-border-radius: 16px;
+	border-radius: 16px
+}
+
+#box-wrapper.tnol.signup-box>.content .breadcrumb dl dt.active {
+	background-color: #4183b4
+}
+
+#box-wrapper.tnol.signup-box>.content .breadcrumb dl dd {
+	color: #c9cacb;
+	margin-right: 11px;
+	line-height: 1.5
+}
+
+#box-wrapper.tnol.signup-box>.content .breadcrumb dl dd.active {
+	font-weight: bold;
+	color: #000
+}
+
+#box-wrapper.tnol.signup-box>.content .text-content {
+	text-align: left;
+	padding-top: 20px
+}
+
+#box-wrapper.tnol.signup-box .subheading {
+	font-size: 18px;
+	font-size: 1.8rem;
+	margin-top: 25px;
+	margin-bottom: 0px;
+	color: #999999;
+	font-weight: normal;
+	line-height: 25px
+}
+
+#box-wrapper.tnol.signup-box .subheading strong {
+	font-weight: bold
+}
+
+#box-wrapper.tnol.signup-box .heading {
+	margin-top: 50px;
+	font-weight: bold;
+	font-size: 35px;
+	font-size: 3.5rem
+}
+
+#box-wrapper.tnol.signup-box.select_packs,#box-wrapper.tnol.signup-box.wide
+	{
+	width: 800px
+}
+
+#box-wrapper.tnol.signup-box.select_packs>.content,#box-wrapper.tnol.signup-box.wide>.content
+	{
+	width: 800px
+}
+
+#box-wrapper.tnol.google-signup-confirm .content {
+	width: 454px;
+	height: 295px;
+	background-image:
+		url(/images/google_sign_in/instructions.png?1347364549);
+	background-repeat: no-repeat;
+	background-position: left bottom
+}
+
+#box-wrapper.tnol.google-signup-confirm .content button {
+	float: right
+}
+
+#box-wrapper.tnol>.content {
+	margin: 30px auto 20px auto
+}
+
+#box-wrapper.tnol>.content form {
+	width: auto;
+	margin-bottom: 0
+}
+
+#box-wrapper.tnol>.content form input[type=text],#box-wrapper.tnol>.content form input[type=email],#box-wrapper.tnol>.content form input[type=submit],#box-wrapper.tnol>.content form input[type=password]
+	{
+	width: 100%
+}
+
+#box-wrapper.tnol>.content form .form-validation-invalid-wrapper {
+	width: 100%
+}
+
+#box-wrapper.tnol>.content form dl dt.tos {
+	float: none
+}
+
+#box-wrapper.tnol>.content form dl dt.tos .nextbutton {
+	margin-bottom: 0;
+	width: 90px;
+	height: 32px
+}
+
+#box-wrapper .signup-org-setup {
+	padding: 20px;
+	text-align: left;
+	overflow: visible
+}
+
+#box-wrapper .signup-org-setup .files-drag-tip {
+	display: none
+}
+
+#box-wrapper .signup-org-setup .main .logo-options {
+	width: 490px
+}
+
+#box-wrapper .signup-org-setup .sidebar {
+	width: 270px;
+	float: left;
+	text-align: left
+}
+
+#box-wrapper .signup-org-setup .sidebar img {
+	-moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	-webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	-o-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	border: 0;
+	display: block;
+	width: 200px;
+	height: 250px;
+	margin-bottom: 30px
+}
+
+#box-wrapper .signup-org-setup .footer {
+	overflow: hidden;
+	clear: both
+}
+
+#box-wrapper .signup-org-setup .footer a,#box-wrapper .signup-org-setup .footer button
+	{
+	float: right;
+	margin-bottom: 0
+}
+
+#box-wrapper .signup-org-setup .footer button {
+	padding-bottom: 3px;
+	line-height: 18px
+}
+
+
+
+#wrapper .linked-account-buttons.v2 .linked-account-signin {
+	text-align: left
+}
+
+#box-wrapper.login-box.v2 {
+	width: 526px
+}
+
+#box-wrapper.login-box.v2 .content,#box-wrapper.login-box.v2 footer {
+	width: 486px
+}
+
+#box-wrapper.login-box.v2 .content>form,#box-wrapper.login-box.v2 footer>form
+	{
+	width: 446px
+}
+
+#box-wrapper.login-box.v2 .content>form input,#box-wrapper.login-box.v2 footer>form input
+	{
+	width: 446px
+}
+
+#box-wrapper.login-box .content {
+	width: 452px
+}
+
+#box-wrapper.login-box .content>form {
+	width: 412px
+}
+
+#box-wrapper.login-box .content>form input {
+	width: 412px;
+	height: 38px;
+	margin-bottom: 5px;
+	margin-top: 5px;
+	padding: 10px 6px
+}
+
+#box-wrapper.login-box .content>form dl {
+	padding: 0;
+	margin-bottom: 20px
+}
+
+#box-wrapper.login-box .content>form dl dd {
+	margin-bottom: 10px;
+	position: relative
+}
+
+#box-wrapper.login-box .content>form .login-box-footer {
+	display: table;
+	height: 100%;
+	margin-top: 30px
+}
+
+#box-wrapper.login-box .content>form .login-box-footer>.inner {
+	display: table-cell;
+	vertical-align: middle
+}
+
+#box-wrapper.login-box .content>form .login-box-footer>.forgot-password
+	{
+	width: 50%
+}
+
+#box-wrapper.login-box .content>form .login-box-footer>.remember-me {
+	text-align: right;
+	padding-right: 20px;
+	width: 50%
+}
+
+#box-wrapper.login-box .content>form .login-box-footer input {
+	width: auto;
+	height: auto
+}
+
+#box-wrapper.login-box .content>form .login-box-footer label {
+	float: none;
+	display: inline;
+	padding-left: 5px;
+	color: #999;
+	font-weight: normal
+}
+
+#box-wrapper.login-box .content>form .login-box-footer button {
+	margin: 0
+}
+
+#box-wrapper.login-box .content>form .or-wrapper {
+	height: 24px;
+	border-top: 1px solid #eee;
+	margin-top: 30px;
+	color: #999;
+	position: relative
+}
+
+#box-wrapper.login-box .content>form .or-wrapper div {
+	position: absolute;
+	height: 18px;
+	left: 46%;
+	text-align: center;
+	top: -9px;
+	width: 40px;
+	background: #FFF;
+	font-size: 11px
+}
+
+#box-wrapper.login-box footer {
+	width: 452px;
+	color: #525252
+}
+
+#box-wrapper.login-box footer .badge {
+	display: block;
+	clear: both;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-o-border-radius: 5px;
+	-ms-border-radius: 5px;
+	border-radius: 5px;
+	-moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	-webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	-o-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.148);
+	padding: 12px 20px 12px 20px;
+	border-top: 1px solid #ddd;
+	border-left: 1px solid #ddd;
+	background: #fff;
+	font-weight: bold;
+	margin-bottom: 20px
+}
+
+#box-wrapper.login-box footer .badge a {
+	font-weight: normal
+}
