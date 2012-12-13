@@ -162,7 +162,7 @@
 			  '<td style="width: 5%;"><input type="text" name="protocol" id="protocol" style="width:80px;" value=\''+ipPermissionP.protocol+'\'> </td>'+
 			  '<td style="width: 5%;"><input type="checkbox" name="vcloudEnabled" id="vcloudEnabled" size="10" '+enabled+' ></td>'+
 			  '<td style="width: 5%;">'+
-					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
+					'<a title="Remove Rule" onclick="deleteRow(this,'+ipPermissionP.id+')"><img src=../images/minus.png></a>'+
 			  '</td>'+
 		  '</tr>';
 	    $('#'+tableID).append(rowData);
