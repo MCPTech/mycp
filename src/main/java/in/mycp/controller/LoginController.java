@@ -242,7 +242,7 @@ public class LoginController {
 		    }
 		    
             if(authenticate(email,password)){
-    			return "redirect:dash";
+    			return "forward:dash";
             }
         } catch (Exception e) {
         	e.printStackTrace();
