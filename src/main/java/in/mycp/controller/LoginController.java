@@ -29,6 +29,7 @@ import in.mycp.domain.Project;
 import in.mycp.domain.Role;
 import in.mycp.domain.User;
 import in.mycp.remote.ProductService;
+import in.mycp.remote.RealmService;
 import in.mycp.service.WorkflowImpl4Jbpm;
 import in.mycp.utils.Commons;
 import in.mycp.web.MailDetailsDTO;
@@ -36,12 +37,14 @@ import in.mycp.web.MailDetailsDTO;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jbpm.api.ProcessInstance;
@@ -54,6 +57,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 
@@ -71,12 +75,16 @@ public class LoginController {
 	 WorkflowImpl4Jbpm workflowImpl4Jbpm;
 
 	 @Autowired
-	 	ShaPasswordEncoder passwordEncoder;
+	 ShaPasswordEncoder passwordEncoder;
+	 
 	 @Autowired
 	 ProductService productService;
 	 
 	 @Autowired
-	 	private transient MailSender mailTemplate;
+	 private transient MailSender mailTemplate;
+	 
+	 @Autowired
+	 private RealmService realmService;
 	 
 	@RequestMapping(produces = "text/html")
 	public String main(HttpServletRequest req, HttpServletResponse resp) {
@@ -84,54 +92,90 @@ public class LoginController {
 		//HttpSession s = req.getSession(true);
 		return "mycplogin";
 	}
-
-	@RequestMapping(value="/signup", produces = "text/html")
-	public String signup(HttpServletRequest req, HttpServletResponse resp) {
-		try {
-				String name = req.getParameter("name");
-				String email = req.getParameter("email");
-				String password = req.getParameter("password");
-				String organization = req.getParameter("organization");
-				String captchaResp = req.getParameter("captchaResp");
+	
+	@RequestMapping(value="recoverPwd", produces = "text/html")
+	@ResponseBody
+	public String recoverPassword(HttpServletRequest req, HttpServletResponse resp) {
+		String email = req.getParameter("mail");
+		if (StringUtils.isBlank(email)) {
+        	return "<font style=\"color: red;\"> Email cannot be empty</font>";
+        }
+		List<User> lstUser = realmService.findUsersByEmailEquals(email);
+		if(lstUser == null || lstUser.size()==0){
+			return "<font style=\"color: red;\"> Your email could not be found </font>";
+		} else {
+			String newPwd = RandomStringUtils.randomAlphanumeric(6);
 			
-            boolean captchaPassed = false;
+			User user = lstUser.get(0);
+			user.setPassword( passwordEncoder.encodePassword(newPwd, email) );
+			user.merge();
+			
+			MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
+			mailDetailsDTO.setTemplateName("RecoverPwdMailTemplate");
+        	mailDetailsDTO.setTo(user.getEmail());
+        	//mailDetailsDTO.setToName(user.getFirstName());
+        	mailDetailsDTO.setBodyText("Dear "+user.getFirstName()+", Your account password is reset to : "+newPwd);
+        	Map<String, Object> variables = new HashMap<String, Object>(); 
+		    variables.put("mailDetailsDTO", mailDetailsDTO);
+		    ProcessInstance instance = workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
+			return "<font style=\"color: #32CD32;\"> Password sent to your email </font>";
+		}
+	}
+
+	@RequestMapping(value="/validateSignup", produces = "text/html")
+	@ResponseBody
+	public String validateSignup(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			String name = req.getParameter("name");
+			String email = req.getParameter("email");
+			String password = req.getParameter("password");
+			String organization = req.getParameter("organization");
+			String captchaResp = req.getParameter("captchaResp");
+			
+			if (StringUtils.isBlank(name)) {
+            	return "<font style=\"color: red;\"> Name cannot be empty</font>";
+            }
+			if (StringUtils.isBlank(email)) {
+            	return "<font style=\"color: red;\"> Email cannot be empty</font>";
+            }
+			if (StringUtils.isBlank(password)) {
+            	return "<font style=\"color: red;\"> Password cannot be empty</font>";
+            }
+			if (StringUtils.isBlank(organization)) {
+            	return "<font style=\"color: red;\"> Organization cannot be empty</font>";
+            }
+            
+            List<User> lstUsers = User.findUsersByEmailEquals(email).getResultList();
+            if (lstUsers != null && lstUsers.size()>0) {
+            	return "<font style=\"color: red; \"> User " + email + " exists. Choose a different email Id please.</font>";
+            }
+            
             try {
                 HttpSession session = req.getSession();
                 String check = (String) session.getAttribute("captcha");
-                if (captchaResp.equalsIgnoreCase(check)) {
-                    captchaPassed = true;
+                if (!captchaResp.equalsIgnoreCase(check)) {
+                	return "<font style=\"color: red;\">Captcha phrase does not match</font>";
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage());
+                return e.getMessage();
             }
-            if (captchaPassed) {
-            	//continue
-            } else {
-                logger.error("captcha failed ");
-                req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: red;\"> Cannot create User.Captcha failed.</font>");
-                return "mycplogin";
-            }
-            if (StringUtils.isBlank(password)) {
-                throw new Exception("Password cannot be empty");
-            }
-            if (StringUtils.isBlank(email)) {
-                throw new Exception("Email cannot be empty");
-            }
-            boolean exists = false;
-            try {
-                User u = User.findUsersByEmailEquals(email).getSingleResult();
-                if (u != null && u.getId() > 0) {
-                    exists = true;
-                }
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-            }
-            
-            if (exists) {
-            	 req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: red; \"> User " + email + " exists. Choose a different email Id please.</font>");
-            	 return "mycplogin";
-            }
-            
+        } catch (Exception e) {
+        	e.printStackTrace();
+        	logger.error(e.getMessage());
+        	return e.getMessage();
+        }
+		return "";
+	}
+	
+	@RequestMapping(value="/signup", produces = "text/html")
+	public String signup(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			String name = req.getParameter("name");
+			String email = req.getParameter("email");
+			String password = req.getParameter("password");
+			String organization = req.getParameter("organization");
+	            
             User user = new User();
 	            user.setFirstName(name);
 	            user.setEmail(email);
@@ -196,23 +240,15 @@ public class LoginController {
 		    	//e.printStackTrace();
 		    	logger.error(e.getMessage());
 		    }
-            req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: green;\"> User " + user.getEmail() + " created.Please Sign In now.</font>");
+		    
             if(authenticate(email,password)){
-            	if(user.getRole().getName().equals(Commons.ROLE.ROLE_USER+"")){
-    				return "cloud-portal/userdash";
-    			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
-    				return "cloud-portal/managerdash";
-    			}else if(user.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN+"")){
-    				return "cloud-portal/superadmindash";
-    			}
+    			return "redirect:dash";
             }
         } catch (Exception e) {
-        	//e.printStackTrace();
+        	e.printStackTrace();
         	logger.error(e.getMessage());
-            req.getSession().setAttribute("MYCP_SIGNUP_MSG", "<font style=\"color: red;\"> Cannot create User.Please try later.</font>");
-            logger.error(e);
         }
-		 return "mycplogin";
+		return "mycplogin";
 	}
 
    @Autowired
@@ -335,7 +371,7 @@ public class LoginController {
         	mailDetailsDTO.setToName(user.getFirstName());
         	Map<String, Object> variables = new HashMap<String, Object>(); 
 		    variables.put("mailDetailsDTO", mailDetailsDTO);
-		    ProcessInstance instance =  workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Reports", variables);*/
+		    ProcessInstance instance =  workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);*/
 		    
 			if(user.getRole().getName().equals(Commons.ROLE.ROLE_USER+"")){
 				return "cloud-portal/userdash";

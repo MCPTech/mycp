@@ -28,7 +28,7 @@
  //========================================================
 
   String imageFormat = "jpg";
-  response.setContentType("image/" + imageFormat);
+  response.setContentType("" + imageFormat);
   long start = System.currentTimeMillis();
 
  try {

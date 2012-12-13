@@ -48,9 +48,8 @@ import org.springframework.stereotype.Component;
 @Component("JbpmMailEventListener")
 public class JbpmMailEventListener implements EventListener {
 
-	String mailTemplate;
+	  private String mailTemplate;
 	  public void notify(EventListenerExecution execution) {
-		  System.out.println("JbpmMailEventListener Notified..");
 		  try{
 			  ApplicationContext appContext = ApplicationContextService4Jobs.getAppContext();
 			  AccountLogService accountLogService = (AccountLogService)appContext.getBean("accountLogService");
@@ -69,11 +68,11 @@ public class JbpmMailEventListener implements EventListener {
 						System.err.println("Couldn't send Mail : "+e.getMessage());
 						accountLogService.saveLog(e.getMessage(), "Mail Send Job", Commons.task_status.FAIL.ordinal(), "gangu96@yahoo.co.in");
 					}
-					System.out.println("JbpmMailEventListener Ended..!");
 			  }
 		  }catch(Exception e){
 			  e.printStackTrace();
+		  } finally{
+			  mailTemplate = null;
 		  }
 	  }
-
 }

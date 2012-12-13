@@ -15,29 +15,13 @@
 	
 	<script type='text/javascript' src='/dwr/interface/RealmService.js'></script>
 	
-	
-	
 	<link type="text/css" href="/js/jqueryplugins/sticky/sticky.full.css" rel="Stylesheet" />
 	<link type="text/css" href="/styles/home.css" rel="Stylesheet" />
 	<link type="text/css" href="/styles/vader/jquery-ui-1.8.16.custom.css" rel="Stylesheet" />
 	<link type="text/css" href="/styles/popup.css" rel="Stylesheet" />
+	
 	<link href="/styles/login_1.css" media="all" rel="stylesheet" type="text/css" />
 	<link href="/styles/login_2.css" media="all" rel="stylesheet" type="text/css" />
-	
-	<script type="text/javascript">
-	$(function() {
-		$( "input:button", ".demo" ).button();
-		$('a.email').nospam();
-		$("#thisform").validate({
-			 submitHandler: function(form) {
-				form.submit();
-				return true;
-			 }
-			});
-	});
-	</script>
-
-
 </head>
 
 <body>
@@ -49,7 +33,7 @@
 <div id="box-wrapper" class="login-box v2">
   <!-- login page div -->
   <div class="content  with-foot ">
-	  <form name="f" action="/resources/j_spring_security_check" method="POST">
+	  <form name="formSignIn" id="formSignIn" action="/resources/j_spring_security_check" method="POST">
 	    <input id="return_to" name="return_to" type="hidden" />
 	
 	    <dl>
@@ -93,16 +77,14 @@
 <div id="divForgotPwd" class="page-width">
 	<div id="box-wrapper" class="small-box">
 	  <div id="forgotPwd" class="content small-box-content "> 
-		  <form accept-charset="UTF-8" action="/user/recover" class="password-form recover-password" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="iHGbVRXnku/xroP5635cOT/Dlwrx+hXagADG+BNi3Mg=" /></div>
-		    
+		<form id="formRecoverPwd" name="formRecoverPwd">
 		    <label for="mail">Enter your email address</label>
-		
 		    <div class="field">
 		      <input class="required email" id="mail" name="mail" type="text" />
 		    </div>
-		
-		    <button type="submit" class="flatbutton green" id="btnForgot">Recover password</button>
-			</form>
+		    <label style="font-size: 11px;" id="lblRecoverErrMsg"></label>
+		    <button type="button" class="flatbutton green" id="btnForgot" name="btnForgot">Reset password</button>
+		</form>
 	  </div>
 	    <footer>
 	          <div class="login-tip">
@@ -115,9 +97,9 @@
 <!-- sign up div -->
 <div id="box-wrapper" class="login-box v2">
 	<div id="divSignUp" class="content  with-foot">
-		<form novalidate="novalidate" class="cmxform" id="thisform" method="post" name="thisform" action="/cloud-portal/signup">
+		<form novalidate="novalidate" id="signupform" method="post" name="signupform" action="/cloud-portal/signup">
 			<input id="id" name="id" type="hidden">
-			<table>
+			<table border="0">
 				  <tr>
 					<td>Name :
 					<input name="name" id="name" size="30" maxlength="30" class="required" type="text"></td>
@@ -140,20 +122,15 @@
 					</td>
 				  </tr>
 				  <tr>
-					<td><img  style="border:1px solid grey;" src="/jcaptcha.jsp" /></td>
+					<td><img id="captchaImg" style="border:1px solid grey;" />
+					<!-- <a href="#" id="lnkNewCaptcha" title="New Captcha"><img align="top" alt="" src="/images/sync.png"></a> --></td>
 				  </tr>
 					<tr>
-					    <td style="width: 100%; " colspan="2">
-						    <%try{
-								  String s = ((String)session.getAttribute("MYCP_SIGNUP_MSG"));
-								  if(s!=null && !s.equals("") && !s.equals("null")){out.print(s);}
-							  }catch(Exception e){}
-							  %>
-						  </td>
+					    <td style="width: 100%; " colspan="2"><label id="lblSignUpErrMsg"></label></td>
 				  	</tr> 
 				  <tr>
 					<td>
-						 <button style="width: 100px;height: 30px;" type="submit" class="flatbutton green">Sign Up</button>
+						 <button type="button" style="width: 100px;height: 30px;" class="flatbutton green" id="btnSignUp" name="btnSignUp">Sign Up</button>
 					</td>
 				  </tr>
 				  <tr>

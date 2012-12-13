@@ -191,6 +191,11 @@ public class RealmService {
 		}
 		return null;
 	}// end of method findAll
+	
+	@RemoteMethod
+	public List<User> findUsersByEmailEquals(String email){
+		return User.findUsersByEmailEquals(email).getResultList();
+	}
 
 }// end of class UserController
 

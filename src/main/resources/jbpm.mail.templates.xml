@@ -13,6 +13,14 @@
       </text>
     </mail-template>
     
+    <mail-template name="RecoverPwdMailTemplate">
+      <to addresses="${mailDetailsDTO.to}" />
+      <subject>Reset password request for MyCP account</subject>
+      <text>
+      	<![CDATA[ ${mailDetailsDTO.bodyText} ]]>
+      </text>
+    </mail-template>
+    
 <!-- SignupMailTemplate -->
     <mail-template name="SignupMailTemplate">
       <to addresses="${mailDetailsDTO.to}" />

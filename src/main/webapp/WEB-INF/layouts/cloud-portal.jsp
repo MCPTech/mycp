@@ -31,30 +31,64 @@ $(function(){
 });
 
 $("#lnkSignUp").click(function(){
+	$("#signupform")[0].reset();
 	$("#divSignIn").hide();
 	$("#divNoAcc").hide();
 	$("#divForgotPwd").hide();
 	$("#divSignUp").show();
+	$("#captchaImg").attr("src", "/jcaptcha.jsp");
 });
 
 $("#lnkSignIn1").click(function(){
+	$("#formSignIn")[0].reset();
 	$("#divSignIn").show();
 	$("#divNoAcc").show();
 	$("#divForgotPwd").hide();
 	$("#divSignUp").hide();
+	$("#lblRecoverErrMsg").html('');
+	$("#lblSignUpErrMsg").html('');
 });
 
 $("#lnkSignIn2").click(function(){
+	$("#formSignIn")[0].reset();
 	$("#divSignIn").show();
 	$("#divNoAcc").show();
 	$("#divForgotPwd").hide();
 	$("#divSignUp").hide();
+	$("#lblRecoverErrMsg").html('');
+	$("#lblSignUpErrMsg").html('');
 });
 
 $("#lnkForgotPwd").click(function(){
+	$("#formRecoverPwd")[0].reset();
 	$("#divSignIn").hide();
 	$("#divNoAcc").hide();
 	$("#divForgotPwd").show();
 	$("#divSignUp").hide();
 });
+
+$("#btnForgot").click( function(){
+	
+	$.post('/cloud-portal/recoverPwd', $("#formRecoverPwd").serialize(),
+		function(data){
+			$("#lblRecoverErrMsg").html(data);
+		}
+	);
+});
+
+$("#btnSignUp").click( function(){
+	$.post('/cloud-portal/validateSignup', $("#signupform").serialize(),
+		function(data){
+			$("#lblSignUpErrMsg").html(data);
+			if(data =='') {
+				$('#signupform').submit();
+			}
+		}
+	).complete(function() {  });
+});
+
+$("#lnkNewCaptcha").click(function(){
+	$("#captchaImg").attr("src", "/jcaptcha.jsp");
+});
+
 </script>
