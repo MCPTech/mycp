@@ -189,6 +189,17 @@ public class InstanceP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsBy(Infra infra, String instanceId) {
+        if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.instanceId = :instanceId and  o.asset.active = 1 " + 
+        "   " + " and o.asset.productCatalog.infra = :infra", InstanceP.class);
+        q.setParameter("instanceId", instanceId);
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
@@ -213,8 +224,8 @@ public class InstanceP {
     public static TypedQuery<in.mycp.domain.InstanceP> findInstancePsByInstanceIdEquals(String instanceId) {
         if (instanceId == null || instanceId.length() == 0) throw new IllegalArgumentException("The instanceId argument is required");
         EntityManager em = entityManager();
-        TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.instanceId = :instanceId and  o.asset.active = 1 ", InstanceP.class);
-        q.setParameter("instanceId", instanceId);
+        TypedQuery<InstanceP> q = em.createQuery("SELECT o FROM InstanceP AS o WHERE o.instanceId like :instanceId and  o.asset.active = 1 ", InstanceP.class);
+        q.setParameter("instanceId", "%"+instanceId+"%");
         return q;
     }
 

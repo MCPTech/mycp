@@ -118,6 +118,20 @@ public class AddressInfoP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsBy(Infra infra, String  instanceId,String ip) {
+        
+        EntityManager em = entityManager();
+        TypedQuery<AddressInfoP> q = null;
+        q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.instanceId like :instanceId and  o.asset.active = 1 " + " " +
+        		"and o.asset.productCatalog.infra = :infra and o.publicIp like :ip", AddressInfoP.class);
+        System.out.println("instanceId = "+instanceId+" ip = "+ip);
+        q.setParameter("instanceId", "%"+instanceId+"%");
+        q.setParameter("ip", "%"+ip+"%");
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsByInfra(Infra infra) {
         if (infra == null) throw new IllegalArgumentException("The infra argument is required");
@@ -158,6 +172,18 @@ public class AddressInfoP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.AddressInfoP> findAddressInfoPsBy(Infra infra, String publicIp) {
+        if (publicIp == null || publicIp.length() == 0) throw new IllegalArgumentException("The publicIp argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<AddressInfoP> q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.publicIp = :publicIp  and  o.asset.active = 1" + " " +
+        		" " + " and o.asset.productCatalog.infra = :infra", AddressInfoP.class);
+        q.setParameter("publicIp", publicIp);
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
+
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);

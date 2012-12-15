@@ -110,9 +110,12 @@ function centerPopup_ipaddress(popup,backgroundPopup){
             	p[i].status='<img title="available" alt="available" src=/images/available.png>&nbsp;';
             	actions='<img class="clickimg" title="release" alt="release" src=../images/release.png onclick=release_ipaddress('+p[i].id+')>&nbsp;&nbsp;'+
 				'<img class="clickimg" title="associate" alt="associate" src=../images/associate.png onclick=associate_ipaddress('+p[i].id+')>&nbsp; &nbsp;';
-            }else if('associated' == p[i].status ){
+            }else if('associated' == p[i].status){
             	p[i].status='<img title="associated" alt="associated" src=/images/running.png>&nbsp;';
 				actions='<img class="clickimg" title="disassociate" alt="disassociate" src=../images/disassociate.png onclick=disassociate_ipaddress('+p[i].id+')>&nbsp;&nbsp;';
+            }else if( 'auto_assigned' == p[i].status ){
+            	p[i].status='<img title="auto assigned" alt="auto assigned" src=/images/running.png>&nbsp;';
+            	actions='';
             }else if('failed' == p[i].status ){
             	p[i].status='<img title="failed" alt="failed" src=/images/warning.png>&nbsp;';
             	actions='<img class="clickimg" title="Remove" alt="Remove" src=../images/deny.png onclick=remove_ipaddress('+p[i].id+')>';

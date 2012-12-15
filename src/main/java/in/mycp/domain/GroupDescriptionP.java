@@ -218,6 +218,17 @@ public class GroupDescriptionP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsBy(Infra infra, String name) {
+        if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<GroupDescriptionP> q = em.createQuery("SELECT o FROM GroupDescriptionP AS o WHERE o.name = :name and  o.asset.active = 1 " + "" +
+        		" " + " and o.asset.productCatalog.infra = :infra ", GroupDescriptionP.class);
+        q.setParameter("name", name);
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public static TypedQuery<in.mycp.domain.GroupDescriptionP> findGroupDescriptionPsBy(Infra infra, String name, String description) {
         if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");

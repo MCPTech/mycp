@@ -159,8 +159,7 @@ public class VmwareIpAddressWorker extends Worker {
 						//even if there are some AddressInfoPs assigned with this IP, make sure they are dead and gone
 						for (Iterator iterator2 = addressesInMycp.iterator(); iterator2.hasNext(); ) {
 							AddressInfoP addressInfoP2 = (AddressInfoP) iterator2.next();
-							if(addressInfoP2.getAssociated() !=null && 
-									addressInfoP2.getAssociated() == false && addressInfoP2.getStatus() !=null && 
+							if(addressInfoP2.getStatus() !=null && 
 									!addressInfoP2.getStatus().equals(Commons.ipaddress_STATUS.available+"")
 									&& !addressInfoP2.getStatus().equals(Commons.ipaddress_STATUS.associated+"")
 									&& !addressInfoP2.getStatus().equals(Commons.ipaddress_STATUS.starting+"")){
@@ -178,7 +177,7 @@ public class VmwareIpAddressWorker extends Worker {
 			
 			if(allocatedPublicIp !=null){
 				addressInfoP.setPublicIp(allocatedPublicIp);
-				addressInfoP.setAssociated(false);
+				
 				addressInfoP.setStatus(Commons.ipaddress_STATUS.available+"");
 				addressInfoP.merge();
 				setAssetStartTime(addressInfoP.getAsset());
@@ -192,7 +191,7 @@ public class VmwareIpAddressWorker extends Worker {
 				
 			}else{
 				addressInfoP.setPublicIp("");
-				addressInfoP.setAssociated(false);
+				
 				addressInfoP.setStatus(Commons.ipaddress_STATUS.failed+"");
 				addressInfoP.merge();
 				setAssetEndTime(addressInfoP.getAsset());
@@ -270,8 +269,7 @@ public class VmwareIpAddressWorker extends Worker {
 			instance.setIpAddress("");*/
 			
 			//then update the addresinfoP
-			addressInfoP.setAssociated(false);
-			addressInfoP.setStatus(Commons.ipaddress_STATUS.released+"");
+			addressInfoP.setStatus(Commons.ipaddress_STATUS.available+"");
 			setAssetEndTime(addressInfoP.getAsset());
 			addressInfoP.merge();
 			
@@ -366,7 +364,6 @@ public class VmwareIpAddressWorker extends Worker {
 
 			// update AddressInfoP
 			AddressInfoP addressInfoPLocal = addressInfoP.merge();
-			addressInfoPLocal.setAssociated(true);
 			addressInfoPLocal.setInstanceId(instanceP.getInstanceId());
 			addressInfoPLocal.setStatus(Commons.ipaddress_STATUS.associated + "");
 			setAssetStartTime(addressInfoPLocal.getAsset());
@@ -455,10 +452,8 @@ public class VmwareIpAddressWorker extends Worker {
 
 			// update AddressInfoP
 			AddressInfoP addressInfoPLocal = addressInfoP.merge();
-			addressInfoPLocal.setAssociated(false);
-			addressInfoPLocal.setInstanceId("");
 			addressInfoPLocal.setStatus(Commons.ipaddress_STATUS.available + "");
-			addressInfoPLocal.setInstanceId(Commons.ipaddress_STATUS.available + "");
+			addressInfoPLocal.setInstanceId("");
 			setAssetEndTime(addressInfoPLocal.getAsset());
 			addressInfoPLocal = addressInfoPLocal.merge();
 			// update teh associated instanceP object
@@ -482,7 +477,6 @@ public class VmwareIpAddressWorker extends Worker {
 			try {
 				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 				a.setStatus(Commons.ipaddress_STATUS.failed + "");
-				a.setAssociated(false);
 				a = a.merge();
 				setAssetEndTime(a.getAsset());
 				InstanceP i = InstanceP.findInstancePsByInstanceIdEquals(a.getInstanceId()).getSingleResult();

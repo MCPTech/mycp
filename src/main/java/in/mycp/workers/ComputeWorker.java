@@ -481,7 +481,8 @@ public class ComputeWorker extends Worker {
 						.findInstancePsByInstanceIdEquals(instanceId)
 						.getSingleResult();*/
 				InstanceP instanceP = InstanceP.findInstanceP(instancePId);
-				
+				String ip4AddressInfoRemoval = instanceP.getIpAddress();
+				String instanceId4AddressInfoRemoval = instanceP.getInstanceId();
 				int INSTANCE_START_SLEEP_TIME = 5000;
 				long timeout = INSTANCE_START_SLEEP_TIME * 100;
 				long runDuration = 0;
@@ -527,16 +528,9 @@ public class ComputeWorker extends Worker {
 					setAssetEndTime(instanceP.getAsset());
 
 					try {
-						AddressInfoP a = AddressInfoP
-								.findAddressInfoPsByInstanceIdEquals(
-										instanceP.getInstanceId())
-								.getSingleResult();
+						AddressInfoP a = AddressInfoP.findAddressInfoPsBy(infra, instanceId4AddressInfoRemoval, ip4AddressInfoRemoval).getSingleResult();
+						a.setStatus(Commons.ipaddress_STATUS.nobody+"");
 						setAssetEndTime(a.getAsset());
-						//a.remove();
-						Asset a1 = a.getAsset();
-						if(a1!=null && a1.getEndTime()!=null){
-							Commons.setAssetEndTime(a1);	
-						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						logger.error(e);
@@ -681,7 +675,10 @@ public class ComputeWorker extends Worker {
 				instanceLocal.setRamdiskId(instanceEc2.getRamdiskId());
 				instanceLocal.setPlatform(instanceEc2.getPlatform());
 				instanceLocal.setState(Commons.REQUEST_STATUS.running + "");
-
+				
+				instanceLocal.setIpAddress(instanceEc2.getIpAddress());
+				instanceLocal.setPrivateIpAddress(instanceEc2.getPrivateIpAddress());
+				
 				instanceLocal = instanceLocal.merge();
 
 				/*
@@ -695,7 +692,7 @@ public class ComputeWorker extends Worker {
 
 				// create an addressInfo object for this compute's IP.
 				try {
-					AddressInfoP a = new AddressInfoP();
+					AddressInfoP a = new AddressInfoP();//.findAddressInfoPsBy(infra, instanceLocal.getIpAddress()).getSingleResult();
 
 					ProductCatalog pc = null;
 					// Set<ProductCatalog> products = ;
@@ -720,19 +717,25 @@ public class ComputeWorker extends Worker {
 					 * getUser().getProject().getDepartment
 					 * ().getCompany()).getSingleResult();
 					 */
+					System.out.println("finding alkl xingintg addressinfo objects with same publicIp and inactivating them "+instanceLocal.getIpAddress());
+					List<AddressInfoP> addresses =  AddressInfoP.findAddressInfoPsBy(infra, instanceLocal.getIpAddress()).getResultList();
+					for (Iterator iterator = addresses.iterator(); iterator.hasNext(); ) {
+						AddressInfoP addressInfoP = (AddressInfoP) iterator.next();
+						setAssetEndTime(addressInfoP.getAsset());
+					}
+					
 
 					a.setAsset(Commons.getNewAsset(
 							AssetType.findAssetTypesByNameEquals(
 									Commons.ProductType.IpAddress + "")
 									.getSingleResult(), instanceLocal
 									.getAsset().getUser(), pc));
-					a.setAssociated(true);
+					
 					a.setInstanceId(instanceLocal.getInstanceId());
 					a.setName("Ip for " + instanceLocal.getName());
-					a.setPublicIp(instanceLocal.getDnsName());
-					a.setStatus(Commons.ipaddress_STATUS.associated + "");
+					a.setPublicIp(instanceLocal.getIpAddress());
+					a.setStatus(Commons.ipaddress_STATUS.auto_assigned + "");
 					a.setReason("Automatic Ip addres assigned");
-					a.setAutomatic(true);
 					setAssetStartTime(a.getAsset());
 					a.merge();
 				} catch (Exception e) {

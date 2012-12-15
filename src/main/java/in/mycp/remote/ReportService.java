@@ -628,7 +628,7 @@ public class ReportService {
 				AddressInfoP addressInfoP = AddressInfoP.findAddressInfoPsByAsset4Report(asset).getSingleResult();
 				asset.setAssetDetails(addressInfoP.getName() + " " + addressInfoP.getPublicIp());
 				//if this is a automatically assigned IP , we dont charge for it.
-				if(addressInfoP.getAutomatic()!=null && addressInfoP.getAutomatic()){
+				if(addressInfoP.getStatus().equals(Commons.ipaddress_STATUS.auto_assigned+"")){
 					continue;
 				}
 				assets2return = fillCommon(asset, assets2return);

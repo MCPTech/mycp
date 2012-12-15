@@ -12,20 +12,12 @@ import javax.persistence.ManyToOne;
 privileged aspect UserProject_Roo_DbManaged {
     
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
-    private User UserProject.userId;
-    
-    @ManyToOne
     @JoinColumn(name = "project_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
     private Project UserProject.projectId;
     
-    public User UserProject.getUserId() {
-        return userId;
-    }
-    
-    public void UserProject.setUserId(User userId) {
-        this.userId = userId;
-    }
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
+    private User UserProject.userId;
     
     public Project UserProject.getProjectId() {
         return projectId;
@@ -33,6 +25,14 @@ privileged aspect UserProject_Roo_DbManaged {
     
     public void UserProject.setProjectId(Project projectId) {
         this.projectId = projectId;
+    }
+    
+    public User UserProject.getUserId() {
+        return userId;
+    }
+    
+    public void UserProject.setUserId(User userId) {
+        this.userId = userId;
     }
     
 }

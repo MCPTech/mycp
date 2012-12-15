@@ -155,6 +155,17 @@ public class SnapshotInfoP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.SnapshotInfoP> findSnapshotInfoPsBy(Infra infra, String snapshotId) {
+        if (snapshotId == null || snapshotId.length() == 0) throw new IllegalArgumentException("The snapshotId argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<SnapshotInfoP> q = em.createQuery("SELECT o FROM SnapshotInfoP AS o WHERE o.snapshotId = :snapshotId and  o.asset.active = 1" + 
+        "   " + " and o.asset.productCatalog.infra = :infra", SnapshotInfoP.class);
+        q.setParameter("snapshotId", snapshotId);
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);

@@ -171,6 +171,17 @@ public class KeyPairInfoP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.KeyPairInfoP> findKeyPairInfoPsBy(Infra infra, String keyName) {
+        if (keyName == null || keyName.length() == 0) throw new IllegalArgumentException("The keyName argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<KeyPairInfoP> q = em.createQuery("SELECT o FROM KeyPairInfoP AS o WHERE o.keyName = :keyName  and  o.asset.active = 1" + 
+        "  " + " and o.asset.productCatalog.infra = :infra", KeyPairInfoP.class);
+        q.setParameter("keyName", keyName);
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);

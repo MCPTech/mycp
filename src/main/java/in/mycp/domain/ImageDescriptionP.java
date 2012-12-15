@@ -214,6 +214,17 @@ public class ImageDescriptionP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.ImageDescriptionP> findImageDescriptionPsBy(Infra infra, String imageId) {
+        if (imageId == null || imageId.length() == 0) throw new IllegalArgumentException("The imageId argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<ImageDescriptionP> q = em.createQuery("SELECT o FROM ImageDescriptionP AS o WHERE o.imageId = :imageId" + 
+        "  " + " and o.asset.productCatalog.infra = :infra", ImageDescriptionP.class);
+        q.setParameter("imageId", imageId);
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);

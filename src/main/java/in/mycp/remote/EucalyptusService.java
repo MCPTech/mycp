@@ -18,7 +18,6 @@
  along with mycloudportal.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package in.mycp.remote;
 
 import in.mycp.domain.AddressInfoP;
@@ -597,131 +596,850 @@ public class EucalyptusService {
 		logger.info("End cleanUpDataFromEuca");
 
 	}
+	public void syncKeys(Jec2 ec2, List params, AssetType assetTypeKeyPair, User currentUser, ProductCatalog keypairProduct, 
+			Infra infra, Company company, Date start) {
+		Hashtable<String, KeyPairInfo> keysFromCloud = new Hashtable<String, KeyPairInfo>();
 
-	public Jec2 getNewJce2(Infra infra) {
-		BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
-		textEncryptor.setPassword("gothilla");
-		String decAccessId = textEncryptor.decrypt(infra.getAccessId());
-		String decSecretKey = textEncryptor.decrypt(infra.getSecretKey());
+		try {
+			List<KeyPairInfo> info = ec2.describeKeyPairs(new String[] {});
+			logger.info("keypair list");
+			for (KeyPairInfo keypairinfo : info) {
+				logger.info("keypair : " + keypairinfo.getKeyName() + ", " + keypairinfo.getKeyFingerprint());
 
-		if (infra.getServer().startsWith("ec2.amazonaws.com")) {
-			Jec2 ec2 = new Jec2(decAccessId, decSecretKey);
-			return ec2;
-		} else {
-			Jec2 ec2 = new Jec2(decAccessId, decSecretKey, false, infra.getServer(), infra.getPort());
-			ec2.setResourcePrefix(infra.getResourcePrefix());
-			ec2.setSignatureVersion(infra.getSignatureVersion());
-			return ec2;
+				keysFromCloud.put(keypairinfo.getKeyName(), keypairinfo);
+
+				KeyPairInfoP keyPairInfoP = null;
+				try {
+					if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+						keyPairInfoP = KeyPairInfoP.findKeyPairInfoPsBy(infra, keypairinfo.getKeyName()).getSingleResult();
+					} else{
+						keyPairInfoP = KeyPairInfoP.findKeyPairInfoPsBy(infra, keypairinfo.getKeyName(), company).getSingleResult();
+					}
+					
+					
+				} catch (Exception e) {
+					// logger.error(e);
+					//e.printStackTrace();
+				}
+
+				if (keyPairInfoP != null) {
+
+				} else {
+					keyPairInfoP = new KeyPairInfoP();
+					Asset asset = Commons.getNewAsset(assetTypeKeyPair, currentUser, keypairProduct);
+
+					keyPairInfoP.setAsset(asset);
+					keyPairInfoP = keyPairInfoP.merge();
+				}
+				keyPairInfoP.setKeyName(keypairinfo.getKeyName());
+				keyPairInfoP.setKeyFingerprint(keypairinfo.getKeyFingerprint());
+				keyPairInfoP.setKeyMaterial(keypairinfo.getKeyMaterial());
+				keyPairInfoP.setStatus(Commons.keypair_STATUS.active + "");
+				keyPairInfoP = keyPairInfoP.merge();
+
+			}// end of for KeyPairInfo i : info)
+
+			List<KeyPairInfoP> keys = null;
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				keys = KeyPairInfoP.findKeyPairInfoPsByInfra(infra).getResultList();
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				keys = KeyPairInfoP.findKeyPairInfoPsBy(infra, company).getResultList();
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			for (Iterator iterator = keys.iterator(); iterator.hasNext();) {
+				KeyPairInfoP keyPairInfoP = (KeyPairInfoP) iterator.next();
+				try {
+					if (keyPairInfoP.getStatus().equals(Commons.keypair_STATUS.starting + "")
+							&& (new Date().getTime() - keyPairInfoP.getAsset().getStartTime().getTime() > (1000 * 60 * 60 * 3))) {
+						keyPairInfoP.getAsset().setEndTime(keyPairInfoP.getAsset().getStartTime());
+						keyPairInfoP.setStatus(Commons.keypair_STATUS.failed + "");
+						keyPairInfoP.merge();
+					}
+
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+						// remove assets in mycp only if the edition running is
+						// NOT SERVICE PROVIDER
+						if (keysFromCloud.containsKey(keyPairInfoP.getKeyName())
+								&& keysFromCloud.get(keyPairInfoP.getKeyName()).getKeyFingerprint().equals(keyPairInfoP.getKeyFingerprint())) {
+
+						} else {
+							logger.info("removing keyPairInfoP " + keyPairInfoP.getKeyName() + ", fingerprint " + keyPairInfoP.getKeyFingerprint()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							keyPairInfoP.remove();
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void syncInstances(Jec2 ec2, List params, AssetType assetTypeComputeInstance, User currentUser, ProductCatalog computeProduct, 
+			Infra infra, Company company, Date start) {
+
+
+		
+		Hashtable<String, Instance> instancesFromCloud = new Hashtable<String, ReservationDescription.Instance>();
+
+		try {
+			params = new ArrayList<String>();
+			List<ReservationDescription> instances = ec2.describeInstances(params);
+			logger.info("Instances");
+			String instanceId = "";
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
+			Date now = new Date();
+			for (ReservationDescription res : instances) {
+				logger.info(res.getOwner() + "\t" + res.getReservationId());
+				if (res.getInstances() != null) {
+					HashSet<InstanceP> instancesP = new HashSet<InstanceP>();
+					for (Instance inst : res.getInstances()) {
+						Date then = inst.getLaunchTime().getTime();
+						long timediff = now.getTime() - then.getTime();
+						long hours = timediff / (1000 * 60 * 60);
+						// inst.get
+						// c.getTimeInMillis();
+
+						instancesFromCloud.put(inst.getInstanceId(), inst);
+
+						logger.info("\t" + inst.getImageId() + "\t" + inst.getDnsName() + "\t" + inst.getState() + "\t" + inst.getKeyName() + "\t"
+								+ formatter.format(then) + "\t(H)" + hours
+
+								+ "\t" + inst.getInstanceType().getTypeId() + inst.getPlatform());
+
+						InstanceP instanceP = null;
+						try {
+							if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+								instanceP = InstanceP.findInstancePsBy(infra, inst.getInstanceId()).getSingleResult();
+							} else{
+								instanceP = InstanceP.findInstancePsBy(infra, inst.getInstanceId(), company).getSingleResult();
+							}
+							
+							
+						} catch (Exception e) {
+							 logger.error(e.getMessage());
+							//e.printStackTrace();
+						}
+
+						if (instanceP != null) {
+
+						} else {
+							instanceP = new InstanceP();
+							Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser, computeProduct);
+							instanceP.setAsset(asset);
+						}
+
+						instanceP.setInstanceId(inst.getInstanceId());
+						try {
+							instanceP.setImage(ImageDescriptionP.findImageDescriptionPsByImageIdEquals(inst.getImageId()).getSingleResult());
+						} catch (Exception e) {
+							logger.error(e.getMessage());
+							//e.printStackTrace();
+						}
+						instanceP.setDnsName(inst.getDnsName());
+						if("terminated".equals(inst.getState())){
+							Commons.setAssetEndTime(instanceP.getAsset());
+						}
+						
+						instanceP.setState(inst.getState());
+						instanceP.setKeyName(inst.getKeyName());
+						instanceP.setInstanceType(inst.getInstanceType().getTypeId());
+						instanceP.setPlatform(inst.getPlatform());
+						instanceP.setPrivateDnsName(inst.getPrivateDnsName());
+						instanceP.setReason(inst.getReason());
+						instanceP.setLaunchIndex(inst.getLaunchIndex());
+
+						List<String> prodCodes = inst.getProductCodes();
+						String prodCodes_str = "";
+						for (Iterator iterator = prodCodes.iterator(); iterator.hasNext();) {
+							String prodCode = (String) iterator.next();
+							prodCodes_str = prodCodes_str + prodCode + ",";
+						}
+						prodCodes_str = StringUtils.removeEnd(prodCodes_str, ",");
+
+						instanceP.setProductCodes(prodCodes_str);
+						instanceP.setLaunchTime(inst.getLaunchTime().getTime());
+						instanceP.setAvailabilityZone(inst.getAvailabilityZone());
+						instanceP.setKernelId(inst.getKernelId());
+						instanceP.setRamdiskId(inst.getRamdiskId());
+						instanceP.setStateCode(inst.getStateCode());
+						// instanceP.setMonitoring(inst.get)
+						instanceP.setSubnetId(inst.getSubnetId());
+						instanceP.setVpcId(inst.getVpcId());
+						instanceP.setPrivateIpAddress(inst.getPrivateIpAddress());
+						instanceP.setIpAddress(inst.getIpAddress());
+						instanceP.setArchitecture(inst.getArchitecture());
+						instanceP.setRootDeviceType(inst.getRootDeviceType());
+						instanceP.setRootDeviceName(inst.getRootDeviceName());
+						instanceP.setInstanceLifecycle(inst.getInstanceLifecycle());
+						instanceP.setSpotInstanceRequestId(inst.getSpotInstanceRequestId());
+						instanceP.setVirtualizationType(inst.getVirtualizationType());
+						
+						// instanceP.setState(Commons.REQUEST_STATUS.running+"");
+						// instanceP.setClientToken(inst.get)
+
+						// instanceP.setReservationDescription(reservationDescriptionP);
+
+						instanceP = instanceP.merge();
+
+						instancesP.add(instanceP);
+
+					}
+					/*
+					 * reservationDescriptionP.setInstancePs(instancesP);
+					 * reservationDescriptionP =
+					 * reservationDescriptionP.merge();
+					 */
+				}
+			}// end of ReservationDescription res : instances
+
+			List<InstanceP> insts = null;
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				insts = InstanceP.findInstancePsByInfra(infra).getResultList();
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				insts = InstanceP.findInstancePsBy(infra, company).getResultList();
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			for (Iterator iterator = insts.iterator(); iterator.hasNext();) {
+				InstanceP instanceP2 = (InstanceP) iterator.next();
+				try {
+					if (instanceP2.getState().equals(Commons.REQUEST_STATUS.STARTING + "")
+							&& (new Date().getTime() - instanceP2.getAsset().getStartTime().getTime() > (1000 * 60 * 60 * 3))) {
+						instanceP2.getAsset().setEndTime(instanceP2.getAsset().getStartTime());
+						instanceP2.setState(Commons.REQUEST_STATUS.FAILED + "");
+						instanceP2.merge();
+					}
+
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+						// remove assets in mycp only if the edition running is
+						// NOT SERVICE PROVIDER
+						if (instancesFromCloud.containsKey(instanceP2.getInstanceId())
+								&& instancesFromCloud.get(instanceP2.getInstanceId()).getImageId().equals(instanceP2.getImage().getImageId())) {
+
+						} else {
+							logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImage().getImageId()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							instanceP2.remove();
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void syncImages(Jec2 ec2, List params, AssetType assetTypeComputeImage, User currentUser, ProductCatalog imageProduct, 
+			Infra infra, Company company, Date start) {
+
+		Hashtable<String, ImageDescription> imagesFromCloud = new Hashtable<String, ImageDescription>();
+
+		try {
+			logger.info("starting ec2.describeImages which may take a long time");
+			List<ImageDescription> images = ec2.describeImages(params);
+			logger.info("complete ec2.describeImages.");
+			logger.info("Available Images");
+			int imageCount = 0;
+
+			outer: for (Iterator imagesIterator = images.iterator(); imagesIterator.hasNext();) {
+				ImageDescription img = (ImageDescription) imagesIterator.next();
+				try {
+					if (img.getImageState().equals("available")) {
+
+						if (infra.getServer() != null && infra.getServer().contains("ec2.amazon")) {
+							// if syncing from ec2, just load 10 bitnami ubuntu
+							// images
+							// and check if they are public ones.
+							if (!img.isPublic()) {
+								continue;
+							}
+							if (img.getName() != null && (img.getName().contains("bitnami") && img.getName().contains("ubuntu"))) {
+								imageCount = imageCount + 1;
+								if (imageCount > 10) {
+									logger.info("more than 10 images, cutting short the import process.");
+									break outer;
+								}
+							} else {
+								continue;
+							}
+
+						}
+
+						// euca gives back eri and eki assets during the image
+						// listing, need to avoid that.
+						if (!infra.getServer().contains("ec2.amazon") && img.getImageId() != null && !img.getImageId().startsWith("emi")) {
+							continue;
+						}
+
+						// for image removal
+						// logger.info("putting into imagesFromCloud img.getImageId() = "+img.getImageId());
+						imagesFromCloud.put(img.getImageId(), img);
+
+						logger.info(img.getImageId() + "\t" + img.getImageLocation() + "\t" + img.getImageOwnerId());
+						ImageDescriptionP imageDescriptionP = null;
+
+						try {
+							if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+								imageDescriptionP = ImageDescriptionP.findImageDescriptionPsBy(infra, img.getImageId()).getSingleResult();
+							} else{
+								imageDescriptionP = ImageDescriptionP.findImageDescriptionPsBy(infra, img.getImageId(), company).getSingleResult();
+							}
+							
+							
+						} catch (Exception e) {
+							logger.error(e.getMessage());
+							//e.printStackTrace();
+						}
+						if (imageDescriptionP != null) {
+
+						} else {
+							imageDescriptionP = new ImageDescriptionP();
+							Asset asset = Commons.getNewAsset(assetTypeComputeImage, currentUser, imageProduct);
+							imageDescriptionP.setAsset(asset);
+							imageDescriptionP = imageDescriptionP.merge();
+						}
+
+						imageDescriptionP.setImageId(img.getImageId());
+
+						imageDescriptionP.setImageLocation(img.getImageLocation());
+						imageDescriptionP.setImageOwnerId(img.getImageOwnerId());
+						imageDescriptionP.setImageState(img.getImageState());
+						imageDescriptionP.setIsPublic(img.isPublic());
+						List<String> prodCodes = img.getProductCodes();
+						String prodCodes_str = "";
+						for (Iterator iterator = prodCodes.iterator(); iterator.hasNext();) {
+							String prodCode = (String) iterator.next();
+							prodCodes_str = prodCodes_str + prodCode + ",";
+						}
+						prodCodes_str = StringUtils.removeEnd(prodCodes_str, ",");
+						imageDescriptionP.setProductCodes(prodCodes_str);
+						imageDescriptionP.setArchitecture(img.getArchitecture());
+						imageDescriptionP.setImageType(img.getImageType());
+						imageDescriptionP.setKernelId(img.getKernelId());
+						imageDescriptionP.setRamdiskId(img.getRamdiskId());
+						imageDescriptionP.setPlatform(img.getPlatform());
+						imageDescriptionP.setReason(img.getReason());
+						imageDescriptionP.setImageOwnerAlias(img.getImageOwnerAlias());
+
+						imageDescriptionP.setName(img.getName());
+						imageDescriptionP.setDescription(img.getDescription());
+						imageDescriptionP.setRootDeviceType(img.getRootDeviceType());
+						imageDescriptionP.setRootDeviceName(img.getRootDeviceName());
+						imageDescriptionP.setVirtualizationType(img.getVirtualizationType());
+
+						imageDescriptionP.merge();
+
+					}
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}// end of for ImageDescription img : images
+
+			// now clean up the images in mycp db which do not exist in
+			// the cloud.
+			List<ImageDescriptionP> imagesInMycp = null;
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				imagesInMycp = ImageDescriptionP.findImageDescriptionPsByInfra(infra).getResultList();
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				imagesInMycp = ImageDescriptionP.findImageDescriptionPsByCompany(infra, company).getResultList();
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				// remove assets in mycp only if the edition running is NOT
+				// SERVICE PROVIDER
+				for (Iterator iterator = imagesInMycp.iterator(); iterator.hasNext();) {
+					ImageDescriptionP imageDescriptionP = (ImageDescriptionP) iterator.next();
+					try {
+
+						if (imagesFromCloud.containsKey(imageDescriptionP.getImageId())
+								&& imagesFromCloud.get(imageDescriptionP.getImageId()).getImageLocation().equals(imageDescriptionP.getImageLocation())) {
+
+						} else {
+							logger.info("removing imageDescriptionP " + imageDescriptionP.getImageId() + ", location " + imageDescriptionP.getImageLocation()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							imageDescriptionP.remove();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void syncSnapshots(Jec2 ec2, List params, AssetType assetTypeVolumeSnapshot, User currentUser, ProductCatalog snapshotProduct, 
+			Infra infra, Company company, Date start,String ownerId) {
+
+
+		Hashtable<String, SnapshotInfo> snapshotsFromCloud = new Hashtable<String, SnapshotInfo>();
+
+		try {
+			params = new ArrayList<String>();
+			List<SnapshotInfo> snapshots = ec2.describeSnapshots(params);
+			logger.info("Available Snapshots");
+			for (Iterator iterator = snapshots.iterator(); iterator.hasNext();) {
+				SnapshotInfo snapshotInfo = (SnapshotInfo) iterator.next();
+				snapshotsFromCloud.put(snapshotInfo.getSnapshotId(), snapshotInfo);
+
+				if (snapshotInfo.getOwnerId() != null && snapshotInfo.getOwnerId().equals(ownerId)) {
+					logger.info("importing owned snapshot " + snapshotInfo.toString());
+				} else {
+					// logger.info("not importing snapshot since you are not the owner: "
+					// + snapshotInfo.toString());
+					continue;
+				}
+
+				SnapshotInfoP snapshotInfoP = null;
+				try {
+					if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+						snapshotInfoP = SnapshotInfoP.findSnapshotInfoPsBy(infra, snapshotInfo.getSnapshotId()).getSingleResult();
+					} else{
+						snapshotInfoP = SnapshotInfoP.findSnapshotInfoPsBy(infra, snapshotInfo.getSnapshotId(), company).getSingleResult();
+					}
+					
+					
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+					//e.printStackTrace();
+				}
+
+				if (snapshotInfoP != null) {
+
+				} else {
+					snapshotInfoP = new SnapshotInfoP();
+					Asset asset = Commons.getNewAsset(assetTypeVolumeSnapshot, currentUser, snapshotProduct);
+
+					snapshotInfoP.setAsset(asset);
+					snapshotInfoP = snapshotInfoP.merge();
+
+				}
+
+				snapshotInfoP.setDescription(snapshotInfo.getDescription());
+				snapshotInfoP.setProgress(snapshotInfo.getProgress());
+				snapshotInfoP.setVolumeId(snapshotInfo.getVolumeId());
+				snapshotInfoP.setStartTime(snapshotInfo.getStartTime().getTime());
+				snapshotInfoP.setSnapshotId(snapshotInfo.getSnapshotId());
+				snapshotInfoP.setStatus(snapshotInfo.getStatus());
+				snapshotInfoP.setOwnerId(snapshotInfo.getOwnerId());
+				snapshotInfoP.setVolumeSize(snapshotInfo.getVolumeSize());
+				snapshotInfoP.setOwnerAlias(snapshotInfo.getOwnerAlias());
+
+				snapshotInfoP = snapshotInfoP.merge();
+
+			}// end of for snapshots.iterator()
+
+			List<SnapshotInfoP> snaps = null;
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				snaps = SnapshotInfoP.findSnapshotInfoPsByInfra(infra).getResultList();
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				snaps = SnapshotInfoP.findSnapshotInfoPsBy(infra, company).getResultList();
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			for (Iterator iterator = snaps.iterator(); iterator.hasNext();) {
+				SnapshotInfoP snapshotInfoP = (SnapshotInfoP) iterator.next();
+				try {
+
+					if (snapshotInfoP.getStatus() != null && snapshotInfoP.getStatus().equals(Commons.SNAPSHOT_STATUS.pending + "")
+							&& (new Date().getTime() - snapshotInfoP.getAsset().getStartTime().getTime() > (1000 * 60 * 60 * 3))) {
+						snapshotInfoP.getAsset().setEndTime(snapshotInfoP.getAsset().getStartTime());
+						snapshotInfoP.setStatus(Commons.SNAPSHOT_STATUS.inactive + "");
+						snapshotInfoP.merge();
+					}
+
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+						// remove assets in mycp only if the edition running is
+						// NOT SERVICE PROVIDER
+						if (snapshotsFromCloud.containsKey(snapshotInfoP.getSnapshotId())
+								&& snapshotsFromCloud.get(snapshotInfoP.getSnapshotId()).getVolumeId().equals(snapshotInfoP.getVolumeId())) {
+
+						} else {
+							logger.info("removing snapshotInfoP " + snapshotInfoP.getSnapshotId() + ", volumeId " + snapshotInfoP.getVolumeId()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							snapshotInfoP.remove();
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void syncVolumes(Jec2 ec2, List params, AssetType assetTypeVolume, User currentUser, ProductCatalog volumeProduct, Infra infra, Company company, Date start) {
+
+		Hashtable<String, VolumeInfo> volumesFromCloud = new Hashtable<String, VolumeInfo>();
+
+		try {
+
+			params = new ArrayList<String>();
+			List<VolumeInfo> volumes = ec2.describeVolumes(params);
+
+			logger.info("Available Volumes");
+			for (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
+				VolumeInfo volumeInfo = (VolumeInfo) iterator.next();
+				// logger.info("adding volumeInfo.getVolumeId() into volumesFromCloud "+volumeInfo.getVolumeId());
+				volumesFromCloud.put(volumeInfo.getVolumeId(), volumeInfo);
+
+				logger.info(volumeInfo.getSize() + volumeInfo.getVolumeId() + volumeInfo.getCreateTime().getTime());
+				VolumeInfoP volumeInfoP = null;
+				try {
+					if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+						volumeInfoP = VolumeInfoP.findVolumeInfoPsBy(infra, volumeInfo.getVolumeId()).getSingleResult();
+					} else{
+						volumeInfoP = VolumeInfoP.findVolumeInfoPsBy(infra, volumeInfo.getVolumeId(), company).getSingleResult();
+					}
+					
+					
+				} catch (Exception e) {
+					 logger.error(e.getMessage());
+					//e.printStackTrace();
+				}
+				if (volumeInfoP != null) {
+
+				} else {
+					volumeInfoP = new VolumeInfoP();
+					Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser, volumeProduct);
+
+					volumeInfoP.setAsset(asset);
+
+				}
+				volumeInfoP.setSize(Integer.parseInt(volumeInfo.getSize()));
+				volumeInfoP.setVolumeId(volumeInfo.getVolumeId());
+				volumeInfoP.setCreateTime(volumeInfo.getCreateTime().getTime());
+				volumeInfoP.setZone(volumeInfo.getZone());
+				volumeInfoP.setStatus(volumeInfo.getStatus());
+				volumeInfoP.setSnapshotId(volumeInfo.getSnapshotId());
+				volumeInfoP = volumeInfoP.merge();
+
+				List<AttachmentInfoP> existingAttachments = AttachmentInfoP.findAttachmentInfoPsByVolumeIdEquals(volumeInfoP.getVolumeId()).getResultList();
+
+				if (existingAttachments != null) {
+					for (Iterator iterator2 = existingAttachments.iterator(); iterator2.hasNext();) {
+						AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator2.next();
+						attachmentInfoP.remove();
+
+					}
+				}
+
+				List<AttachmentInfo> attachments = volumeInfo.getAttachmentInfo();
+				Set<AttachmentInfoP> attachments4Store = new HashSet<AttachmentInfoP>();
+				if (attachments != null && attachments.size() > 0) {
+					for (Iterator iterator2 = attachments.iterator(); iterator2.hasNext();) {
+						AttachmentInfo attachmentInfo = (AttachmentInfo) iterator2.next();
+
+						AttachmentInfoP attachmentInfoP = new AttachmentInfoP();
+						attachmentInfoP.setAttachTime(attachmentInfo.getAttachTime().getTime());
+						attachmentInfoP.setDevice(attachmentInfo.getDevice());
+						attachmentInfoP.setInstanceId(attachmentInfo.getInstanceId());
+						attachmentInfoP.setVolumeId(attachmentInfo.getVolumeId());
+						attachmentInfoP.setStatus(attachmentInfo.getStatus());
+						attachmentInfoP.setVolumeInfo(volumeInfoP);
+
+						volumeInfoP.setDevice(attachmentInfo.getDevice());
+						volumeInfoP.setInstanceId(attachmentInfo.getInstanceId());
+						volumeInfoP.setStatus(Commons.VOLUME_STATUS_ATTACHED);
+
+						attachmentInfoP = attachmentInfoP.merge();
+						attachments4Store.add(attachmentInfoP);
+					}
+				}
+
+				volumeInfoP.setAttachmentInfoPs(attachments4Store);
+				volumeInfoP = volumeInfoP.merge();
+
+			}// end of for volumes.iterator()
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		List<VolumeInfoP> vols = null;
+		try {
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				vols = VolumeInfoP.findVolumeInfoPsByInfra(infra).getResultList();
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				vols = VolumeInfoP.findVolumeInfoPsBy(infra, company).getResultList();
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			for (Iterator volIterator = vols.iterator(); volIterator.hasNext();) {
+				VolumeInfoP volumeInfo2 = (VolumeInfoP) volIterator.next();
+				try {
+					if (volumeInfo2.getStatus().equals(Commons.VOLUME_STATUS_CREATING)
+							&& (new Date().getTime() - volumeInfo2.getAsset().getStartTime().getTime() > (1000 * 60 * 60))) {
+						volumeInfo2.getAsset().setEndTime(volumeInfo2.getAsset().getStartTime());
+						volumeInfo2.setStatus(Commons.VOLUME_STATUS_FAILED);
+						volumeInfo2.merge();
+						continue;
+					}
+
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+						// remove assets in mycp only if the edition running is
+						// NOT
+						// SERVICE PROVIDER
+						if (volumesFromCloud.containsKey(volumeInfo2.getVolumeId())
+								&& volumesFromCloud.get(volumeInfo2.getVolumeId()).getSize().equals(volumeInfo2.getSize().toString())) {
+
+						} else {
+							logger.info("removing volumeInfo " + volumeInfo2.getVolumeId() + ", size " + volumeInfo2.getSize()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							volumeInfo2.remove();
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void syncZones(Jec2 ec2, List params, User currentUser, Infra infra, Company company, Date start) {
+		/*
+		 * params = new ArrayList<String>(); List<RegionInfo> regions =
+		 * ec2.describeRegions(params); for (Iterator iterator =
+		 * regions.iterator(); iterator.hasNext();) { RegionInfo regionInfo =
+		 * (RegionInfo) iterator.next(); logger.info("regionInfo = " +
+		 * regionInfo); RegionP regionP = null; try { regionP =
+		 * RegionP.findRegionPsByNameEquals
+		 * (regionInfo.getName()).getSingleResult(); } catch (Exception e) {
+		 * logger.error(e.getMessage());//e.printStackTrace(); }
+		 * 
+		 * if (regionP != null) {
+		 * 
+		 * } else { regionP = new RegionP(); }
+		 * 
+		 * regionP.setName(regionInfo.getName());
+		 * regionP.setUrl(regionInfo.getUrl()); regionP = regionP.merge();
+		 * 
+		 * }
+		 */
+		Hashtable<String, AvailabilityZone> zonesFromCloud = new Hashtable<String, AvailabilityZone>();
+
+		try {
+			params = new ArrayList<String>();
+			List<AvailabilityZone> zones = ec2.describeAvailabilityZones(params);
+			for (Iterator iterator = zones.iterator(); iterator.hasNext();) {
+				AvailabilityZone availabilityZone = (AvailabilityZone) iterator.next();
+				zonesFromCloud.put(availabilityZone.getName(), availabilityZone);
+				logger.info("availabilityZone = " + availabilityZone);
+				AvailabilityZoneP availabilityZoneP = null;
+				try {
+					availabilityZoneP = AvailabilityZoneP.findAvailabilityZonePsBy(infra, availabilityZone.getName()).getSingleResult();
+				} catch (Exception e) {
+					 logger.error(e.getMessage());
+					//e.printStackTrace();
+				}
+
+				if (availabilityZoneP != null) {
+
+				} else {
+					availabilityZoneP = new AvailabilityZoneP();
+				}
+
+				availabilityZoneP.setName(availabilityZone.getName());
+				availabilityZoneP.setRegionName(availabilityZone.getRegionName());
+				availabilityZoneP.setState(availabilityZone.getState());
+				availabilityZoneP.setInfraId(infra);
+				infra.setZone(availabilityZone.getName());
+
+				availabilityZoneP = availabilityZoneP.merge();
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		try {
+			List<AvailabilityZoneP> zones = null;
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				zones = AvailabilityZoneP.findAllAvailabilityZonePsByInfra(infra);
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				zones = AvailabilityZoneP.findAllAvailabilityZonePsBy(infra, company);
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				// remove assets in mycp only if the edition running is NOT
+				// SERVICE PROVIDER
+				for (Iterator iterator = zones.iterator(); iterator.hasNext();) {
+					AvailabilityZoneP availabilityZoneP = (AvailabilityZoneP) iterator.next();
+					try {
+						if (zonesFromCloud.containsKey(availabilityZoneP.getName())
+								&& zonesFromCloud.get(availabilityZoneP.getName()).getState().equals(availabilityZoneP.getState())) {
+
+						} else {
+							logger.info("removing availabilityZoneP " + availabilityZoneP.getName() + ", state " + availabilityZoneP.getState()
+									+ " in mycp since it does not have a corresponding entry in the cloud");
+							availabilityZoneP.remove();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}// for zones.iterator();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void syncIpAddress(Jec2 ec2, List params, AssetType assetTypeIpAddress, User currentUser, ProductCatalog ipaddressProduct, Infra infra, Company company,
+			Date start) {
+
+		/*
+		 * IP Address import
+		 * 
+		 * 1. get all IPs from the cloud. 2. loop thro them and compare them
+		 * against the currentUser's address assets. - this is the first loop 3.
+		 * clean up all address in mycp database if they are hanging in state
+		 * "starting" for more than 60 mins 4. vclean up all ip addresses in
+		 * mycp whose ownership has changed in the cloud
+		 */
+
+		try {
+			List<AddressInfo> addressInfos = ec2.describeAddresses(params);
+			Hashtable<String, String> IpNobody = new Hashtable<String, String>();
+			Hashtable<String, String> IpAll = new Hashtable<String, String>();
+
+			logger.info("Available addresses @ " + (new Date().getTime() - start.getTime()) / 1000 + " S");
+			for (Iterator iterator = addressInfos.iterator(); iterator.hasNext();) {
+				AddressInfo addressInfo = (AddressInfo) iterator.next();
+				IpAll.put(addressInfo.getPublicIp(), addressInfo.getInstanceId());
+				logger.info(addressInfo.getInstanceId() + "-----" + addressInfo.getPublicIp());
+				String addressInfoStatus = "";
+				if (addressInfo.getInstanceId() != null && addressInfo.getInstanceId().startsWith(Commons.ipaddress_STATUS.nobody + "")) {
+					IpNobody.put(addressInfo.getPublicIp(), "nobody");
+					addressInfoStatus = Commons.ipaddress_STATUS.nobody + "";
+					// skip the import process for free IPs.
+					continue;
+					
+					/*if (!currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+						continue;
+					}// if NOT super user
+*/				}else if(addressInfo.getInstanceId() != null && addressInfo.getInstanceId().startsWith(Commons.ipaddress_STATUS.available + "")){
+					addressInfoStatus = Commons.ipaddress_STATUS.available + "";
+				}else{
+					//although there is one more status as auto_assigned, we will assume  all teh IP while import as associated
+					addressInfoStatus = Commons.ipaddress_STATUS.associated + "";
+				}
+				AddressInfoP addressInfoP = null;
+				try {
+					
+					if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+						addressInfoP = AddressInfoP.findAddressInfoPsBy(infra, addressInfo.getPublicIp()).getSingleResult();
+					} else{
+						addressInfoP = AddressInfoP.findAddressInfoPsBy(infra, addressInfo.getPublicIp(), company).getSingleResult();
+					}
+					
+					
+
+				} catch (Exception e) {
+					 logger.error(e.getMessage());
+					//e.printStackTrace();
+				}
+				if (addressInfoP == null) {
+					addressInfoP = new AddressInfoP();
+					Asset asset = Commons.getNewAsset(assetTypeIpAddress, currentUser, ipaddressProduct);
+					addressInfoP.setAsset(asset);
+					addressInfoP = addressInfoP.merge();
+				}
+
+				addressInfoP.setInstanceId(addressInfo.getInstanceId());
+				addressInfoP.setPublicIp(addressInfo.getPublicIp());
+				addressInfoP.setStatus(addressInfoStatus);
+				addressInfoP = addressInfoP.merge();
+			}// loop thro all address from cloud
+
+			// clean up all address in mycp database if they are hanging in
+			// state "starting" for more than 60 mins
+			// //clean up the ip adresses in mycp which are not in a
+			// corresponding state in the cloud
+			/*List<AddressInfoP> addresses = null;
+
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+				addresses = AddressInfoP.findAddressInfoPsByInfra(infra).getResultList();
+			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				addresses = AddressInfoP.findAddressInfoPsBy(infra, company).getResultList();
+			} else {
+				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
+						+ "2. you are Super Admin but running any other edition of mycloudportal");
+			}
+
+			for (Iterator iterator = addresses.iterator(); iterator.hasNext();) {
+				AddressInfoP addressInfoP = (AddressInfoP) iterator.next();
+				try {
+					if (addressInfoP.getStatus().equals(Commons.ipaddress_STATUS.starting + "")
+							&& (new Date().getTime() - addressInfoP.getAsset().getStartTime().getTime() > (1000 * 60 * 60))) {
+						Commons.setAssetEndTime(addressInfoP.getAsset());
+						//addressInfoP.getAsset().setEndTime(addressInfoP.getAsset().getStartTime());
+						addressInfoP.setStatus(Commons.ipaddress_STATUS.failed + "");
+						addressInfoP.merge();
+						continue;
+					}
+
+					// remove those ip address for which the ownership has
+					// changed
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+						// remove assets in mycp only if the edition running is
+						// NOT SERVICE PROVIDER
+						if (addressInfoP.getPublicIp() != null && addressInfoP.getInstanceId() != null && IpAll.containsKey(addressInfoP.getPublicIp())
+								&& !addressInfoP.getInstanceId().equals(IpAll.get(addressInfoP.getPublicIp()))) {
+							logger.info("removing ip address in MYCP for those whose ownership has changed in the cloud " + addressInfoP.getName() + " "
+									+ addressInfoP.getPublicIp() + " " + addressInfoP.getInstanceId());
+							addressInfoP.remove();
+							continue;
+						}
+					}
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}*/
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}
 
-	@RemoteMethod
-	public void syncDataFromEuca(Infra infra) throws Exception {
-
-		User currentUser = null;
-		Company company = null;
-		currentUser = Commons.getCurrentUser();
-		company = Company.findCompany(Commons.getCurrentSession().getCompanyId());
-
-		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-			logger.info("SP Edition Enabled and Current user is Super Admin, synching everything cloud<-->mycp");
-/*<<<<<<< HEAD*/
-
-		} else if (company != null && Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") )) {
-			logger.info("Private Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
-		}else if (company != null && Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "") )) {
-			logger.info("Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
-/*=======
-		} else if (company != null && Commons.EDITION_ENABLED != Commons.SP_EDITION_ENABLED
-				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + ""))) {
-			logger.info("OS/Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
->>>>>>> origin/development*/
-		} else {
-			if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-				throw new Exception("You are running service provider edition, you can sync if you have super admin role only.");
-			}else if(Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED){
-				throw new Exception("You are running private cloud edition, you need to be a Account Manager to run sync");
-			}else if(Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED){
-				throw new Exception("You cannot sync if you are not account manager");
-			}else{
-				throw new Exception("You cannot sync. What edition of mycp are you running?");
-			}
-		}
-
-		AssetType assetTypeIpAddress = AssetType.findAssetTypesByNameEquals("IpAddress").getSingleResult();
-		AssetType assetTypeSecurityGroup = AssetType.findAssetTypesByNameEquals("SecurityGroup").getSingleResult();
-		AssetType assetTypeVolume = AssetType.findAssetTypesByNameEquals("Volume").getSingleResult();
-		AssetType assetTypeVolumeSnapshot = AssetType.findAssetTypesByNameEquals("VolumeSnapshot").getSingleResult();
-		AssetType assetTypeComputeImage = AssetType.findAssetTypesByNameEquals("ComputeImage").getSingleResult();
-		AssetType assetTypeComputeInstance = AssetType.findAssetTypesByNameEquals("ComputeInstance").getSingleResult();
-		AssetType assetTypeKeyPair = AssetType.findAssetTypesByNameEquals("KeyPair").getSingleResult();
-
-		ProductCatalog ipaddressProduct = null;
-		ProductCatalog secGroupProduct = null;
-		ProductCatalog volumeProduct = null;
-		ProductCatalog snapshotProduct = null;
-		ProductCatalog computeProduct = null;
-		ProductCatalog imageProduct = null;
-		ProductCatalog keypairProduct = null;
-
-		Set<ProductCatalog> products = infra.getProductCatalogs();
-		if (products != null && products.size() > 0) {
-
-		} else {
-			logger.error("Please set up products for this Cloud before synchronizing.");
-			return;
-		}
-		for (Iterator iterator = products.iterator(); iterator.hasNext();) {
-			ProductCatalog productCatalog = (ProductCatalog) iterator.next();
-			if (productCatalog.getProductType().equals(Commons.ProductType.ComputeImage.getName())) {
-				imageProduct = productCatalog;
-			} else if (productCatalog.getProductType().equals(Commons.ProductType.ComputeInstance.getName())) {
-				computeProduct = productCatalog;
-			} else if (productCatalog.getProductType().equals(Commons.ProductType.IpAddress.getName())) {
-				ipaddressProduct = productCatalog;
-			} else if (productCatalog.getProductType().equals(Commons.ProductType.KeyPair.getName())) {
-				keypairProduct = productCatalog;
-			} else if (productCatalog.getProductType().equals(Commons.ProductType.SecurityGroup.getName())) {
-				secGroupProduct = productCatalog;
-			} else if (productCatalog.getProductType().equals(Commons.ProductType.Volume.getName())) {
-				volumeProduct = productCatalog;
-			} else if (productCatalog.getProductType().equals(Commons.ProductType.VolumeSnapshot.getName())) {
-				snapshotProduct = productCatalog;
-			}
-		}
-
-		if (ipaddressProduct == null) {
-			logger.error("Please set up ipaddress Product for this Cloud before synchronizing.");
-			return;
-		} else if (secGroupProduct == null) {
-			logger.error("Please set up Security Group Product for this Cloud before synchronizing.");
-			return;
-		} else if (volumeProduct == null) {
-			logger.error("Please set up Volume Product for this Cloud before synchronizing.");
-			return;
-		} else if (snapshotProduct == null) {
-			logger.error("Please set up Snapshot Product for this Cloud before synchronizing.");
-			return;
-		} else if (computeProduct == null) {
-			logger.error("Please set up Compute Product for this Cloud before synchronizing.");
-			return;
-		} else if (imageProduct == null) {
-			logger.error("Please set up Image Product for this Cloud before synchronizing.");
-			return;
-		} else if (keypairProduct == null) {
-			logger.error("Please set up Key Pair Product for this Cloud before synchronizing.");
-			return;
-		}
-
-		Date start = new Date();
-		logger.info("Connect Start:" + new Date());
-		Jec2 ec2 = getNewJce2(infra);
-		String ownerId = "";
-		List<String> params = new ArrayList<String>();
-
+	public String syncSecurityGroup(Jec2 ec2, List params, AssetType assetTypeSecurityGroup, User currentUser, ProductCatalog secGroupProduct, Infra infra,
+			Company company, Date start) {
+		
+		String ownerId="";
 		try {
 			params = new ArrayList<String>();
 			List<GroupDescription> groupDescs = ec2.describeSecurityGroups(params);
@@ -734,7 +1452,14 @@ public class EucalyptusService {
 				logger.info(groupDescription);
 				GroupDescriptionP descriptionP = null;
 				try {
-					List<GroupDescriptionP> groups = GroupDescriptionP.findGroupDescriptionPsBy(infra, groupDescription.getName(), company).getResultList();
+					List<GroupDescriptionP> groups = null;
+					
+					if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+						groups = GroupDescriptionP.findGroupDescriptionPsBy(infra, groupDescription.getName()).getResultList();
+					} else{
+						groups = GroupDescriptionP.findGroupDescriptionPsBy(infra, groupDescription.getName(), company).getResultList();
+					}
+					
 					inner: for (Iterator iterator2 = groups.iterator(); iterator2.hasNext();) {
 						GroupDescriptionP groupDescriptionP = (GroupDescriptionP) iterator2.next();
 						// check if this security group is for this cloud or for
@@ -788,8 +1513,8 @@ public class EucalyptusService {
 						// ipPermission.getProtocol(), ipPermission.getToPort(),
 						// ipPermission.getFromPort()).getSingleResult();
 					} catch (Exception e) {
-						// logger.error(e.getMessage());
-						e.printStackTrace();
+						 logger.error(e.getMessage());
+						//e.printStackTrace();
 					}
 
 					if (ipPermissionP != null) {
@@ -875,12 +1600,13 @@ public class EucalyptusService {
 					 * get all groups from mycp db loop and find out if they
 					 * exist in cloud if not remove them
 					 */
-					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
-						
+					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+						// remove assets in mycp only if the edition running is
+						// NOT SERVICE PROVIDER
+
 						if (groupDescsFromCloud.containsKey(groupDescriptionP.getName())
 								&& groupDescsFromCloud.get(groupDescriptionP.getName()).getOwner().equals(groupDescriptionP.getOwner())) {
-	
+
 						} else {
 							logger.info("removing groupDescriptionP " + groupDescriptionP.getName() + ", owner " + groupDescriptionP.getOwner()
 									+ " in mycp since it does not have a corresponding entry in the cloud");
@@ -897,752 +1623,152 @@ public class EucalyptusService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return ownerId;
+	}
 
-		/*
-		 * IP Address import
-		 * 
-		 * 1. get all IPs from the cloud. 2. loop thro them and compare them
-		 * against the currentUser's address assets. - this is the first loop 3.
-		 * clean up all address in mycp database if they are hanging in state
-		 * "starting" for more than 60 mins 4. vclean up all ip addresses in
-		 * mycp whose ownership has changed in the cloud
-		 */
+	public Jec2 getNewJce2(Infra infra) {
+		BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
+		textEncryptor.setPassword("gothilla");
+		String decAccessId = textEncryptor.decrypt(infra.getAccessId());
+		String decSecretKey = textEncryptor.decrypt(infra.getSecretKey());
 
-		try {
-			List<AddressInfo> addressInfos = ec2.describeAddresses(params);
-			Hashtable<String, String> IpNobody = new Hashtable<String, String>();
-			Hashtable<String, String> IpAll = new Hashtable<String, String>();
-
-			logger.info("Available addresses @ " + (new Date().getTime() - start.getTime()) / 1000 + " S");
-			for (Iterator iterator = addressInfos.iterator(); iterator.hasNext();) {
-				AddressInfo addressInfo = (AddressInfo) iterator.next();
-				IpAll.put(addressInfo.getPublicIp(), addressInfo.getInstanceId());
-				logger.info(addressInfo.getInstanceId() + "-----" + addressInfo.getPublicIp());
-				if (addressInfo.getInstanceId() == null || addressInfo.getInstanceId().startsWith("nobody")) {
-					IpNobody.put(addressInfo.getPublicIp(), "nobody");
-					// import only for superuser , for everybody else , just
-					// skip the import process for free IPs.
-					if (!currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-						continue;
-					}// if NOT super user
-				}
-				AddressInfoP addressInfoP = null;
-				try {
-					addressInfoP = AddressInfoP.findAddressInfoPsBy(infra, addressInfo.getPublicIp(), company).getSingleResult();
-
-				} catch (Exception e) {
-					// logger.error(e.getMessage());
-					e.printStackTrace();
-				}
-				if (addressInfoP == null) {
-					addressInfoP = new AddressInfoP();
-					Asset asset = Commons.getNewAsset(assetTypeIpAddress, currentUser, ipaddressProduct);
-					addressInfoP.setAsset(asset);
-					addressInfoP.setStatus(Commons.ipaddress_STATUS.available + "");
-					addressInfoP = addressInfoP.merge();
-				}
-
-				addressInfoP.setInstanceId(addressInfo.getInstanceId());
-				addressInfoP.setPublicIp(addressInfo.getPublicIp());
-				addressInfoP = addressInfoP.merge();
-			}// loop thro all address from cloud
-
-			// clean up all address in mycp database if they are hanging in
-			// state "starting" for more than 60 mins
-			// //clean up the ip adresses in mycp which are not in a
-			// corresponding state in the cloud
-			List<AddressInfoP> addresses = null;
-
-			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-				addresses = AddressInfoP.findAddressInfoPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
-				addresses = AddressInfoP.findAddressInfoPsBy(infra, company).getResultList();
-			} else {
-				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-						+ "2. you are Super Admin but running any other edition of mycloudportal");
-			}
-
-			for (Iterator iterator = addresses.iterator(); iterator.hasNext();) {
-				AddressInfoP addressInfoP = (AddressInfoP) iterator.next();
-				try {
-					if (addressInfoP.getStatus().equals(Commons.ipaddress_STATUS.starting + "")
-							&& (new Date().getTime() - addressInfoP.getAsset().getStartTime().getTime() > (1000 * 60 * 60))) {
-						addressInfoP.getAsset().setEndTime(addressInfoP.getAsset().getStartTime());
-						addressInfoP.setStatus(Commons.ipaddress_STATUS.failed + "");
-						addressInfoP.merge();
-						continue;
-					}
-
-					// remove those ip address for which the ownership has changed
-					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
-						if (addressInfoP.getPublicIp() != null && addressInfoP.getInstanceId() != null && IpAll.containsKey(addressInfoP.getPublicIp())
-								&& !addressInfoP.getInstanceId().equals(IpAll.get(addressInfoP.getPublicIp()))) {
-							logger.info("removing ip address in MYCP for those whose ownership has changed in the cloud " + addressInfoP.getName() + " "
-									+ addressInfoP.getPublicIp() + " " + addressInfoP.getInstanceId());
-							addressInfoP.remove();
-							continue;
-						}
-					}
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (infra.getServer().startsWith("ec2.amazonaws.com")) {
+			Jec2 ec2 = new Jec2(decAccessId, decSecretKey);
+			return ec2;
+		} else {
+			Jec2 ec2 = new Jec2(decAccessId, decSecretKey, false, infra.getServer(), infra.getPort());
+			ec2.setResourcePrefix(infra.getResourcePrefix());
+			ec2.setSignatureVersion(infra.getSignatureVersion());
+			return ec2;
 		}
 
-		/*
-		 * params = new ArrayList<String>(); List<RegionInfo> regions =
-		 * ec2.describeRegions(params); for (Iterator iterator =
-		 * regions.iterator(); iterator.hasNext();) { RegionInfo regionInfo =
-		 * (RegionInfo) iterator.next(); logger.info("regionInfo = " +
-		 * regionInfo); RegionP regionP = null; try { regionP =
-		 * RegionP.findRegionPsByNameEquals
-		 * (regionInfo.getName()).getSingleResult(); } catch (Exception e) {
-		 * logger.error(e.getMessage());//e.printStackTrace(); }
-		 * 
-		 * if (regionP != null) {
-		 * 
-		 * } else { regionP = new RegionP(); }
-		 * 
-		 * regionP.setName(regionInfo.getName());
-		 * regionP.setUrl(regionInfo.getUrl()); regionP = regionP.merge();
-		 * 
-		 * }
-		 */
-		Hashtable<String, AvailabilityZone> zonesFromCloud = new Hashtable<String, AvailabilityZone>();
+	}
 
-		try {
-			params = new ArrayList<String>();
-			List<AvailabilityZone> zones = ec2.describeAvailabilityZones(params);
-			for (Iterator iterator = zones.iterator(); iterator.hasNext();) {
-				AvailabilityZone availabilityZone = (AvailabilityZone) iterator.next();
-				zonesFromCloud.put(availabilityZone.getName(), availabilityZone);
-				logger.info("availabilityZone = " + availabilityZone);
-				AvailabilityZoneP availabilityZoneP = null;
-				try {
-					availabilityZoneP = AvailabilityZoneP.findAvailabilityZonePsBy(infra, availabilityZone.getName()).getSingleResult();
-				} catch (Exception e) {
-					// logger.error(e.getMessage());
-					e.printStackTrace();
-				}
+	@RemoteMethod
+	public void syncDataFromEuca(Infra infra) throws Exception {
 
-				if (availabilityZoneP != null) {
-
-				} else {
-					availabilityZoneP = new AvailabilityZoneP();
-				}
-
-				availabilityZoneP.setName(availabilityZone.getName());
-				availabilityZoneP.setRegionName(availabilityZone.getRegionName());
-				availabilityZoneP.setState(availabilityZone.getState());
-				availabilityZoneP.setInfraId(infra);
-				infra.setZone(availabilityZone.getName());
-
-				availabilityZoneP = availabilityZoneP.merge();
-
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		try {
-			List<AvailabilityZoneP> zones = null;
-
-			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-				zones = AvailabilityZoneP.findAllAvailabilityZonePsByInfra(infra);
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
-				zones = AvailabilityZoneP.findAllAvailabilityZonePsBy(infra, company);
-			} else {
-				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-						+ "2. you are Super Admin but running any other edition of mycloudportal");
-			}
-
-			if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-				//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
-				for (Iterator iterator = zones.iterator(); iterator.hasNext();) {
-					AvailabilityZoneP availabilityZoneP = (AvailabilityZoneP) iterator.next();
-					try {
-						if (zonesFromCloud.containsKey(availabilityZoneP.getName())
-								&& zonesFromCloud.get(availabilityZoneP.getName()).getState().equals(availabilityZoneP.getState())) {
-	
-						} else {
-							logger.info("removing availabilityZoneP " + availabilityZoneP.getName() + ", state " + availabilityZoneP.getState()
-									+ " in mycp since it does not have a corresponding entry in the cloud");
-							availabilityZoneP.remove();
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}// for zones.iterator();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		Hashtable<String, VolumeInfo> volumesFromCloud = new Hashtable<String, VolumeInfo>();
-
-		try {
-
-			params = new ArrayList<String>();
-			List<VolumeInfo> volumes = ec2.describeVolumes(params);
-
-			logger.info("Available Volumes");
-			for (Iterator iterator = volumes.iterator(); iterator.hasNext();) {
-				VolumeInfo volumeInfo = (VolumeInfo) iterator.next();
-				//logger.info("adding volumeInfo.getVolumeId() into volumesFromCloud "+volumeInfo.getVolumeId());
-				volumesFromCloud.put(volumeInfo.getVolumeId(), volumeInfo);
-
-				logger.info(volumeInfo.getSize() + volumeInfo.getVolumeId() + volumeInfo.getCreateTime().getTime());
-				VolumeInfoP volumeInfoP = null;
-				try {
-					volumeInfoP = VolumeInfoP.findVolumeInfoPsBy(infra, volumeInfo.getVolumeId(), company).getSingleResult();
-				} catch (Exception e) {
-					// logger.error(e.getMessage());
-					e.printStackTrace();
-				}
-				if (volumeInfoP != null) {
-
-				} else {
-					volumeInfoP = new VolumeInfoP();
-					Asset asset = Commons.getNewAsset(assetTypeVolume, currentUser, volumeProduct);
-
-					volumeInfoP.setAsset(asset);
-
-				}
-				volumeInfoP.setSize(Integer.parseInt(volumeInfo.getSize()));
-				volumeInfoP.setVolumeId(volumeInfo.getVolumeId());
-				volumeInfoP.setCreateTime(volumeInfo.getCreateTime().getTime());
-				volumeInfoP.setZone(volumeInfo.getZone());
-				volumeInfoP.setStatus(volumeInfo.getStatus());
-				volumeInfoP.setSnapshotId(volumeInfo.getSnapshotId());
-				volumeInfoP = volumeInfoP.merge();
-
-				List<AttachmentInfoP> existingAttachments = AttachmentInfoP.findAttachmentInfoPsByVolumeIdEquals(volumeInfoP.getVolumeId()).getResultList();
-
-				if (existingAttachments != null) {
-					for (Iterator iterator2 = existingAttachments.iterator(); iterator2.hasNext();) {
-						AttachmentInfoP attachmentInfoP = (AttachmentInfoP) iterator2.next();
-						attachmentInfoP.remove();
-
-					}
-				}
-
-				List<AttachmentInfo> attachments = volumeInfo.getAttachmentInfo();
-				Set<AttachmentInfoP> attachments4Store = new HashSet<AttachmentInfoP>();
-				if (attachments != null && attachments.size() > 0) {
-					for (Iterator iterator2 = attachments.iterator(); iterator2.hasNext();) {
-						AttachmentInfo attachmentInfo = (AttachmentInfo) iterator2.next();
-
-						AttachmentInfoP attachmentInfoP = new AttachmentInfoP();
-						attachmentInfoP.setAttachTime(attachmentInfo.getAttachTime().getTime());
-						attachmentInfoP.setDevice(attachmentInfo.getDevice());
-						attachmentInfoP.setInstanceId(attachmentInfo.getInstanceId());
-						attachmentInfoP.setVolumeId(attachmentInfo.getVolumeId());
-						attachmentInfoP.setStatus(attachmentInfo.getStatus());
-						attachmentInfoP.setVolumeInfo(volumeInfoP);
-
-						volumeInfoP.setDevice(attachmentInfo.getDevice());
-						volumeInfoP.setInstanceId(attachmentInfo.getInstanceId());
-						volumeInfoP.setStatus(Commons.VOLUME_STATUS_ATTACHED);
-
-						attachmentInfoP = attachmentInfoP.merge();
-						attachments4Store.add(attachmentInfoP);
-					}
-				}
-
-				volumeInfoP.setAttachmentInfoPs(attachments4Store);
-				volumeInfoP = volumeInfoP.merge();
-
-			}// end of for volumes.iterator()
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		List<VolumeInfoP> vols = null;
+		User currentUser = null;
+		Company company = null;
+		currentUser = Commons.getCurrentUser();
+		company = Company.findCompany(Commons.getCurrentSession().getCompanyId());
 
 		if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-			vols = VolumeInfoP.findVolumeInfoPsByInfra(infra).getResultList();
-		} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
-			vols = VolumeInfoP.findVolumeInfoPsBy(infra, company).getResultList();
+			logger.info("SP Edition Enabled and Current user is Super Admin, synching everything cloud<-->mycp");
+			/* <<<<<<< HEAD */
+
+		} else if (company != null && Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + ""))) {
+			logger.info("Private Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
+		} else if (company != null && Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED
+				&& (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + ""))) {
+			logger.info("Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp");
+			/*
+			 * ======= } else if (company != null && Commons.EDITION_ENABLED !=
+			 * Commons.SP_EDITION_ENABLED &&
+			 * (currentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER
+			 * + ""))) { logger.info(
+			 * "OS/Hosted Edition Enabled and Current user is Account Manager, synching account related cloud<-->mycp"
+			 * ); >>>>>>> origin/development
+			 */
 		} else {
-			throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-					+ "2. you are Super Admin but running any other edition of mycloudportal");
-		}
-
-		for (Iterator volIterator = vols.iterator(); volIterator.hasNext();) {
-			VolumeInfoP volumeInfo2 = (VolumeInfoP) volIterator.next();
-			try {
-				if (volumeInfo2.getStatus().equals(Commons.VOLUME_STATUS_CREATING)
-						&& (new Date().getTime() - volumeInfo2.getAsset().getStartTime().getTime() > (1000 * 60 * 60))) {
-					volumeInfo2.getAsset().setEndTime(volumeInfo2.getAsset().getStartTime());
-					volumeInfo2.setStatus(Commons.VOLUME_STATUS_FAILED);
-					volumeInfo2.merge();
-					continue;
-				}
-				
-				if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-					//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
-					if (volumesFromCloud.containsKey(volumeInfo2.getVolumeId()) && 
-							volumesFromCloud.get(volumeInfo2.getVolumeId()).getSize().equals(volumeInfo2.getSize().toString())) {
-	
-					} else {
-						logger.info("removing volumeInfo " + volumeInfo2.getVolumeId() + ", size " + volumeInfo2.getSize()
-								+ " in mycp since it does not have a corresponding entry in the cloud");
-						volumeInfo2.remove();
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		}
-
-		Hashtable<String, SnapshotInfo> snapshotsFromCloud = new Hashtable<String, SnapshotInfo>();
-
-		try {
-			params = new ArrayList<String>();
-			List<SnapshotInfo> snapshots = ec2.describeSnapshots(params);
-			logger.info("Available Snapshots");
-			for (Iterator iterator = snapshots.iterator(); iterator.hasNext();) {
-				SnapshotInfo snapshotInfo = (SnapshotInfo) iterator.next();
-				snapshotsFromCloud.put(snapshotInfo.getSnapshotId(), snapshotInfo);
-
-				if (snapshotInfo.getOwnerId() != null && snapshotInfo.getOwnerId().equals(ownerId)) {
-					logger.info("importing owned snapshot " + snapshotInfo.toString());
-				} else {
-					//logger.info("not importing snapshot since you are not the owner: " + snapshotInfo.toString());
-					continue;
-				}
-
-				SnapshotInfoP snapshotInfoP = null;
-				try {
-					snapshotInfoP = SnapshotInfoP.findSnapshotInfoPsBy(infra, snapshotInfo.getSnapshotId(), company).getSingleResult();
-				} catch (Exception e) {
-					logger.error(e.getMessage());e.printStackTrace();
-				}
-
-				if (snapshotInfoP != null) {
-
-				} else {
-					snapshotInfoP = new SnapshotInfoP();
-					Asset asset = Commons.getNewAsset(assetTypeVolumeSnapshot, currentUser, snapshotProduct);
-
-					snapshotInfoP.setAsset(asset);
-					snapshotInfoP = snapshotInfoP.merge();
-
-				}
-
-				snapshotInfoP.setDescription(snapshotInfo.getDescription());
-				snapshotInfoP.setProgress(snapshotInfo.getProgress());
-				snapshotInfoP.setVolumeId(snapshotInfo.getVolumeId());
-				snapshotInfoP.setStartTime(snapshotInfo.getStartTime().getTime());
-				snapshotInfoP.setSnapshotId(snapshotInfo.getSnapshotId());
-				snapshotInfoP.setStatus(snapshotInfo.getStatus());
-				snapshotInfoP.setOwnerId(snapshotInfo.getOwnerId());
-				snapshotInfoP.setVolumeSize(snapshotInfo.getVolumeSize());
-				snapshotInfoP.setOwnerAlias(snapshotInfo.getOwnerAlias());
-
-				snapshotInfoP = snapshotInfoP.merge();
-				
-
-			}// end of for snapshots.iterator()
-
-			List<SnapshotInfoP> snaps = null;
-
-			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-				snaps = SnapshotInfoP.findSnapshotInfoPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
-				snaps = SnapshotInfoP.findSnapshotInfoPsBy(infra, company).getResultList();
+			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
+				throw new Exception("You are running service provider edition, you can sync if you have super admin role only.");
+			} else if (Commons.EDITION_ENABLED == Commons.PRIVATE_CLOUD_EDITION_ENABLED) {
+				throw new Exception("You are running private cloud edition, you need to be a Account Manager to run sync");
+			} else if (Commons.EDITION_ENABLED == Commons.HOSTED_EDITION_ENABLED) {
+				throw new Exception("You cannot sync if you are not account manager");
 			} else {
-				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-						+ "2. you are Super Admin but running any other edition of mycloudportal");
+				throw new Exception("You cannot sync. What edition of mycp are you running?");
 			}
-
-			for (Iterator iterator = snaps.iterator(); iterator.hasNext();) {
-				SnapshotInfoP snapshotInfoP = (SnapshotInfoP) iterator.next();
-				try {
-
-					if (snapshotInfoP.getStatus() != null && snapshotInfoP.getStatus().equals(Commons.SNAPSHOT_STATUS.pending + "")
-							&& (new Date().getTime() - snapshotInfoP.getAsset().getStartTime().getTime() > (1000 * 60 * 60 * 3))) {
-						snapshotInfoP.getAsset().setEndTime(snapshotInfoP.getAsset().getStartTime());
-						snapshotInfoP.setStatus(Commons.SNAPSHOT_STATUS.inactive + "");
-						snapshotInfoP.merge();
-					}
-
-					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
-						if (snapshotsFromCloud.containsKey(snapshotInfoP.getSnapshotId())
-								&& snapshotsFromCloud.get(snapshotInfoP.getSnapshotId()).getVolumeId().equals(snapshotInfoP.getVolumeId())) {
-	
-						} else {
-							logger.info("removing snapshotInfoP " + snapshotInfoP.getSnapshotId() + ", volumeId " + snapshotInfoP.getVolumeId()
-									+ " in mycp since it does not have a corresponding entry in the cloud");
-							snapshotInfoP.remove();
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
-		Hashtable<String, ImageDescription> imagesFromCloud = new Hashtable<String, ImageDescription>();
+		AssetType assetTypeIpAddress = AssetType.findAssetTypesByNameEquals("IpAddress").getSingleResult();
+		AssetType assetTypeSecurityGroup = AssetType.findAssetTypesByNameEquals("SecurityGroup").getSingleResult();
+		AssetType assetTypeVolume = AssetType.findAssetTypesByNameEquals("Volume").getSingleResult();
+		AssetType assetTypeVolumeSnapshot = AssetType.findAssetTypesByNameEquals("VolumeSnapshot").getSingleResult();
+		AssetType assetTypeComputeImage = AssetType.findAssetTypesByNameEquals("ComputeImage").getSingleResult();
+		AssetType assetTypeComputeInstance = AssetType.findAssetTypesByNameEquals("ComputeInstance").getSingleResult();
+		AssetType assetTypeKeyPair = AssetType.findAssetTypesByNameEquals("KeyPair").getSingleResult();
 
-		try {
-			logger.info("starting ec2.describeImages which may take a long time");
-			List<ImageDescription> images = ec2.describeImages(params);
-			logger.info("complete ec2.describeImages.");
-			logger.info("Available Images");
-			int imageCount = 0;
+		ProductCatalog ipaddressProduct = null;
+		ProductCatalog secGroupProduct = null;
+		ProductCatalog volumeProduct = null;
+		ProductCatalog snapshotProduct = null;
+		ProductCatalog computeProduct = null;
+		ProductCatalog imageProduct = null;
+		ProductCatalog keypairProduct = null;
 
-			outer: for (Iterator imagesIterator = images.iterator(); imagesIterator.hasNext();) {
-				ImageDescription img = (ImageDescription) imagesIterator.next();
-				try {
-					if (img.getImageState().equals("available")) {
+		Set<ProductCatalog> products = infra.getProductCatalogs();
+		if (products != null && products.size() > 0) {
 
-						if (infra.getServer() != null && infra.getServer().contains("ec2.amazon")) {
-							// if syncing from ec2, just load 10 bitnami ubuntu
-							// images
-							// and check if they are public ones.
-							if (!img.isPublic()) {
-								continue;
-							}
-							if (img.getName() != null && (img.getName().contains("bitnami") && img.getName().contains("ubuntu"))) {
-								imageCount = imageCount + 1;
-								if (imageCount > 10) {
-									logger.info("more than 10 images, cutting short the import process.");
-									break outer;
-								}
-							} else {
-								continue;
-							}
-
-						}
-
-						// euca gives back eri and eki assets during the image
-						// listing, need to avoid that.
-						if (!infra.getServer().contains("ec2.amazon") && img.getImageId() != null && !img.getImageId().startsWith("emi")) {
-							continue;
-						}
-
-						// for image removal
-						//logger.info("putting into imagesFromCloud img.getImageId() = "+img.getImageId());
-						imagesFromCloud.put(img.getImageId(), img);
-
-						logger.info(img.getImageId() + "\t" + img.getImageLocation() + "\t" + img.getImageOwnerId());
-						ImageDescriptionP imageDescriptionP = null;
-
-						try {
-							imageDescriptionP = ImageDescriptionP.findImageDescriptionPsBy(infra, img.getImageId(), company).getSingleResult();
-						} catch (Exception e) {
-							 logger.error(e.getMessage());
-							 e.printStackTrace();
-						}
-						if (imageDescriptionP != null) {
-
-						} else {
-							imageDescriptionP = new ImageDescriptionP();
-							Asset asset = Commons.getNewAsset(assetTypeComputeImage, currentUser, imageProduct);
-							imageDescriptionP.setAsset(asset);
-							imageDescriptionP = imageDescriptionP.merge();
-						}
-
-						imageDescriptionP.setImageId(img.getImageId());
-
-						imageDescriptionP.setImageLocation(img.getImageLocation());
-						imageDescriptionP.setImageOwnerId(img.getImageOwnerId());
-						imageDescriptionP.setImageState(img.getImageState());
-						imageDescriptionP.setIsPublic(img.isPublic());
-						List<String> prodCodes = img.getProductCodes();
-						String prodCodes_str = "";
-						for (Iterator iterator = prodCodes.iterator(); iterator.hasNext();) {
-							String prodCode = (String) iterator.next();
-							prodCodes_str = prodCodes_str + prodCode + ",";
-						}
-						prodCodes_str = StringUtils.removeEnd(prodCodes_str, ",");
-						imageDescriptionP.setProductCodes(prodCodes_str);
-						imageDescriptionP.setArchitecture(img.getArchitecture());
-						imageDescriptionP.setImageType(img.getImageType());
-						imageDescriptionP.setKernelId(img.getKernelId());
-						imageDescriptionP.setRamdiskId(img.getRamdiskId());
-						imageDescriptionP.setPlatform(img.getPlatform());
-						imageDescriptionP.setReason(img.getReason());
-						imageDescriptionP.setImageOwnerAlias(img.getImageOwnerAlias());
-
-						imageDescriptionP.setName(img.getName());
-						imageDescriptionP.setDescription(img.getDescription());
-						imageDescriptionP.setRootDeviceType(img.getRootDeviceType());
-						imageDescriptionP.setRootDeviceName(img.getRootDeviceName());
-						imageDescriptionP.setVirtualizationType(img.getVirtualizationType());
-
-						imageDescriptionP.merge();
-
-					}
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}// end of for ImageDescription img : images
-			
-			// now clean up the images in mycp db which do not exist in
-			// the cloud.
-			List<ImageDescriptionP> imagesInMycp = null;
-
-			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-				imagesInMycp = ImageDescriptionP.findImageDescriptionPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
-				imagesInMycp = ImageDescriptionP.findImageDescriptionPsByCompany(infra, company).getResultList();
-			} else {
-				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-						+ "2. you are Super Admin but running any other edition of mycloudportal");
+		} else {
+			logger.error("Please set up products for this Cloud before synchronizing.");
+			return;
+		}
+		for (Iterator iterator = products.iterator(); iterator.hasNext();) {
+			ProductCatalog productCatalog = (ProductCatalog) iterator.next();
+			if (productCatalog.getProductType().equals(Commons.ProductType.ComputeImage.getName())) {
+				imageProduct = productCatalog;
+			} else if (productCatalog.getProductType().equals(Commons.ProductType.ComputeInstance.getName())) {
+				computeProduct = productCatalog;
+			} else if (productCatalog.getProductType().equals(Commons.ProductType.IpAddress.getName())) {
+				ipaddressProduct = productCatalog;
+			} else if (productCatalog.getProductType().equals(Commons.ProductType.KeyPair.getName())) {
+				keypairProduct = productCatalog;
+			} else if (productCatalog.getProductType().equals(Commons.ProductType.SecurityGroup.getName())) {
+				secGroupProduct = productCatalog;
+			} else if (productCatalog.getProductType().equals(Commons.ProductType.Volume.getName())) {
+				volumeProduct = productCatalog;
+			} else if (productCatalog.getProductType().equals(Commons.ProductType.VolumeSnapshot.getName())) {
+				snapshotProduct = productCatalog;
 			}
-
-			if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-				//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER 
-				for (Iterator iterator = imagesInMycp.iterator(); iterator.hasNext();) {
-				ImageDescriptionP imageDescriptionP = (ImageDescriptionP) iterator.next();
-				try {
-				
-					if (imagesFromCloud.containsKey(imageDescriptionP.getImageId())
-							&& imagesFromCloud.get(imageDescriptionP.getImageId()).getImageLocation().equals(imageDescriptionP.getImageLocation())) {
-				
-					} else {
-						logger.info("removing imageDescriptionP " + imageDescriptionP.getImageId() + ", location " + imageDescriptionP.getImageLocation()
-								+ " in mycp since it does not have a corresponding entry in the cloud");
-							imageDescriptionP.remove();
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
-		Hashtable<String, Instance> instancesFromCloud = new Hashtable<String, ReservationDescription.Instance>();
-
-		try {
-			params = new ArrayList<String>();
-			List<ReservationDescription> instances = ec2.describeInstances(params);
-			logger.info("Instances");
-			String instanceId = "";
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh.mm.ss");
-			Date now = new Date();
-			for (ReservationDescription res : instances) {
-				logger.info(res.getOwner() + "\t" + res.getReservationId());
-				if (res.getInstances() != null) {
-					HashSet<InstanceP> instancesP = new HashSet<InstanceP>();
-					for (Instance inst : res.getInstances()) {
-						Date then = inst.getLaunchTime().getTime();
-						long timediff = now.getTime() - then.getTime();
-						long hours = timediff / (1000 * 60 * 60);
-						// inst.get
-						// c.getTimeInMillis();
-
-						instancesFromCloud.put(inst.getInstanceId(), inst);
-
-						logger.info("\t" + inst.getImageId() + "\t" + inst.getDnsName() + "\t" + inst.getState() + "\t" + inst.getKeyName() + "\t"
-								+ formatter.format(then) + "\t(H)" + hours
-
-								+ "\t" + inst.getInstanceType().getTypeId() + inst.getPlatform());
-
-						InstanceP instanceP = null;
-						try {
-							instanceP = InstanceP.findInstancePsBy(infra, inst.getInstanceId(), company).getSingleResult();
-						} catch (Exception e) {
-							// logger.error(e.getMessage());
-							e.printStackTrace();
-						}
-
-						if (instanceP != null) {
-
-						} else {
-							instanceP = new InstanceP();
-							Asset asset = Commons.getNewAsset(assetTypeComputeInstance, currentUser, computeProduct);
-							instanceP.setAsset(asset);
-						}
-
-						instanceP.setInstanceId(inst.getInstanceId());
-						try{
-						instanceP.setImage(ImageDescriptionP.findImageDescriptionPsByImageIdEquals(inst.getImageId()).getSingleResult());
-						}catch(Exception e){
-							logger.error(e.getMessage());
-							e.printStackTrace();
-						}
-						instanceP.setDnsName(inst.getDnsName());
-						instanceP.setState(inst.getState());
-						instanceP.setKeyName(inst.getKeyName());
-						instanceP.setInstanceType(inst.getInstanceType().getTypeId());
-						instanceP.setPlatform(inst.getPlatform());
-						instanceP.setPrivateDnsName(inst.getPrivateDnsName());
-						instanceP.setReason(inst.getReason());
-						instanceP.setLaunchIndex(inst.getLaunchIndex());
-
-						List<String> prodCodes = inst.getProductCodes();
-						String prodCodes_str = "";
-						for (Iterator iterator = prodCodes.iterator(); iterator.hasNext();) {
-							String prodCode = (String) iterator.next();
-							prodCodes_str = prodCodes_str + prodCode + ",";
-						}
-						prodCodes_str = StringUtils.removeEnd(prodCodes_str, ",");
-
-						instanceP.setProductCodes(prodCodes_str);
-						instanceP.setLaunchTime(inst.getLaunchTime().getTime());
-						instanceP.setAvailabilityZone(inst.getAvailabilityZone());
-						instanceP.setKernelId(inst.getKernelId());
-						instanceP.setRamdiskId(inst.getRamdiskId());
-						instanceP.setStateCode(inst.getStateCode());
-						// instanceP.setMonitoring(inst.get)
-						instanceP.setSubnetId(inst.getSubnetId());
-						instanceP.setVpcId(inst.getVpcId());
-						instanceP.setPrivateIpAddress(inst.getPrivateIpAddress());
-						instanceP.setIpAddress(inst.getIpAddress());
-						instanceP.setArchitecture(inst.getArchitecture());
-						instanceP.setRootDeviceType(inst.getRootDeviceType());
-						instanceP.setRootDeviceName(inst.getRootDeviceName());
-						instanceP.setInstanceLifecycle(inst.getInstanceLifecycle());
-						instanceP.setSpotInstanceRequestId(inst.getSpotInstanceRequestId());
-						instanceP.setVirtualizationType(inst.getVirtualizationType());
-						// instanceP.setState(Commons.REQUEST_STATUS.running+"");
-						// instanceP.setClientToken(inst.get)
-
-						// instanceP.setReservationDescription(reservationDescriptionP);
-
-						instanceP = instanceP.merge();
-
-						instancesP.add(instanceP);
-
-					}
-					/*
-					 * reservationDescriptionP.setInstancePs(instancesP);
-					 * reservationDescriptionP =
-					 * reservationDescriptionP.merge();
-					 */
-				}
-			}// end of ReservationDescription res : instances
-
-			List<InstanceP> insts = null;
-
-			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-				insts = InstanceP.findInstancePsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
-				insts = InstanceP.findInstancePsBy(infra, company).getResultList();
-			} else {
-				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-						+ "2. you are Super Admin but running any other edition of mycloudportal");
-			}
-
-			for (Iterator iterator = insts.iterator(); iterator.hasNext();) {
-				InstanceP instanceP2 = (InstanceP) iterator.next();
-				try {
-					if (instanceP2.getState().equals(Commons.REQUEST_STATUS.STARTING + "")
-							&& (new Date().getTime() - instanceP2.getAsset().getStartTime().getTime() > (1000 * 60 * 60 * 3))) {
-						instanceP2.getAsset().setEndTime(instanceP2.getAsset().getStartTime());
-						instanceP2.setState(Commons.REQUEST_STATUS.FAILED + "");
-						instanceP2.merge();
-					}
-					
-					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER
-						if (instancesFromCloud.containsKey(instanceP2.getInstanceId())
-								&& instancesFromCloud.get(instanceP2.getInstanceId()).getImageId().equals(instanceP2.getImage().getImageId())) {
-	
-						} else {
-							logger.info("removing instanceP " + instanceP2.getInstanceId() + ", image " + instanceP2.getImage().getImageId()
-									+ " in mycp since it does not have a corresponding entry in the cloud");
-							instanceP2.remove();
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (ipaddressProduct == null) {
+			logger.error("Please set up ipaddress Product for this Cloud before synchronizing.");
+			return;
+		} else if (secGroupProduct == null) {
+			logger.error("Please set up Security Group Product for this Cloud before synchronizing.");
+			return;
+		} else if (volumeProduct == null) {
+			logger.error("Please set up Volume Product for this Cloud before synchronizing.");
+			return;
+		} else if (snapshotProduct == null) {
+			logger.error("Please set up Snapshot Product for this Cloud before synchronizing.");
+			return;
+		} else if (computeProduct == null) {
+			logger.error("Please set up Compute Product for this Cloud before synchronizing.");
+			return;
+		} else if (imageProduct == null) {
+			logger.error("Please set up Image Product for this Cloud before synchronizing.");
+			return;
+		} else if (keypairProduct == null) {
+			logger.error("Please set up Key Pair Product for this Cloud before synchronizing.");
+			return;
 		}
 
-		Hashtable<String, KeyPairInfo> keysFromCloud = new Hashtable<String, KeyPairInfo>();
+		Date start = new Date();
+		logger.info("Connect Start:" + new Date());
+		Jec2 ec2 = getNewJce2(infra);
+		String ownerId = "";
+		List<String> params = new ArrayList<String>();
 
-		try {
-			List<KeyPairInfo> info = ec2.describeKeyPairs(new String[] {});
-			logger.info("keypair list");
-			for (KeyPairInfo keypairinfo : info) {
-				logger.info("keypair : " + keypairinfo.getKeyName() + ", " + keypairinfo.getKeyFingerprint());
+		ownerId = syncSecurityGroup(ec2, params, assetTypeSecurityGroup, currentUser, secGroupProduct, infra, company, start);
 
-				keysFromCloud.put(keypairinfo.getKeyName(), keypairinfo);
+		syncIpAddress(ec2, params, assetTypeIpAddress, currentUser, ipaddressProduct, infra, company, start);
 
-				KeyPairInfoP keyPairInfoP = null;
-				try {
-					keyPairInfoP = KeyPairInfoP.findKeyPairInfoPsBy(infra, keypairinfo.getKeyName(), company).getSingleResult();
-				} catch (Exception e) {
-					// logger.error(e);
-					e.printStackTrace();
-				}
+		syncZones(ec2, params, currentUser, infra, company, start);
 
-				if (keyPairInfoP != null) {
-
-				} else {
-					keyPairInfoP = new KeyPairInfoP();
-					Asset asset = Commons.getNewAsset(assetTypeKeyPair, currentUser, keypairProduct);
-
-					keyPairInfoP.setAsset(asset);
-					keyPairInfoP = keyPairInfoP.merge();
-				}
-				keyPairInfoP.setKeyName(keypairinfo.getKeyName());
-				keyPairInfoP.setKeyFingerprint(keypairinfo.getKeyFingerprint());
-				keyPairInfoP.setKeyMaterial(keypairinfo.getKeyMaterial());
-				keyPairInfoP.setStatus(Commons.keypair_STATUS.active + "");
-				keyPairInfoP = keyPairInfoP.merge();
-
-			}// end of for KeyPairInfo i : info)
-
-			List<KeyPairInfoP> keys = null;
-
-			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-				keys = KeyPairInfoP.findKeyPairInfoPsByInfra(infra).getResultList();
-			} else if (company != null && Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED) {
-				keys = KeyPairInfoP.findKeyPairInfoPsBy(infra, company).getResultList();
-			} else {
-				throw new Exception("You cannot sync if" + "1. you are not Super Admin and running a SP edition of mycloudportal."
-						+ "2. you are Super Admin but running any other edition of mycloudportal");
-			}
-
-			for (Iterator iterator = keys.iterator(); iterator.hasNext();) {
-				KeyPairInfoP keyPairInfoP = (KeyPairInfoP) iterator.next();
-				try {
-					if (keyPairInfoP.getStatus().equals(Commons.keypair_STATUS.starting + "")
-							&& (new Date().getTime() - keyPairInfoP.getAsset().getStartTime().getTime() > (1000 * 60 * 60 * 3))) {
-						keyPairInfoP.getAsset().setEndTime(keyPairInfoP.getAsset().getStartTime());
-						keyPairInfoP.setStatus(Commons.keypair_STATUS.failed + "");
-						keyPairInfoP.merge();
-					}
-
-					if (Commons.EDITION_ENABLED != Commons.SERVICE_PROVIDER_EDITION_ENABLED){
-						//remove assets in mycp only if the edition running is NOT SERVICE PROVIDER
-						if (keysFromCloud.containsKey(keyPairInfoP.getKeyName())
-								&& keysFromCloud.get(keyPairInfoP.getKeyName()).getKeyFingerprint().equals(keyPairInfoP.getKeyFingerprint())) {
-	
-						} else {
-							logger.info("removing keyPairInfoP " + keyPairInfoP.getKeyName() + ", fingerprint " + keyPairInfoP.getKeyFingerprint()
-									+ " in mycp since it does not have a corresponding entry in the cloud");
-							keyPairInfoP.remove();
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		syncVolumes(ec2, params, assetTypeVolumeSnapshot, currentUser, volumeProduct, infra, company, start);
+		
+		syncSnapshots(ec2, params, assetTypeVolumeSnapshot, currentUser, snapshotProduct, infra, company, start,ownerId);
+		
+		syncImages(ec2, params, assetTypeComputeImage, currentUser, imageProduct, infra, company, start);
+		
+		syncInstances(ec2, params, assetTypeComputeInstance, currentUser, computeProduct, infra, company, start);
+		
+		syncKeys(ec2, params, assetTypeKeyPair, currentUser, keypairProduct, infra, company, start);
+		
 
 	}// end of sync
 

@@ -761,13 +761,12 @@ public class VmwareComputeWorker extends Worker {
 									Commons.ProductType.IpAddress + "")
 									.getSingleResult(), instanceLocal
 									.getAsset().getUser(), pc));
-					a.setAssociated(true);
+
 					a.setInstanceId(instanceLocal.getInstanceId());
 					a.setName("Ip for " + instanceLocal.getName());
 					a.setPublicIp(instanceLocal.getDnsName());
-					a.setStatus(Commons.ipaddress_STATUS.associated + "");
+					a.setStatus(Commons.ipaddress_STATUS.auto_assigned + "");
 					a.setReason("Automatic Ip addres assigned");
-					a.setAutomatic(true);
 					setAssetStartTime(a.getAsset());
 					a.merge();
 				} catch (Exception e) {
@@ -806,7 +805,7 @@ public class VmwareComputeWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1]
 									.getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1]
 											.getMethodName().indexOf("_")) + " for "
-							+ instance.getName() + ", " + e.getMessage(),
+							+ instance.getName() + ", " + e.getClass().getCanonicalName()+" : "+e.getMessage(),
 					Commons.task_name.COMPUTE.name(), Commons.task_status.FAIL
 							.ordinal(), userId);
 			try {

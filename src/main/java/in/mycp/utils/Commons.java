@@ -89,7 +89,9 @@ public class Commons {
 	}
 
 	static public enum ipaddress_STATUS {
-		starting,associating,disassociating,releasing,allocating, available,associated,failed,released,disassociated
+		nobody,available, associated, auto_assigned,
+		starting,associating,disassociating,releasing,allocating,failed
+		
 	}
 
 	static public enum keypair_STATUS {
@@ -225,11 +227,31 @@ public class Commons {
 		asset.setAssetType(at);
 		asset.setDetails("from mycp");
 		asset.setUser(currentUser);
-		if (!StringUtils.isEmpty(productCatalogId)) {
+		//productCatalog is a must here, without it this should throw an error
+		//if (!StringUtils.isEmpty(productCatalogId)) {
 			ProductCatalog pc = ProductCatalog.findProductCatalog(Integer.parseInt(productCatalogId));
 			asset.setStartRate(pc.getPrice());
 			asset.setProductCatalog(pc);
-		}
+		//}
+
+		return asset.merge();
+	}
+	
+	public static Asset getNewAsset4Worker(AssetType at, User currentUser, String productCatalogId, ReportService reportService , Company company) throws Exception {
+		currentUser = User.findUser(currentUser.getId());
+		
+		Asset asset = new Asset();
+		asset.setActive(true);
+		//asset.setStartTime(new Date());
+		asset.setAssetType(at);
+		asset.setDetails("from mycp");
+		asset.setUser(currentUser);
+		//productCatalog is a must here, without it this should throw an error
+		//if (!StringUtils.isEmpty(productCatalogId)) {
+			ProductCatalog pc = ProductCatalog.findProductCatalog(Integer.parseInt(productCatalogId));
+			asset.setStartRate(pc.getPrice());
+			asset.setProductCatalog(pc);
+		//}
 
 		return asset.merge();
 	}

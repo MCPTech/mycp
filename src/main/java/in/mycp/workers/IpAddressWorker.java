@@ -21,17 +21,20 @@ package in.mycp.workers;
 
 import in.mycp.domain.AddressInfoP;
 import in.mycp.domain.Asset;
+import in.mycp.domain.AssetType;
+import in.mycp.domain.Company;
 import in.mycp.domain.Infra;
 import in.mycp.domain.InstanceP;
+import in.mycp.domain.Project;
+import in.mycp.domain.User;
 import in.mycp.remote.AccountLogService;
+import in.mycp.remote.ReportService;
 import in.mycp.utils.Commons;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -39,8 +42,6 @@ import org.springframework.stereotype.Component;
 
 import com.xerox.amazonws.ec2.AddressInfo;
 import com.xerox.amazonws.ec2.Jec2;
-import com.xerox.amazonws.ec2.ReservationDescription;
-import com.xerox.amazonws.ec2.ReservationDescription.Instance;
 
 /**
  * 
@@ -55,6 +56,9 @@ public class IpAddressWorker extends Worker {
 	@Autowired
 	AccountLogService accountLogService;
 
+	@Autowired
+	ReportService reportService;
+	
 	protected static Logger logger = Logger.getLogger(IpAddressWorker.class);
 
 	@Async
@@ -119,12 +123,23 @@ public class IpAddressWorker extends Worker {
 					address_str = e.getMessage();
 					if (e.getMessage().indexOf("Number of retries exceeded") > -1) {
 						throw new Exception("No Connectivity to Cloud");
+					}else if (e.getMessage().indexOf("Got bored, Quitting") > -1) {
+						throw new Exception("Got bored, Quitting");
 					}
 				}
 			}
-
+			
+			//if there are any AddressInfoP objevcts hanging around in the MYCP DB for the same publicIP, make it inactive.
+			List<AddressInfoP> addressInfoPsWithSameIP = AddressInfoP.findAddressInfoPsBy(infra, address_str).getResultList();
+			for (Iterator iterator = addressInfoPsWithSameIP.iterator(); iterator.hasNext(); ) {
+				AddressInfoP addressInfoP2 = (AddressInfoP) iterator.next();
+				setAssetEndTime(addressInfoP2.getAsset());
+			}
+			
+			
+			
 			if (address_str.equals(newIpAddress)) {
-				addressInfoPLocal.setInstanceId("available");
+				addressInfoPLocal.setInstanceId("");
 				addressInfoPLocal.setPublicIp(newIpAddress);
 				addressInfoPLocal.setStatus(Commons.ipaddress_STATUS.available + "");
 				addressInfoPLocal = addressInfoPLocal.merge();
@@ -209,7 +224,7 @@ public class IpAddressWorker extends Worker {
 					List<AddressInfo> adrsses = ec2.describeAddresses(new ArrayList<String>());
 					for (Iterator iterator = adrsses.iterator(); iterator.hasNext();) {
 						AddressInfo addressInfo = (AddressInfo) iterator.next();
-						if (ipToMatch.equals(addressInfo.getPublicIp()) && addressInfo.getInstanceId().equals("nobody")) {
+						if (ipToMatch.equals(addressInfo.getPublicIp()) && addressInfo.getInstanceId().startsWith("nobody")) {
 							// euca logic
 							addressInfoLocal = null;
 							break;
@@ -221,15 +236,19 @@ public class IpAddressWorker extends Worker {
 					Thread.sleep(START_SLEEP_TIME);
 				} catch (Exception e) {
 					logger.error(e);// e.printStackTrace();
-					addressInfoLocal = null;
+					// addressInfoLocal = null;
 
 					if (e.getMessage().indexOf("Number of retries exceeded") > -1) {
 						throw new Exception("No Connectivity to Cloud");
+					}else if (e.getMessage().indexOf("Got bored, Quitting") > -1) {
+						throw new Exception("Got bored, Quitting");
 					}
 				}
 			}
 
-			if (addressInfoLocal == null && addressInfoPLocal!=null) {
+			if (addressInfoLocal == null && addressInfoPLocal != null) {
+				addressInfoPLocal.setStatus(Commons.ipaddress_STATUS.nobody + "");
+				addressInfoPLocal.merge();
 				setAssetEndTime(addressInfoPLocal.getAsset());
 				accountLogService.saveLogAndSendMail("Completed : "
 						+ this.getClass().getName()
@@ -238,11 +257,13 @@ public class IpAddressWorker extends Worker {
 								.subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
 						Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
-				//addressInfoPLocal.remove();
-				Asset a = addressInfoPLocal.getAsset();
-				if(a!=null && a.getEndTime()!=null){
-					Commons.setAssetEndTime(a);	
-				}
+				// addressInfoPLocal.remove();
+
+			} else {
+				addressInfoPLocal.setStatus(Commons.ipaddress_STATUS.failed + "");
+				addressInfoPLocal.setInstanceId("");
+				addressInfoPLocal.merge();
+				setAssetEndTime(addressInfoPLocal.getAsset());
 			}
 
 		} catch (Exception e) {
@@ -258,6 +279,7 @@ public class IpAddressWorker extends Worker {
 			try {
 				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 				a.setStatus(Commons.ipaddress_STATUS.failed + "");
+				a.setInstanceId("");
 				a = a.merge();
 				setAssetEndTime(a.getAsset());
 			} catch (Exception e2) {
@@ -270,6 +292,7 @@ public class IpAddressWorker extends Worker {
 	@Async
 	public void associateAddress(final Infra infra, final AddressInfoP addressInfoP, final String userId) {
 		try {
+
 			accountLogService.saveLog(
 					"Started : "
 							+ this.getClass().getName()
@@ -279,7 +302,30 @@ public class IpAddressWorker extends Worker {
 					Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
 			Jec2 ec2 = getNewJce2(infra);
+			// get the new addressInfoP and update it with the new instanceId
+			// get the new addressInfoP and update it with status "from cloud"
+			// get the old addressinfoP and update the instanceId with ""
+			// get the old addressinfoP and update the status with "from cloud"
+			// get the old instanceP and update the new ipaddress
 
+			AddressInfoP addressInfoPNew = AddressInfoP.findAddressInfoP(addressInfoP.getId());
+			InstanceP instancePNew = InstanceP.findInstancePsByInstanceIdEquals(addressInfoP.getInstanceId()).getSingleResult();
+			List<AddressInfoP> addressInfoPOlds = null;
+			
+			if(instancePNew.getIpAddress()!=null && instancePNew.getIpAddress().length()>0){
+				try {
+					 addressInfoPOlds = AddressInfoP.findAddressInfoPsByPublicIpEquals(instancePNew.getIpAddress()).getResultList();
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			/*System.out.println("addressInfoPOld.getPublicIp() = "+addressInfoPOld.getPublicIp()+" "+addressInfoPOld.getInstanceId());
+			System.out.println("addressInfoPNew.getPublicIp() = "+addressInfoPNew.getPublicIp()+" "+addressInfoPNew.getInstanceId());
+			System.out.println("instancePNew.getIpAddress() = "+instancePNew.getIpAddress()+" "+instancePNew.getInstanceId());
+			*/
+			// here do the ec2.associate
 			try {
 				logger.info("associateAddress address " + addressInfoP.getPublicIp() + " to instance " + addressInfoP.getInstanceId());
 				ec2.associateAddress(addressInfoP.getInstanceId(), addressInfoP.getPublicIp());
@@ -291,108 +337,87 @@ public class IpAddressWorker extends Worker {
 					throw new Exception("No Connectivity to Cloud");
 				}
 			}
-			String instanceIdOrig = addressInfoP.getInstanceId();
-			if (StringUtils.contains(instanceIdOrig, " ")) {
-				instanceIdOrig = StringUtils.substringBefore(instanceIdOrig, " ");
-			}
-
-			InstanceP orig_compute = null;
-			try {
-				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(instanceIdOrig).getSingleResult();
-			} catch (Exception e) {
-				logger.error(e);// 
-				e.printStackTrace();
-			}
-
-			AddressInfoP addressInfoP4PublicIp = null;
-			try {
-				addressInfoP4PublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(addressInfoP.getPublicIp()).getSingleResult();
-			} catch (Exception e) {
-				logger.error(e);// 
-				e.printStackTrace();
-			}
-
-			AddressInfoP addressInfoP4InstanceId = null;
-			try {
-				addressInfoP4InstanceId = AddressInfoP.findAddressInfoPsByInstanceIdLike(instanceIdOrig).getSingleResult();
-			} catch (Exception e) {
-				logger.error(e);// 
-				e.printStackTrace();
-			}
-
 			boolean match = false;
 			int START_SLEEP_TIME = 5000;
 			int waitformaxcap = START_SLEEP_TIME * 10;
 			long now = 0;
 			outer: while (!match) {
-				if (now > waitformaxcap) {
-					throw new Exception("Got bored, Quitting.");
-				}
-				now = now + START_SLEEP_TIME;
-
 				try {
+					if (now > waitformaxcap) {
+						throw new Exception("Got bored, Quitting.");
+					}
+					now = now + START_SLEEP_TIME;
+					// wait till teh job is done.
+					List<AddressInfo> adrsses = ec2.describeAddresses(new ArrayList<String>());
+					for (Iterator iterator = adrsses.iterator(); iterator.hasNext();) {
+						AddressInfo addressInfo = (AddressInfo) iterator.next();
+						
+						System.out.println("addressInfoPNew.getPublicIp().equals(addressInfo.getPublicIp() = "+addressInfoPNew.getPublicIp()+" "+addressInfo.getPublicIp());
+						
+						if (addressInfoPNew.getPublicIp().equals(addressInfo.getPublicIp())) {
+							// euca logic
+							if (addressInfo.getInstanceId().startsWith(addressInfoPNew.getInstanceId())) {
+								match = true;
+								break outer;
 
-					List<String> params = new ArrayList<String>();
-					List<ReservationDescription> instances = ec2.describeInstances(params);
-					for (ReservationDescription res : instances) {
-						if (res.getInstances() != null) {
-							HashSet<InstanceP> instancesP = new HashSet<InstanceP>();
-							for (Instance inst : res.getInstances()) {
-								logger.info(inst.getInstanceId() + " " + orig_compute.getInstanceId() + " " + inst.getDnsName()+ " " + inst.getIpAddress()  + " " + addressInfoP.getPublicIp());
-								if (inst.getInstanceId().equals(orig_compute.getInstanceId()) && inst.getIpAddress().equals(addressInfoP.getPublicIp())) {
-									match = true;
-									break outer;
-								}
-
-							}// for (Instance inst : res.getInstances()) {
-						}// if (res.getInstances() != null) {
-					}// for (ReservationDescription res : instances) {
+							}
+						}
+					}
 
 					logger.info("Ipaddress " + addressInfoP.getPublicIp() + " getting associated; sleeping " + START_SLEEP_TIME + "ms");
 					Thread.sleep(START_SLEEP_TIME);
-
 				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
-					// addressInfoLocal=null;
+					e.printStackTrace();
 					if (e.getMessage().indexOf("Number of retries exceeded") > -1) {
 						throw new Exception("No Connectivity to Cloud");
+					}else if (e.getMessage().indexOf("Got bored, Quitting") > -1) {
+						throw new Exception("Got bored, Quitting");
 					}
 				}
 			}
-			if (match == true) {
-				try {
-					orig_compute.setIpAddress(addressInfoP.getPublicIp());
-					orig_compute.merge();
-				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
+
+			// now loop throgh the ip addreses in cloud
+			// and get the association details
+			// then get the status of oldIp.
+
+			List<AddressInfo> adrsses = ec2.describeAddresses(new ArrayList<String>());
+			for (Iterator iterator = adrsses.iterator(); iterator.hasNext();) {
+				AddressInfo addressInfo = (AddressInfo) iterator.next();
+				//System.out.println("addressInfoPNew.getPublicIp().equals(addressInfo.getPublicIp() = "+addressInfoPNew.getPublicIp()+" "+addressInfo.getPublicIp());
+				if (addressInfoPNew.getPublicIp().equals(addressInfo.getPublicIp())) {
+					// euca logic
+					//System.out.println(" addressInfo.getInstanceId().startsWith(addressInfoPNew.getInstanceId()) "+addressInfo.getInstanceId()+" "+addressInfoPNew.getInstanceId());
+					if (addressInfo.getInstanceId().startsWith(addressInfoPNew.getInstanceId())) {
+						// now the association is successfull
+						// save this into MYCP.
+						addressInfoPNew.setInstanceId(addressInfoP.getInstanceId());
+						addressInfoPNew.setStatus(Commons.ipaddress_STATUS.associated + "");
+						addressInfoPNew.merge();
+						instancePNew.setIpAddress(addressInfoPNew.getPublicIp());
+						instancePNew.setDnsName(addressInfoPNew.getPublicIp());
+						instancePNew.merge();
+						setAssetStartTime(instancePNew.getAsset());
+					} 
 				}
-
-				try {
-					addressInfoP4PublicIp.setAssociated(true);
-					addressInfoP4PublicIp.setInstanceId(orig_compute.getInstanceId());
-					addressInfoP4PublicIp.setStatus(Commons.ipaddress_STATUS.associated + "");
-					addressInfoP4PublicIp.merge();
-
-				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
+				
+				//System.out.println("addressInfoPOld.getPublicIp().equals(addressInfo.getPublicIp()) = "+addressInfoPOld.getPublicIp()+" "+addressInfo.getPublicIp());
+				for (Iterator iterator2 = addressInfoPOlds.iterator(); iterator2.hasNext(); ) {
+					AddressInfoP addressInfoP2 = (AddressInfoP) iterator2.next();
+					if (addressInfoP2.getPublicIp().equals(addressInfo.getPublicIp())) {
+						// test whether the oldIp has been disassociated
+						
+						addressInfoP2.setStatus(Commons.ipaddress_STATUS.nobody + "");
+						addressInfoP2.merge();
+						setAssetEndTime(addressInfoP2.getAsset());
+					}	
 				}
-
-				try {
-					addressInfoP4InstanceId.setAssociated(false);
-					addressInfoP4InstanceId.setInstanceId("somebody");
-					addressInfoP4InstanceId.setStatus(Commons.ipaddress_STATUS.associated + "");
-					addressInfoP4InstanceId.merge();
-				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
-				}
-
-				accountLogService.saveLogAndSendMail("Completed : "
-						+ this.getClass().getName()
-						+ " : "
-						+ Thread.currentThread().getStackTrace()[1].getMethodName()
-								.subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
-						Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
+				
+				
 			}
+
+			accountLogService.saveLogAndSendMail("Completed : " + this.getClass().getName() + " : "
+					+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_"))
+					+ " for " + addressInfoP.getName(), Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -418,9 +443,34 @@ public class IpAddressWorker extends Worker {
 
 	@Async
 	public void disassociateAddress(final Infra infra, final AddressInfoP addressInfoP, final String userId) {
-		String threadName = Thread.currentThread().getName();
+		
+
+		// get the old addressInfoP and update it with the instanceId=""
+		// get the old addressInfoP and update it with status -="from cloud"
+		// loop through the ec2 addreses
+		// find the addressInfo for that old instanceId
+		// find the addressInfoP for that addressInfo
+		// and update the new addressInfoP with instanceId=new insatnceID
+		// and update the new addressInfoP with status associated.
+		// get the old instanceP and update the new ipaddress
 
 		try {
+			AddressInfoP addressInfoPOld = AddressInfoP.findAddressInfoP(addressInfoP.getId());
+			String instanceId = getExactInstanceId(addressInfoPOld.getInstanceId()); 
+			InstanceP instanceP = null;
+			String productCatId = addressInfoP.getAsset().getProductCatalog().getId()+"";
+			try {
+				instanceP = InstanceP.findInstancePsByInstanceIdEquals(instanceId).getSingleResult();	
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			
+			// AddressInfoP addressInfoNew =
+			// AddressInfoP.findAddressInfoPsByPublicIpEquals(instancePNew.getIpAddress()).getSingleResult();
+			System.out.println("addressInfoPOld.getPublicIp() = "+addressInfoPOld.getPublicIp()+" "+addressInfoPOld.getInstanceId());
+			System.out.println("instanceP.getIpAddress() = "+instanceP.getIpAddress()+" "+instanceP.getInstanceId());
+			
 			accountLogService.saveLog(
 					"Started : "
 							+ this.getClass().getName()
@@ -429,7 +479,7 @@ public class IpAddressWorker extends Worker {
 									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
 					Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
-			logger.debug("threadName " + threadName + " started for disassociateAddress");
+			
 			Jec2 ec2 = getNewJce2(infra);
 
 			try {
@@ -442,108 +492,126 @@ public class IpAddressWorker extends Worker {
 					throw new Exception("No Connectivity to Cloud");
 				}
 			}
-			String instanceIdOrig = addressInfoP.getInstanceId();
-			if (StringUtils.contains(instanceIdOrig, " ")) {
-				instanceIdOrig = StringUtils.substringBefore(instanceIdOrig, " ");
-			}
-
-			InstanceP orig_compute = null;
-			try {
-				orig_compute = InstanceP.findInstancePsByInstanceIdEquals(instanceIdOrig).getSingleResult();
-			} catch (Exception e) {
-				logger.error(e);// 
-				e.printStackTrace();
-			}
-
-			AddressInfoP addressInfoP4PublicIp = null;
-			try {
-				addressInfoP4PublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(addressInfoP.getPublicIp()).getSingleResult();
-			} catch (Exception e) {
-				logger.error(e);// 
-				e.printStackTrace();
-			}
-
-			String newIp = "";
-			boolean match = false;
+			
+			//loop and find out if the disassocitaion job is complete 
 			int START_SLEEP_TIME = 5000;
 			int waitformaxcap = START_SLEEP_TIME * 10;
 			long now = 0;
-			outer: while (!match) {
-				if (now > waitformaxcap) {
-					throw new Exception("Got bored, Quitting.");
-				}
-				now = now + START_SLEEP_TIME;
-
+			boolean done=false;
+			outer: while (!done) {
 				try {
+					if (now > waitformaxcap) {
+						throw new Exception("Got bored, Quitting.");
+					}
+					now = now + START_SLEEP_TIME;
+			List<AddressInfo> adrsses1 = ec2.describeAddresses(new ArrayList<String>());
+				for (Iterator iterator = adrsses1.iterator(); iterator.hasNext(); ) {
+					AddressInfo addressInfo = (AddressInfo) iterator.next();
+					if (addressInfoPOld.getPublicIp().equals(addressInfo.getPublicIp())) {
+						// if teh address is already released/disassociated
+						if (addressInfo.getInstanceId().startsWith(Commons.ipaddress_STATUS.nobody + "")
+								|| addressInfo.getInstanceId().startsWith(Commons.ipaddress_STATUS.available + "")) {
+							done = true;
+							break outer;
+						}
+					}
+				}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			//end of looping and finding out if the disassociation job is complete 
 
-					List<String> params = new ArrayList<String>();
-					List<ReservationDescription> instances = ec2.describeInstances(params);
-					for (ReservationDescription res : instances) {
-						if (res.getInstances() != null) {
-							HashSet<InstanceP> instancesP = new HashSet<InstanceP>();
-							for (Instance inst : res.getInstances()) {
-								logger.info(inst.getInstanceId() + " " + orig_compute.getInstanceId() + " " + inst.getDnsName()+ " " + inst.getIpAddress() + " " + addressInfoP.getPublicIp());
-								if (inst.getInstanceId().equals(orig_compute.getInstanceId()) && !inst.getIpAddress().equals(addressInfoP.getPublicIp())) {
+			//now , start looping again to fin dthe status old IP and the new ip (which the instance got automatically reassigned to)
+			boolean match = false;
+			boolean found = false;
+			START_SLEEP_TIME = 5000;
+			waitformaxcap = START_SLEEP_TIME * 10;
+			now = 0;
+			outer: while (!match && !found) {
+				try {
+					if (now > waitformaxcap) {
+						throw new Exception("Got bored, Quitting.");
+					}
+					now = now + START_SLEEP_TIME;
+					// wait till teh job is done.
+					List<AddressInfo> adrsses = ec2.describeAddresses(new ArrayList<String>());
+					for (Iterator iterator = adrsses.iterator(); iterator.hasNext();) {
+						AddressInfo addressInfo = (AddressInfo) iterator.next();
+						//logger.info("addressInfoPOld.getPublicIp().equals(addressInfo.getPublicIp() = "+addressInfoPOld.getPublicIp()+" "+addressInfo.getPublicIp());
+						//now, if you get the OLD ip , remove its association with the instance and make it available
+						if (addressInfoPOld.getPublicIp().equals(addressInfo.getPublicIp())) {
+							// if teh address is already released/disassociated, it will be in teh status available
+							if (addressInfo.getInstanceId().startsWith(Commons.ipaddress_STATUS.available + "")) {
+								match = true;
+								addressInfoPOld.setStatus(Commons.ipaddress_STATUS.available + "");
+								//setAssetEndTime(addressInfoPOld.getAsset());
+								addressInfoPOld.setInstanceId("");
+								addressInfoPOld.setReason("");
+								addressInfoPOld.merge();
 
-									newIp = inst.getIpAddress();
-									match = true;
-									break outer;
-								}
+							}
 
-							}// for (Instance inst : res.getInstances()) {
-						}// if (res.getInstances() != null) {
-					}// for (ReservationDescription res : instances) {
+							continue;
+						} 
+						
+						
+						//logger.info("associating back into the old/automatic IP = "+addressInfo.getInstanceId()+" "+addressInfoPOld.getInstanceId());
+						
+						// if some other automatic Ip is assigned ot the old instance, get that IP and store it in MYCP DB.
+						
+						if (addressInfo.getInstanceId().contains(instanceId)) {
+							// now we get the new Ip address assigned
+							found = true;
+
+							// find the addressInfoP for that addressInfo
+							// and update the new addressInfoP with
+							// instanceId=new insatnceID
+							// and update the new addressInfoP with status
+							// associated.
+							// get the old instanceP and update the new
+							// ipaddress
+
+							AddressInfoP addressInfoPNew = new AddressInfoP();//.findAddressInfoPsByPublicIpEquals(addressInfo.getPublicIp()).getSingleResult();
+							addressInfoPNew.setInstanceId(addressInfo.getInstanceId());
+							addressInfoPNew.setPublicIp(addressInfo.getPublicIp());
+							
+							addressInfoPNew.setStatus(Commons.ipaddress_STATUS.auto_assigned+ "");
+							addressInfoPNew.setReason("auto assigned Ip after disassociation");
+							
+								AssetType assetType = AssetType.findAssetTypesByNameEquals(
+										"" + Commons.ASSET_TYPE.IpAddress).getSingleResult();
+								Company company = addressInfoPOld.getAsset().getUser().getDepartment().getCompany();
+								Asset asset = Commons.getNewAsset4Worker(assetType, addressInfoPOld.getAsset().getUser() ,productCatId , reportService,company);
+								asset.setProject(Project.findProject(addressInfoPOld.getProjectId()));
+								addressInfoPNew.setAsset(asset);
+							setAssetStartTime(addressInfoPNew.getAsset());
+							addressInfoPNew.merge();
+
+							instanceP.setIpAddress(addressInfoPNew.getPublicIp());
+							instanceP.setDnsName(addressInfoPNew.getPublicIp());
+							instanceP.merge();
+							//after disaccosition , the asset still belongs to the user, cannot set the end time
+							//setAssetEndTime(addressInfoPOld.getAsset());
+						}
+					}
 
 					logger.info("Ipaddress " + addressInfoP.getPublicIp() + " getting disassociated; sleeping " + START_SLEEP_TIME + "ms");
 					Thread.sleep(START_SLEEP_TIME);
-
 				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
-					// addressInfoLocal=null;
-
+					e.printStackTrace();
+					if (e.getMessage().indexOf("Number of retries exceeded") > -1) {
+						throw new Exception("No Connectivity to Cloud");
+					}else if (e.getMessage().indexOf("Got bored, Quitting") > -1) {
+						throw new Exception("Got bored, Quitting");
+					}
 				}
 			}
 
-			AddressInfoP addressInfoP4NewPublicIp = null;
-			try {
-				addressInfoP4NewPublicIp = AddressInfoP.findAddressInfoPsByPublicIpEquals(newIp).getSingleResult();
-			} catch (Exception e) {
-				logger.error(e);// 
-				e.printStackTrace();
-			}
-
-			if (match == true) {
-				try {
-					orig_compute.setIpAddress(newIp);
-					orig_compute.merge();
-				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
-				}
-
-				try {
-					addressInfoP4PublicIp.setAssociated(false);
-					addressInfoP4PublicIp.setInstanceId("available");
-					addressInfoP4PublicIp.setStatus(Commons.ipaddress_STATUS.available + "");
-					addressInfoP4PublicIp.merge();
-				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
-				}
-
-				try {
-					addressInfoP4NewPublicIp.setAssociated(false);
-					addressInfoP4NewPublicIp.setInstanceId(orig_compute.getInstanceId());
-					addressInfoP4PublicIp.setStatus(Commons.ipaddress_STATUS.available + "");
-					addressInfoP4NewPublicIp.merge();
-				} catch (Exception e) {
-					logger.error(e);// e.printStackTrace();
-				}
-				accountLogService.saveLogAndSendMail("Completed : "
-						+ this.getClass().getName()
-						+ " : "
-						+ Thread.currentThread().getStackTrace()[1].getMethodName()
-								.subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName(),
-						Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
-			}
+			accountLogService.saveLogAndSendMail("Completed : " + this.getClass().getName() + " : "
+					+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0, Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_"))
+					+ " for " + addressInfoP.getName(), Commons.task_name.IPADDRESS.name(), Commons.task_status.SUCCESS.ordinal(), userId);
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -555,14 +623,16 @@ public class IpAddressWorker extends Worker {
 							+ Thread.currentThread().getStackTrace()[1].getMethodName().subSequence(0,
 									Thread.currentThread().getStackTrace()[1].getMethodName().indexOf("_")) + " for " + addressInfoP.getName() + ", " + e.getMessage(),
 					Commons.task_name.IPADDRESS.name(), Commons.task_status.FAIL.ordinal(), userId);
-			try {
+			
+			//lets leave the asset and mycp DB which ever state they are in. 
+			/*try {
 				AddressInfoP a = AddressInfoP.findAddressInfoP(addressInfoP.getId());
 				a.setStatus(Commons.ipaddress_STATUS.failed + "");
 				a = a.merge();
 				setAssetEndTime(a.getAsset());
 			} catch (Exception e2) {
 				// TODO: handle exception
-			}
+			}*/
 		}
 
 	}// enf disassociateAddress

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.TypedQuery;
 
@@ -89,7 +90,7 @@ public class KeyPairService {
 		try {
 
 			// for uniquity
-			instance.setKeyName(instance.getKeyName() + "_" + Commons.getCurrentSession().getCompany());
+			instance.setKeyName(instance.getKeyName() + "_" + UUID.randomUUID());
 			// check unique name per infra
 			try {
 				TypedQuery<KeyPairInfoP> tq = KeyPairInfoP.findKeyPairInfoPsByKeyNameEqualsAndCompanyEquals(instance.getKeyName(), Commons.getCurrentUser()

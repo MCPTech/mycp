@@ -170,6 +170,17 @@ public class VolumeInfoP {
         q.setParameter("infra", infra);
         return q;
     }
+    
+    public static TypedQuery<in.mycp.domain.VolumeInfoP> findVolumeInfoPsBy(Infra infra, String volumeId) {
+        if (volumeId == null || volumeId.length() == 0) throw new IllegalArgumentException("The volumeId argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<VolumeInfoP> q = em.createQuery("SELECT o FROM VolumeInfoP AS o WHERE o.volumeId = :volumeId and  o.asset.active = 1 " + 
+        "  " + " and o.asset.productCatalog.infra = :infra ", VolumeInfoP.class);
+        q.setParameter("volumeId", volumeId);
+        
+        q.setParameter("infra", infra);
+        return q;
+    }
 
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);

@@ -30,6 +30,7 @@ import java.util.Collection;
 import javax.mail.Message;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.jbpm.api.listener.EventListener;
 import org.jbpm.api.listener.EventListenerExecution;
 import org.jbpm.pvm.internal.email.impl.MailProducerImpl;
@@ -43,36 +44,45 @@ import org.springframework.stereotype.Component;
 /**
  * @author GangadharJN
  * @author jangamgangadhar@gmail.com
- *
+ * 
  */
 @Component("JbpmMailEventListener")
 public class JbpmMailEventListener implements EventListener {
 
-	  private String mailTemplate;
-	  public void notify(EventListenerExecution execution) {
-		  try{
-			  ApplicationContext appContext = ApplicationContextService4Jobs.getAppContext();
-			  AccountLogService accountLogService = (AccountLogService)appContext.getBean("accountLogService");
-			  MailDetailsDTO mailDetailsDTO = (MailDetailsDTO) execution.getVariable("mailDetailsDTO");
-			  if(mailDetailsDTO != null){
-				  if(StringUtils.isBlank(mailTemplate))	mailTemplate=mailDetailsDTO.getTemplateName();
-					try {
-						MailTemplateRegistry mailTemplateRegistry = EnvironmentImpl.getFromCurrent(MailTemplateRegistry.class);
-						MailSession mailSession = EnvironmentImpl.getFromCurrent(MailSession.class);
-						MailTemplate template = mailTemplateRegistry.getTemplate(mailTemplate);
-						MailProducerImpl mailProducer = new MailProducerImpl();
-						mailProducer.setTemplate(template);
-						Collection<Message> emails = mailProducer.produce(execution);
-						mailSession.send(emails);
-					} catch (Exception e) {
-						System.err.println("Couldn't send Mail : "+e.getMessage());
-						accountLogService.saveLog(e.getMessage(), "Mail Send Job", Commons.task_status.FAIL.ordinal(), "gangu96@yahoo.co.in");
-					}
-			  }
-		  }catch(Exception e){
-			  e.printStackTrace();
-		  } finally{
-			  mailTemplate = null;
-		  }
-	  }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	protected static Logger logger = Logger.getLogger(JbpmMailEventListener.class);
+
+	private String mailTemplate;
+
+	public void notify(EventListenerExecution execution) {
+		try {
+			ApplicationContext appContext = ApplicationContextService4Jobs.getAppContext();
+			AccountLogService accountLogService = (AccountLogService) appContext.getBean("accountLogService");
+			MailDetailsDTO mailDetailsDTO = (MailDetailsDTO) execution.getVariable("mailDetailsDTO");
+			if (mailDetailsDTO != null) {
+				if (StringUtils.isBlank(mailTemplate))
+					mailTemplate = mailDetailsDTO.getTemplateName();
+				try {
+					MailTemplateRegistry mailTemplateRegistry = EnvironmentImpl.getFromCurrent(MailTemplateRegistry.class);
+					MailSession mailSession = EnvironmentImpl.getFromCurrent(MailSession.class);
+					MailTemplate template = mailTemplateRegistry.getTemplate(mailTemplate);
+					MailProducerImpl mailProducer = new MailProducerImpl();
+					mailProducer.setTemplate(template);
+					Collection<Message> emails = mailProducer.produce(execution);
+					mailSession.send(emails);
+				} catch (Exception e) {
+					logger.error("Couldn't send Mail : " + e.getMessage());
+					//accountLogService.saveLog(e.getMessage(), "Mail Send Job", Commons.task_status.FAIL.ordinal(), mailDetailsDTO.getTo());
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			mailTemplate = null;
+		}
+	}
 }

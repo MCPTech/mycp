@@ -86,8 +86,7 @@ public class AddressInfoPService {
 			AssetType assetType = AssetType.findAssetTypesByNameEquals(
 					"" + Commons.ASSET_TYPE.IpAddress).getSingleResult();
 			User currentUser = Commons.getCurrentUser();
-			long allAssetTotalCosts = reportService.getAllAssetCosts()
-					.getTotalCost();
+			
 			currentUser = User.findUser(currentUser.getId());
 			Company company = currentUser.getDepartment().getCompany();
 			Asset asset = Commons.getNewAsset(assetType, currentUser,productId, reportService,company);
@@ -225,8 +224,7 @@ public class AddressInfoPService {
 			String orig_instanceIdFromJS = instance.getInstanceId();
 			String orig_publicIpFromJS = instance.getPublicIp();
 			instance = AddressInfoP.findAddressInfoP(instance.getId());
-			instance.setStatus(Commons.ipaddress_STATUS.associating+"");
-			instance = instance.merge();
+			
 			// setit back to clean instance ID because it is in format
 			// 'i-595E09AE (eucalyptus)'
 			instance.setInstanceId(orig_instanceIdFromJS);
@@ -255,8 +253,7 @@ public class AddressInfoPService {
 	public void disassociateAddress(int id) {
 		try {
 			AddressInfoP instance = AddressInfoP.findAddressInfoP(id);
-			instance.setStatus(Commons.ipaddress_STATUS.disassociating+"");
-			instance = instance.merge();
+			
 			Infra infra = instance.getAsset().getProductCatalog().getInfra();
 			if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
 					|| infra.getInfraType().getId() == Commons.INFRA_TYPE_EUCA){
@@ -283,8 +280,7 @@ public class AddressInfoPService {
 			AddressInfoP adressInfoP = AddressInfoP.findAddressInfoP(id);
 			log.info("Calling allocate address for Workflow approved for "
 					+ adressInfoP.getId() + " " + adressInfoP.getName());
-			adressInfoP.setStatus(Commons.ipaddress_STATUS.allocating+"");
-			adressInfoP = adressInfoP.merge();
+			
 			
 			Infra infra = adressInfoP.getAsset().getProductCatalog().getInfra();
 			if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
@@ -310,11 +306,10 @@ public class AddressInfoPService {
 		try {
 			AddressInfoP adressInfoP = AddressInfoP.findAddressInfoP(id);
 			log.info("releasing IP adress " + adressInfoP.getPublicIp());
-			adressInfoP.setStatus(Commons.ipaddress_STATUS.releasing+"");
-			adressInfoP = adressInfoP.merge();
+			
 			
 			if (adressInfoP.getInstanceId() != null
-					&& adressInfoP.getInstanceId().startsWith("available")) {
+					&& adressInfoP.getStatus().startsWith("available")) {
 				
 				Infra infra = adressInfoP.getAsset().getProductCatalog().getInfra();
 				if(infra.getInfraType().getId() == Commons.INFRA_TYPE_AWS 
@@ -328,8 +323,9 @@ public class AddressInfoPService {
 				
 				
 			} else {
-				log.error("Cant release addresses not marked as available.");
+				throw new Exception("Cant release addresses not marked as available.");
 			}
+			
 			Commons.setSessionMsg("Scheduling Ip Address release");
 			remove(id);
 			

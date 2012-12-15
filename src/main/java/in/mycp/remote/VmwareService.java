@@ -316,6 +316,7 @@ public class VmwareService {
 					}
 
 					if (descriptionP != null) {
+						descriptionP.setName(adminOrgNetwork.getReference().getName());
 						descriptionP.setDescripton(adminOrgNetwork.getReference().getHref());
 						//descriptionP.setOwner(groupDescription.getOwner());
 					} else {
@@ -354,7 +355,7 @@ public class VmwareService {
 														firewallRule.getSourceIp(), firewallRule.getSourcePort(),
 														firewallRule.getDirection(),firewallRule.getPolicy()).getSingleResult();
 											} catch (Exception e) {
-												e.printStackTrace();
+												//e.printStackTrace();
 												logger.error(e.getMessage());
 											}
 
@@ -576,7 +577,7 @@ public class VmwareService {
 
 				} catch (Exception e) {
 					logger.error(e.getMessage());//
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 				if (addressInfoP == null) {
 					addressInfoP = new AddressInfoP();
@@ -596,7 +597,7 @@ public class VmwareService {
 			// state "starting" for more than 60 mins
 			// //clean up the ip adresses in mycp which are not in a
 			// corresponding state in the cloud
-			List<AddressInfoP> addresses = null;
+			/*List<AddressInfoP> addresses = null;
 
 			if (Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED && currentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				addresses = AddressInfoP.findAddressInfoPsByInfra(infra).getResultList();
@@ -633,7 +634,7 @@ public class VmwareService {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}
+			}*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -689,7 +690,7 @@ public class VmwareService {
 								volumeInfoP = VolumeInfoP.findVolumeInfoPsBy(infra, volId, company).getSingleResult();
 							} catch (Exception e) {
 								logger.error(e.getMessage());//
-								e.printStackTrace();
+								//e.printStackTrace();
 							}
 							if (volumeInfoP != null) {
 
@@ -808,7 +809,7 @@ public class VmwareService {
 							imageDescriptionP = ImageDescriptionP.findImageDescriptionPsBy(infra,vappTemplate.getResource().getId(), company).getSingleResult();
 						} catch (Exception e) {
 							logger.error(e.getMessage());//
-							e.printStackTrace();
+							//e.printStackTrace();
 						}
 						if (imageDescriptionP != null) {
 	
@@ -1041,7 +1042,7 @@ public class VmwareService {
 							instanceP = InstanceP.findInstancePsBy(infra, vmId, company).getSingleResult();
 						} catch (Exception e) {
 							logger.error(e.getMessage());//
-							e.printStackTrace();
+							//e.printStackTrace();
 						}
 
 						if (instanceP != null) {

@@ -9,16 +9,17 @@ import in.mycp.domain.Manager;
 import in.mycp.domain.Project;
 import in.mycp.domain.User;
 import java.util.Set;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 privileged aspect Project_Roo_DbManaged {
     
-    @ManyToMany(mappedBy = "projects", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToMany
+    @JoinTable(name = "user_project", joinColumns = { @JoinColumn(name = "project_id", nullable = false) }, inverseJoinColumns = { @JoinColumn(name = "user_id", nullable = false) })
     private Set<User> Project.users;
     
     @OneToMany(mappedBy = "project")

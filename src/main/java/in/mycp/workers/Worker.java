@@ -153,5 +153,14 @@ public class Worker {
 		a.merge();
 	}
 	
+	public String getExactInstanceId(String addressInfoInstanceId){
+		if(addressInfoInstanceId!=null && addressInfoInstanceId.indexOf(" ")>-1){
+			return addressInfoInstanceId.substring(0,addressInfoInstanceId.indexOf(" ")+1);	
+		}else {
+			return addressInfoInstanceId;
+		}
+		
+	}
+	
 	
 }
