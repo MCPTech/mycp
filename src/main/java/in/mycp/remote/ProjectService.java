@@ -23,9 +23,11 @@ package in.mycp.remote;
 import in.mycp.domain.Company;
 import in.mycp.domain.Department;
 import in.mycp.domain.Project;
+import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -70,10 +72,20 @@ public class ProjectService {
 					Commons.task_name.PROJECT.name(),
 					Commons.task_status.SUCCESS.ordinal(), Commons
 							.getCurrentUser().getEmail());
-			if(instance.getId()>0){
+			if(instance.getId()!=null && instance.getId()>0){
 				Project project = findById(instance.getId());
 				if(project.getQuota()!=null && project.getQuota().intValue() != instance.getQuota().intValue()){
-					accountLogService.saveLogAndSendMail("Project '"+instance.getName()+"' Quota updated from '"+project.getQuota()+"' to '"+instance.getQuota()+"'", "Project '"+instance.getName()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+					
+					List<User> users = User.findManagersByCompany(project.getDepartment().getCompany()).getResultList();
+					for (User user : users) {
+						if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
+							accountLogService.saveLogAndSendMail("project '"+instance.getName()+"' Quota updated from '"+project.getQuota()+
+									"' to '"+instance.getQuota()+"'", "project '"+instance.getName()+"' Quota updated", 1, user.getEmail());
+						}
+					}
+					
+					
+					
 				}
 			}
 			

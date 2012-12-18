@@ -92,13 +92,15 @@ public class AccountLogService {
 					Company company2 = (Company) iterator.next();
 					superAdminUsers.addAll(User.findUsersByCompany(company2).getResultList());
 				} catch (Exception e) {
+					e.printStackTrace();
 					// TODO: handle exception
 				}
 			}
+			return superAdminUsers;
 
 		}
 
-		return null;
+		return new ArrayList<User>();
 	}
 
 	public List<AccountLog> getLast24HoursLog() {
@@ -108,8 +110,9 @@ public class AccountLogService {
 			User curentUser = Commons.getCurrentUser();
 
 			List<User> users = findUsers4Role(curentUser);
-			for (Iterator iterator = users.iterator(); iterator.hasNext();) {
-				User user = (User) iterator.next();
+
+			for (User user : users) {
+
 				try {
 					List<AccountLog> als = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(user, yesterday.toDate()).getResultList();
 					accountLogs.addAll(als);
@@ -193,6 +196,7 @@ public class AccountLogService {
 			variables.put("mailDetailsDTO", mailDetailsDTO);
 			ProcessInstance instance = workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e.getMessage());
 		}
 	}// end saveLogAfterLogout
@@ -215,7 +219,7 @@ public class AccountLogService {
 				acctLog.merge();
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
+			 e.printStackTrace();
 			log.error(e.getMessage());
 		}
 	}// end saveLogAfterLogout

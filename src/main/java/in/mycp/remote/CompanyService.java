@@ -21,6 +21,7 @@
 package in.mycp.remote;
 
 import in.mycp.domain.Company;
+import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 
 import java.util.ArrayList;
@@ -35,14 +36,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
 
 @RemoteProxy(name = "CompanyService")
 public class CompanyService {
 
 	private static final Logger log = Logger.getLogger(CompanyService.class.getName());
-	
+
 	@Autowired
 	AccountLogService accountLogService;
 
@@ -51,7 +52,7 @@ public class CompanyService {
 		try {
 			instance.persist();
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage());
 		}
 	}// end of save(Company
@@ -59,13 +60,22 @@ public class CompanyService {
 	@RemoteMethod
 	public Company saveOrUpdate(Company instance) {
 		try {
-			//TODO - Charu - Gangu, do we need this for company itself?
-/*			if(instance.getId()!=null && instance.getId()>0){
+
+			if (instance.getId() != null && instance.getId() > 0) {
 				Company company = findById(instance.getId());
-				if(company.getQuota() !=null && company.getQuota().intValue() != instance.getQuota().intValue()){
-					accountLogService.saveLogAndSendMail("Company '"+instance.getName()+"' Quota updated from '"+company.getQuota()+"' to '"+instance.getQuota()+"'", "Company '"+instance.getName()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+				if (company.getQuota() != null && company.getQuota().intValue() != instance.getQuota().intValue()) {
+
+					List<User> users = User.findManagersByCompany(company).getResultList();
+					for (User user : users) {
+						if (user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "")) {
+							accountLogService.saveLogAndSendMail(
+									"Company '" + instance.getName() + "' Quota updated from '" + company.getQuota() + "' to '" + instance.getQuota() + "'", "Company '"
+											+ instance.getName() + "' Quota updated", 1, user.getEmail());
+						}
+					}
+
 				}
-			}*/
+			}
 			return instance.merge();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -81,7 +91,7 @@ public class CompanyService {
 			return "Removed Company " + id;
 		} catch (Exception e) {
 			// System.out.println(" = "+e.getMessage());
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage());
 		}
 		return "Error removing Company " + id + ". Look into logs.";
@@ -92,7 +102,7 @@ public class CompanyService {
 		try {
 			return Company.findCompany(id);
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage());
 		}
 		return null;
@@ -103,7 +113,7 @@ public class CompanyService {
 		try {
 			if (Commons.getCurrentUser().getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 				return Company.findAllCompanys();
-				
+
 			} else {
 				List<Company> comapnies = new ArrayList<Company>();
 				comapnies.add(Company.findCompany(Commons.getCurrentSession().getCompanyId()));
@@ -111,25 +121,23 @@ public class CompanyService {
 			}
 
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage());
 		}
 		return null;
 	}// end of method findAll
-	
+
 	@RemoteMethod
 	public List<String> findAllDistinctCurrency() {
 		try {
 			return Company.findAllDistinctCurrency();
 
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			log.error(e.getMessage());
 		}
 		return null;
 	}// end of method findAll
-	
-	
 
 }// end of class Company
 

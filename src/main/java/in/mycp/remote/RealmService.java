@@ -83,6 +83,11 @@ public class RealmService {
 			if (instance != null && StringUtils.isBlank(instance.getPassword())) {
 				throw new Exception("Password cannot be empty");
 			}
+			
+			int quotaInDB = 0;
+			int quotaFromUI = 0;
+			boolean saveLog=false;
+			
 			//to update the user projects
 			Set<Project> stProjects2Save = new HashSet<Project>();
 			Set<Project> stProjects = instance.getProjects();
@@ -99,6 +104,11 @@ public class RealmService {
 				instance.setRegistereddate(new Date());
 				instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
 			} else {
+				
+				 quotaInDB = localUser.getQuota();
+				 quotaFromUI = instance.getQuota();
+				 saveLog = true;
+				 
 				if(localUser.getRegistereddate() != null){
 					instance.setRegistereddate(localUser.getRegistereddate());
 				}else{
@@ -106,8 +116,8 @@ public class RealmService {
 				}
 				String encodedPassword = passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail());
 				
-				System.out.println(" encodedPassword =  "+encodedPassword);
-				System.out.println(" localUser.getPassword() =  "+localUser.getPassword());
+				/*System.out.println(" encodedPassword =  "+encodedPassword);
+				System.out.println(" localUser.getPassword() =  "+localUser.getPassword());*/
 				
 				instance.setLoggedInDate(localUser.getLoggedInDate());
 				if (!localUser.getPassword().equals(instance.getPassword())) {
@@ -129,22 +139,20 @@ public class RealmService {
 			//	object references an unsaved transient instance - save the transient instance before flushing: in.mycp.domain.User; 
 			// nested exception is java.lang.IllegalStateException: org.hibernate.TransientObjectException: object references an unsaved transient instance - 
 			// save the transient instance before flushing: in.mycp.domain.User
-			accountLogService.saveLog("User " + instance.getEmail()+" created, ",
+			accountLogService.saveLog("User " + instance.getEmail()+" created/updating, ",
 					Commons.task_name.USER.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
-			
-			if(instance!=null && instance.getId() !=null && instance.getId()>0){
-				User user = findById(instance.getId());
-				if(user.getQuota()!=null && user.getQuota().intValue() != instance.getQuota().intValue()){
-					accountLogService.saveLogAndSendMail("User '"+instance.getEmail()+"' Quota updated from '"+user.getQuota()+"' to '"+instance.getQuota()+"'", "User '"+instance.getEmail()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+				
+				if(saveLog && quotaInDB != quotaFromUI ){
+					accountLogService.saveLogAndSendMail("User '"+instance.getEmail()+"' Quota updated from '"+quotaInDB+"' to '"+quotaFromUI+"'", "User '"+instance.getEmail()+"' Quota updated", 1, instance.getEmail());
 				}
-			}
+			
 			return instance.merge();
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
-			accountLogService.saveLog("Error in User " + instance.getEmail()+" creation, "+e.getMessage(),
+			accountLogService.saveLog("Error in User " + instance.getEmail()+" creation/updating, "+e.getMessage(),
 					Commons.task_name.USER.name(),
 					Commons.task_status.FAIL.ordinal(),
 					Commons.getCurrentUser().getEmail());

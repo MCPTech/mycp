@@ -22,9 +22,11 @@ package in.mycp.remote;
 
 import in.mycp.domain.Company;
 import in.mycp.domain.Department;
+import in.mycp.domain.User;
 import in.mycp.utils.Commons;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -59,15 +61,26 @@ public class DepartmentService {
 					Commons.task_name.DEPARTMENT.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
-			if(instance.getId()>0){
+			if(instance.getId()!=null && instance.getId()>0){
 				Department department = findById(instance.getId());
 				if(department.getQuota()!=null && department.getQuota().intValue() != instance.getQuota().intValue()){
-					accountLogService.saveLogAndSendMail("Department '"+instance.getName()+"' Quota updated from '"+department.getQuota()+"' to '"+instance.getQuota()+"'", "Department '"+instance.getName()+"' Quota updated", 1, "gangu96@yahoo.co.in");
+					
+					List<User> users = User.findManagersByCompany(department.getCompany()).getResultList();
+					for (User user : users) {
+						if(user.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER+"")){
+							accountLogService.saveLogAndSendMail("Department '"+instance.getName()+"' Quota updated from '"+department.getQuota()+
+									"' to '"+instance.getQuota()+"'", "Department '"+instance.getName()+"' Quota updated", 1, user.getEmail());
+						}
+					}
+					
+					
+					
+					
 				}
 			}
 			return instance.merge();
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			log.error(e.getMessage());
 			accountLogService.saveLog("Error in Department " + instance.getName()+" creation, ",
 					Commons.task_name.DEPARTMENT.name(),

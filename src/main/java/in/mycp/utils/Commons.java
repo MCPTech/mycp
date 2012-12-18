@@ -127,9 +127,7 @@ public class Commons {
 	public static String VOLUME_STATUS_DELETED = "deleted";
 	public static String VOLUME_STATUS_FAILED = "FAILED";
 
-	public static int ROLE_USER_INTVAL = 0;
-	public static int ROLE_MANAGER_INTVAL = 6;
-	public static int ROLE_SUPERADMIN_INTVAL = 9;
+	
 	
 	public static int INFRA_TYPE_EUCA=1;
 	public static int INFRA_TYPE_AWS=2;
@@ -148,6 +146,9 @@ public class Commons {
 	static public enum ROLE {
 		ROLE_USER, ROLE_MANAGER, ROLE_SUPERADMIN
 	}
+	public static int ROLE_USER_INTVAL = 1;
+	public static int ROLE_MANAGER_INTVAL = 3;
+	public static int ROLE_SUPERADMIN_INTVAL = 4;
 
 	static public enum WORKFLOW_STATUS {
 		PENDING_APPROVAL, ABORTED, APPROVED, APPROVAL_REJECTED, END, NO_WORKFLOW
