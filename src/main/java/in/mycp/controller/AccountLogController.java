@@ -21,6 +21,7 @@
 package in.mycp.controller;
 
 import in.mycp.domain.AccountLog;
+import in.mycp.domain.AccountLogTypeDTO;
 import in.mycp.domain.Asset;
 import in.mycp.domain.Company;
 import in.mycp.domain.Department;
@@ -39,6 +40,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -65,6 +67,24 @@ public class AccountLogController {
 	@RequestMapping(value = "/account", produces = "text/html")
 	public String session(HttpServletRequest req, HttpServletResponse resp) {
 		req.setAttribute("sessionLogList", accountLogService.getLast24HoursLog());
+		return "log/accountLog";
+	}
+	
+	@RequestMapping(value = "/filterLog", produces = "text/html")
+	public String getFilterLog(HttpServletRequest req, HttpServletResponse resp) {
+		String s = req.getParameter("filterName");
+		//System.out.println(" s= "+s);
+		if(StringUtils.isNotBlank(s) && s.equals("last 7 days")){
+		
+			req.setAttribute("sessionLogList", accountLogService.getLast7DaysLog());
+		}else if(StringUtils.isNotBlank(s) && s.equals("last 24 Hours")){
+			req.setAttribute("sessionLogList", accountLogService.getLast24HoursLog());
+		}else if(StringUtils.isNotBlank(s)){
+			req.setAttribute("sessionLogList", accountLogService.getLog4Month(s));
+		}else {
+			req.setAttribute("sessionLogList", accountLogService.getLast24HoursLog());
+		}
+		req.setAttribute("filter", req.getParameter("accountLogType"));
 		return "log/accountLog";
 	}
 

@@ -12,7 +12,8 @@
 <script type="text/javascript">
 function filterResult(p){
 	var Index = p.options[p.selectedIndex].text; 
-	//alert(Index);
+	$("#filterName").val(Index);
+	document.forms["filterLog"].submit();
 	}
 
 $(document).ready(function() {
@@ -20,7 +21,8 @@ $(document).ready(function() {
 	AccountLogService.getAllAccountLogTypes(function(p){
 		dwr.util.removeAllOptions('accountLogType');
 		dwr.util.addOptions('accountLogType', p, 'id', 'name');
-		//dwr.util.setValue(id, sel);
+		//alert('${filter}');
+		dwr.util.setValue('accountLogType', '${filter}');
 	});
 	
 	
@@ -44,8 +46,11 @@ $(document).ready(function() {
 								<tr >
 									<td width="80%" align="right">Filter:</td>
 									<td width="20%" align="right">
+									<form action="/log/filterLog" name="filterLog">
 										<select onchange="filterResult(this)" id="accountLogType" name="accountLogType" style="width: 200px;" >
 								    	</select>
+								    	<input type="hidden" name="filterName" id="filterName">
+								    	</form>
 							    	</td>
 								</tr>
 							</thead>

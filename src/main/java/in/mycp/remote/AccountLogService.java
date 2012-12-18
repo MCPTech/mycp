@@ -75,6 +75,12 @@ public class AccountLogService {
 	public List<AccountLogTypeDTO> getAllAccountLogTypes() {
 		return Commons.getAllAccountLogTypes();
 	}
+	
+	@RemoteMethod
+	public List<AccountLog> getLog(String logType) {
+		System.out.println("logType = "+logType);
+		return null;
+	}
 
 	public List<User> findUsers4Role(User curentUser) {
 		if (curentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "")) {
@@ -86,6 +92,8 @@ public class AccountLogService {
 			return singleUser;
 		} else if (curentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
 			List<User> superAdminUsers = new ArrayList<User>();
+			//add super admin too into this list
+			superAdminUsers.add(curentUser);
 			List<Company> companies = Company.findAllCompanys();
 			for (Iterator iterator = companies.iterator(); iterator.hasNext();) {
 				try {

@@ -717,7 +717,7 @@ public class ComputeWorker extends Worker {
 					 * getUser().getProject().getDepartment
 					 * ().getCompany()).getSingleResult();
 					 */
-					System.out.println("finding alkl xingintg addressinfo objects with same publicIp and inactivating them "+instanceLocal.getIpAddress());
+					/*System.out.println("finding alkl xingintg addressinfo objects with same publicIp and inactivating them "+instanceLocal.getIpAddress());*/
 					List<AddressInfoP> addresses =  AddressInfoP.findAddressInfoPsBy(infra, instanceLocal.getIpAddress()).getResultList();
 					for (Iterator iterator = addresses.iterator(); iterator.hasNext(); ) {
 						AddressInfoP addressInfoP = (AddressInfoP) iterator.next();
