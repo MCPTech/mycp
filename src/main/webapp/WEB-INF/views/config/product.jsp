@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<%@ page import="in.mycp.utils.Commons" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles" %>
 <script type='text/javascript' src='/dwr/interface/ProductService.js'></script>
@@ -311,7 +312,15 @@ function afterSave_product(){
 								
 								</td>
 								<td width="10%">
-									<span id="only4mycpadmin"><div class="demo" id="popupbutton_product"><button>New Product</button></div></span>
+								<% 
+								 if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+									 if(Commons.getCurrentUserRolesNonDWR().contains(Commons.ROLE.ROLE_SUPERADMIN+"")){
+										 %>
+										<div class="demo" id="popupbutton_product"><button>New Product</button></div>										 
+										 <%	 
+									 }
+								 }
+								%>
 								</td>
 								<td width="10%">
 									<div class="demo" id="popupbutton_productlist"><button>List Products</button></div>

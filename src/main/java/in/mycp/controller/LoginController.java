@@ -185,7 +185,13 @@ public class LoginController {
 	            user.setPassword(passwordEncoder.encodePassword(password, email));
             Company c = new Company();
 	            c.setName(organization);
-	            c.setCurrency(Commons.CURRENCY_DEFAULT);
+	            //if SP edition is running , take teh currency of the Sp's account which is the first account in teh system
+	            if(Commons.EDITION_ENABLED == Commons.SERVICE_PROVIDER_EDITION_ENABLED){
+	            	c.setCurrency( Company.findFirstCompany().getCurrency());
+	            }else {
+	            	c.setCurrency(Commons.CURRENCY_DEFAULT);	
+	            }
+	            
 	            c = c.merge();
             Department d = new Department();
 	            d.setCompany(c);

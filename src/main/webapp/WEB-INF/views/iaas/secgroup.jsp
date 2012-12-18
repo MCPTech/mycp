@@ -57,7 +57,7 @@
 			  '<td style="width: 20%;"><input type="text" name="protocol" id="protocol" size="20" class="required"></td>'+
 			  '<td style="width: 20%;"><input type="text" name="fromPort" id="fromPort" size="20" class="required number"></td>'+
 			  '<td style="width: 20%;"><input type="text" name="toPort" id="toPort" size="20" class="required number"></td>'+
-			  '<td style="width: 20%;"><input type="text" name="cidrIps" id="cidrIps" size="20" ></td>'+
+			  '<td style="width: 20%;"><input type="text" name="cidrIps" id="cidrIps" value="0.0.0.0/0" size="20" ></td>'+
 			  '<td style="width: 5%;">'+
 					'<a title="Remove Rule" onclick="deleteRow(this,null)"><img src=../images/minus.png></a>'+
 			  '</td>'+

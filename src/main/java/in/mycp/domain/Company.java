@@ -25,6 +25,11 @@ public class Company {
         return entityManager().createQuery("SELECT DISTINCT c.currency FROM Company AS c", String.class).getResultList();
     }
 
+    
+    public static Company findFirstCompany() {
+    	return entityManager().createQuery("SELECT o FROM Company o where o.id = (select min(o1.id) from Company o1 )", Company.class).getSingleResult();
+    }
+    
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
