@@ -10,7 +10,10 @@
 <script type='text/javascript' src='/dwr/interface/AccountLogService.js'></script>
 
 <script type="text/javascript">
-
+function filterResult(p){
+	var Index = p.options[p.selectedIndex].text; 
+	//alert(Index);
+	}
 
 $(document).ready(function() {
 	
@@ -20,13 +23,15 @@ $(document).ready(function() {
 		//dwr.util.setValue(id, sel);
 	});
 	
+	
+	
 });
 </script>
 
 
  						
 						
-<div class="dataTableHeader">Session log.	
+<div class="dataTableHeader">Audit log.	
 </div>
 
 						
@@ -39,7 +44,7 @@ $(document).ready(function() {
 								<tr >
 									<td width="80%" align="right">Filter:</td>
 									<td width="20%" align="right">
-										<select id="accountLogType" name="accountLogType" style="width: 200px;" >
+										<select onchange="filterResult(this)" id="accountLogType" name="accountLogType" style="width: 200px;" >
 								    	</select>
 							    	</td>
 								</tr>

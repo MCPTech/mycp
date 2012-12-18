@@ -1,9 +1,13 @@
 package in.mycp.domain;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
+
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.roo.addon.dbre.RooDbManaged;
@@ -63,7 +67,7 @@ public class Workflow {
 
     public static TypedQuery<in.mycp.domain.Workflow> findWorkflowsByCompany(Company company) {
         if (company == null) throw new IllegalArgumentException("The company argument is required");
-        EntityManager em = Workflow.entityManager();
+        EntityManager em = entityManager();
         TypedQuery<Workflow> q = em.createQuery("SELECT o FROM Workflow AS o WHERE o.user.department.company = :company", Workflow.class);
         q.setParameter("company", company);
         return q;
@@ -72,4 +76,20 @@ public class Workflow {
     public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
+    
+    public static Workflow findWorkflowsBy(Integer assetId,String assetType) {
+        if (assetId == null) throw new IllegalArgumentException("The assetId argument is required");
+        EntityManager em = entityManager();
+        TypedQuery<Workflow> q = em.createQuery("SELECT o FROM Workflow AS o WHERE o.assetId = :assetId and o.assetType = :assetType", Workflow.class);
+        q.setParameter("assetId", assetId);
+        q.setParameter("assetType", assetType);
+        List<Workflow> wfs = q.getResultList();
+        for (Iterator iterator = wfs.iterator(); iterator.hasNext(); ) {
+			Workflow workflow = (Workflow) iterator.next();
+			return workflow;
+		}
+        
+        return null;
+    }
+    
 }

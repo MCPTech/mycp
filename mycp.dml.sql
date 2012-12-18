@@ -23,3 +23,10 @@ ADD COLUMN `assigned` TINYINT(1) NULL DEFAULT 0  AFTER `automatic` ;
 ALTER TABLE `mycp`.`address_info_p` DROP COLUMN `assigned` , DROP COLUMN `automatic` , DROP COLUMN `associated` ;
 
 -- End charu - 11 Dec 2012
+
+ALTER TABLE `mycp`.`group_description_p` CHANGE COLUMN `name` `name` VARCHAR(90) NULL DEFAULT NULL  ;
+ALTER TABLE `mycp`.`instance_p` CHANGE COLUMN `keyName` `keyName` VARCHAR(90) NULL DEFAULT NULL  , 
+CHANGE COLUMN `groupName` `groupName` VARCHAR(90) NULL DEFAULT NULL  ;
+
+
+

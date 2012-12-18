@@ -21,13 +21,16 @@ package in.mycp.remote;
 
 import in.mycp.domain.AccountLog;
 import in.mycp.domain.AccountLogTypeDTO;
+import in.mycp.domain.Company;
 import in.mycp.domain.User;
 import in.mycp.service.WorkflowImpl4Jbpm;
 import in.mycp.utils.Commons;
 import in.mycp.web.MailDetailsDTO;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -57,104 +60,165 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author Charudath Doddanakatte
  * @author cgowdas@gmail.com
- *
+ * 
  */
- 
+
 @RemoteProxy(name = "AccountLogService")
 public class AccountLogService {
 
 	private static final Logger log = Logger.getLogger(AccountLogService.class.getName());
-	
+
 	@Autowired
 	private WorkflowImpl4Jbpm workflowImpl4Jbpm;
-	
+
 	@RemoteMethod
-	public List<AccountLogTypeDTO> getAllAccountLogTypes(){
+	public List<AccountLogTypeDTO> getAllAccountLogTypes() {
 		return Commons.getAllAccountLogTypes();
 	}
 
-	
-	public List<AccountLog> getLast24HoursLog(){
+	public List<User> findUsers4Role(User curentUser) {
+		if (curentUser.getRole().getName().equals(Commons.ROLE.ROLE_MANAGER + "")) {
+			Company c = curentUser.getDepartment().getCompany();
+			return User.findUsersByCompany(c).getResultList();
+		} else if (curentUser.getRole().getName().equals(Commons.ROLE.ROLE_USER + "")) {
+			List<User> singleUser = new ArrayList<User>();
+			singleUser.add(curentUser);
+			return singleUser;
+		} else if (curentUser.getRole().getName().equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
+			List<User> superAdminUsers = new ArrayList<User>();
+			List<Company> companies = Company.findAllCompanys();
+			for (Iterator iterator = companies.iterator(); iterator.hasNext();) {
+				try {
+					Company company2 = (Company) iterator.next();
+					superAdminUsers.addAll(User.findUsersByCompany(company2).getResultList());
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}
+
+		}
+
+		return null;
+	}
+
+	public List<AccountLog> getLast24HoursLog() {
 		if (Commons.getCurrentSession() != null) {
 			DateTime yesterday = new DateTime().minusDays(1);
-			List<AccountLog> accountLogs = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(
-					Commons.getCurrentUser(), yesterday.toDate()).getResultList();
-			
+			List<AccountLog> accountLogs = new ArrayList<AccountLog>();
+			User curentUser = Commons.getCurrentUser();
+
+			List<User> users = findUsers4Role(curentUser);
+			for (Iterator iterator = users.iterator(); iterator.hasNext();) {
+				User user = (User) iterator.next();
+				try {
+					List<AccountLog> als = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(user, yesterday.toDate()).getResultList();
+					accountLogs.addAll(als);
+				} catch (Exception e) {
+					log.error(e.getMessage());
+					e.printStackTrace();
+				}
+
+			}
 			return accountLogs;
 		}
 		return null;
 
 	}
-	
-	public List<AccountLog> getLast7DaysLog(){
+
+	public List<AccountLog> getLast7DaysLog() {
 		if (Commons.getCurrentSession() != null) {
-			DateTime yesterday = new DateTime().minusDays(7);
-			List<AccountLog> accountLogs = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(
-					Commons.getCurrentUser(), yesterday.toDate()).getResultList();
-			
+			DateTime day7th = new DateTime().minusDays(7);
+			List<AccountLog> accountLogs = new ArrayList<AccountLog>();
+			User curentUser = Commons.getCurrentUser();
+
+			List<User> users = findUsers4Role(curentUser);
+			for (Iterator iterator = users.iterator(); iterator.hasNext();) {
+				User user = (User) iterator.next();
+				try {
+					List<AccountLog> als = AccountLog.findAccountLogsByUserIdAndTimeOfEntryGreaterThan(Commons.getCurrentUser(), day7th.toDate()).getResultList();
+					accountLogs.addAll(als);
+				} catch (Exception e) {
+					log.error(e.getMessage());
+					e.printStackTrace();
+				}
+
+			}
 			return accountLogs;
 		}
 		return null;
 
 	}
-	
 
-	
-	public List<AccountLog> getLog4Month(String monthName){
+	public List<AccountLog> getLog4Month(String monthName) {
 		if (Commons.getCurrentSession() != null) {
 			DateTime dt = Commons.getDateTimeFromMonthName(monthName);
-			DateTime monthStart = new DateTime(dt.getYear(), dt.getMonthOfYear(), 
-					dt.dayOfMonth().getMinimumValue(), 0, 0, 0, 0);
-			DateTime monthEnd = new DateTime(dt.getYear(), dt.getMonthOfYear(), 
-					dt.dayOfMonth().getMaximumValue(), 0, 0, 0, 0);
-			
-			return AccountLog.findAccountLogsByUserIdAndTimeOfEntryBetween(
-					Commons.getCurrentUser(), monthStart.toDate(), monthEnd.toDate()).getResultList();
+			DateTime monthStart = new DateTime(dt.getYear(), dt.getMonthOfYear(), dt.dayOfMonth().getMinimumValue(), 0, 0, 0, 0);
+			DateTime monthEnd = new DateTime(dt.getYear(), dt.getMonthOfYear(), dt.dayOfMonth().getMaximumValue(), 0, 0, 0, 0);
+
+			List<AccountLog> accountLogs = new ArrayList<AccountLog>();
+			User curentUser = Commons.getCurrentUser();
+
+			List<User> users = findUsers4Role(curentUser);
+			for (Iterator iterator = users.iterator(); iterator.hasNext();) {
+				User user = (User) iterator.next();
+				try {
+					List<AccountLog> als = AccountLog.findAccountLogsByUserIdAndTimeOfEntryBetween(Commons.getCurrentUser(), monthStart.toDate(), monthEnd.toDate())
+							.getResultList();
+					accountLogs.addAll(als);
+				} catch (Exception e) {
+					log.error(e.getMessage());
+					e.printStackTrace();
+				}
+
+			}
+			return accountLogs;
+
 		}
 		return null;
-	}//end getLog4Month
-		
+	}// end getLog4Month
+
 	/*
-	 * COMPUTE, IPADDRESS, VOLUME, SECURITYGROUP, KEYPAIR,IMAGE, SNAPSHOT - mail notification has to be sent
+	 * COMPUTE, IPADDRESS, VOLUME, SECURITYGROUP, KEYPAIR,IMAGE, SNAPSHOT - mail
+	 * notification has to be sent
 	 */
-	public void saveLogAndSendMail(String message,String task,int status,String emailId){
+	public void saveLogAndSendMail(String message, String task, int status, String emailId) {
 		saveLog(message, task, status, emailId);
-		try{
+		try {
 			MailDetailsDTO mailDetailsDTO = new MailDetailsDTO();
 			mailDetailsDTO.setTemplateName("RegularMailTemplate");
-        	mailDetailsDTO.setTo(emailId);
-        	mailDetailsDTO.setSubject(task);
-        	mailDetailsDTO.setBodyText(message);
-        	Map<String, Object> variables = new HashMap<String, Object>(); 
-		    variables.put("mailDetailsDTO", mailDetailsDTO);
-		    ProcessInstance instance =  workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
-		}catch(Exception e){
+			mailDetailsDTO.setTo(emailId);
+			mailDetailsDTO.setSubject(task);
+			mailDetailsDTO.setBodyText(message);
+			Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put("mailDetailsDTO", mailDetailsDTO);
+			ProcessInstance instance = workflowImpl4Jbpm.startProcessInstanceByKey("Mail4Users", variables);
+		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
-	}//end saveLogAfterLogout
-	
+	}// end saveLogAfterLogout
+
 	@RemoteMethod
-	public void saveLog(String message,String task,int status,String emailId){
-		try{
-			if(StringUtils.isNotBlank(emailId)) {
+	public void saveLog(String message, String task, int status, String emailId) {
+		try {
+			if (StringUtils.isNotBlank(emailId)) {
 				AccountLog acctLog = new AccountLog();
-				if(message !=null && message.length()>243){
-					acctLog.setDetails(message.substring(0,243));
-				}else{
+				if (message != null && message.length() > 243) {
+					acctLog.setDetails(message.substring(0, 243));
+				} else {
 					acctLog.setDetails(message);
 				}
-				
-				acctLog.setStatus((int)status);
+
+				acctLog.setStatus((int) status);
 				acctLog.setTask(task);
 				acctLog.setTimeOfEntry(new Date());
 				acctLog.setUserId(User.findUsersByEmailEquals(emailId).getSingleResult());
 				acctLog.merge();
 			}
-		}catch(Exception e){
-			e.printStackTrace();
+		} catch (Exception e) {
+			// e.printStackTrace();
 			log.error(e.getMessage());
 		}
-	}//end saveLogAfterLogout
-		
+	}// end saveLogAfterLogout
+
 }// end of class AccountLogService
 

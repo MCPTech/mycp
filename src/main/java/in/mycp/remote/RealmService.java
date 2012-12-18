@@ -27,6 +27,7 @@ import in.mycp.utils.Commons;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -71,7 +72,7 @@ public class RealmService {
 
 		} catch (Exception e) {
 			log.error(e.getMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 			return false;
 		}
 	}
@@ -83,34 +84,57 @@ public class RealmService {
 				throw new Exception("Password cannot be empty");
 			}
 			//to update the user projects
+			Set<Project> stProjects2Save = new HashSet<Project>();
 			Set<Project> stProjects = instance.getProjects();
 			for (Iterator iterator = stProjects.iterator(); iterator.hasNext();) {
 				Project project = (Project) iterator.next();
 				project = Project.findProject(project.getId());
 				project.getUsers().add(instance);
+				stProjects2Save.add(project);
 			}
 			User localUser = User.findUser(instance.getId());
+			//if this method call is for new user
 			if (localUser == null) {
+				//then , set the registered date and save the encoded password
 				instance.setRegistereddate(new Date());
 				instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
 			} else {
-				if(localUser.getRegistereddate() != null)
+				if(localUser.getRegistereddate() != null){
 					instance.setRegistereddate(localUser.getRegistereddate());
-				else
+				}else{
 					instance.setRegistereddate(new Date());
+				}
+				String encodedPassword = passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail());
+				
+				System.out.println(" encodedPassword =  "+encodedPassword);
+				System.out.println(" localUser.getPassword() =  "+localUser.getPassword());
+				
 				instance.setLoggedInDate(localUser.getLoggedInDate());
 				if (!localUser.getPassword().equals(instance.getPassword())) {
-					instance.setPassword(passwordEncoder.encodePassword(instance.getPassword(), instance.getEmail()));
+					instance.setPassword(encodedPassword);
+				}else{
+					instance.setPassword(localUser.getPassword());
 				}
 			}
-			localUser.clear();
-
+			//Gangu: why do you do this? - Charu
+			if(localUser != null){
+				localUser.clear();	
+			}
+			//if you dont add this, no user_project entries are made, along with project master data entries are made ""
+			instance.setProjects(stProjects2Save);
+			//now, merge the instance
+			instance = instance.merge();
+			
+			//To avoid the following error, merging the object above.
+			//	object references an unsaved transient instance - save the transient instance before flushing: in.mycp.domain.User; 
+			// nested exception is java.lang.IllegalStateException: org.hibernate.TransientObjectException: object references an unsaved transient instance - 
+			// save the transient instance before flushing: in.mycp.domain.User
 			accountLogService.saveLog("User " + instance.getEmail()+" created, ",
 					Commons.task_name.USER.name(),
 					Commons.task_status.SUCCESS.ordinal(),
 					Commons.getCurrentUser().getEmail());
 			
-			if(instance.getId()>0){
+			if(instance!=null && instance.getId() !=null && instance.getId()>0){
 				User user = findById(instance.getId());
 				if(user.getQuota()!=null && user.getQuota().intValue() != instance.getQuota().intValue()){
 					accountLogService.saveLogAndSendMail("User '"+instance.getEmail()+"' Quota updated from '"+user.getQuota()+"' to '"+instance.getQuota()+"'", "User '"+instance.getEmail()+"' Quota updated", 1, "gangu96@yahoo.co.in");
@@ -118,7 +142,8 @@ public class RealmService {
 			}
 			return instance.merge();
 		} catch (Exception e) {
-			log.error(e.getMessage());//e.printStackTrace();
+			log.error(e.getMessage());
+			e.printStackTrace();
 			accountLogService.saveLog("Error in User " + instance.getEmail()+" creation, "+e.getMessage(),
 					Commons.task_name.USER.name(),
 					Commons.task_status.FAIL.ordinal(),
@@ -131,7 +156,9 @@ public class RealmService {
 	public void remove(int id) {
 		try {
 			User u = User.findUser(id);
-			u.remove();
+			u.setActive(false);
+			u.merge();
+			//u.remove();
 			
 			accountLogService.saveLog("User " + u.getEmail()+" removed, ",
 					Commons.task_name.USER.name(),

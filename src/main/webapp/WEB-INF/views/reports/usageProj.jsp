@@ -45,11 +45,21 @@ while( deptHashKeys.hasMoreElements() ) {
 								<td colspan="8"><div style=" color: #d45500; font-weight: bold;float: left;"><%=projName %></div></td>
 							</tr>
   <%
+  int i =0;
   for (Iterator iterator = projList.iterator(); iterator.hasNext();) {
 		Asset asset = (Asset) iterator.next();
 		totalCost = totalCost+asset.getCost();
-%>
-							<tr >
+		i++;
+		if(i%2 ==0){
+			%>
+			<tr style="background-color: white;">
+			<% 			
+		}else{
+			%>
+			<tr>
+		<%}%>
+
+							
 								<td><%=asset.getAssetType().getName() %></td>
 								<td width="40%"><%=asset.getAssetDetails() %></td>
 								<td><%=asset.getUser().getEmail()%></td>

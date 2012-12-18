@@ -46,13 +46,23 @@ while( userHashKeys.hasMoreElements() ) {
 								<td colspan="8"><div style="width:25%; color: #d45500; font-weight: bold; float: left;"><%=userName %></div></td>
 							</tr>		
   <%
+  int i =0;
   for (Iterator iterator = userList.iterator(); iterator.hasNext();) {
 		Asset asset = (Asset) iterator.next();
 		totalCost = totalCost+asset.getCost();
 		String projName = "";
 		try{projName = asset.getProject().getName();}catch(Exception e){}
-%>
-							<tr>
+		i++;
+		if(i%2 ==0){
+			%>
+			<tr style="background-color: white;">
+			<% 			
+		}else{
+			%>
+			<tr>
+		<%}			%>
+
+							
 								<td><%=asset.getAssetType().getName() %></td>
 								<td width="40%"><%=asset.getAssetDetails() %></td>
 								<td><%=projName %></td>

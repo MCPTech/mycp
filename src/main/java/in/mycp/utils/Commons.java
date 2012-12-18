@@ -35,6 +35,7 @@ import in.mycp.web.MycpSession;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -389,6 +390,8 @@ public class Commons {
 		a.merge();
 	}
 
+	//public static Hashtable<String, String> accountLogConstants = {}
+	
 	public static List<AccountLogTypeDTO> getAllAccountLogTypes(){
 		
 		List<AccountLogTypeDTO> list = new ArrayList<AccountLogTypeDTO>();

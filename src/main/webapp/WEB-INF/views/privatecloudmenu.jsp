@@ -58,7 +58,7 @@
          <li><a class="dropdown" href="#">Control<span class="arrow"></span></a>
 			<ul class="width-3">
 			    <li><a href="/workflow/processInstance">Workflows</a></li>
-			    <li><a href="/log/account">Session Log</a></li>
+			    <li><a href="/log/account">Audit Log</a></li>
 			</ul>
 		</li>
 	  	<%} %>
