@@ -21,10 +21,13 @@
 package in.mycp.service;
 
 import in.mycp.domain.User;
+import in.mycp.remote.InstancePService;
 
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author GangadharJN
@@ -32,6 +35,7 @@ import javax.servlet.http.HttpSessionListener;
  */
 public class MycpSessionListener implements HttpSessionActivationListener,HttpSessionListener  {
 
+	private static final Logger log = Logger.getLogger(MycpSessionListener.class.getName());
 	@Override
 	public void sessionWillPassivate(HttpSessionEvent se) {
 		/*System.out.println("Session Above to Destroy.!");
@@ -42,18 +46,18 @@ public class MycpSessionListener implements HttpSessionActivationListener,HttpSe
 
 	@Override
 	public void sessionDidActivate(HttpSessionEvent se) {
-		System.out.println(se.getSession().getAttribute("CurrentUser"));
+		log.info(se.getSession().getAttribute("CurrentUser"));
 	}
 
 	@Override
 	public void sessionCreated(HttpSessionEvent se) {
-		System.out.println("Session Created..");
+		log.info("Session Created..");
 		
 	}
 
 	@Override
 	public void sessionDestroyed(HttpSessionEvent se) {
-		System.out.println("Session Destroying.!");
+		log.info("Session Destroying.!");
 		/*User user = (User)se.getSession().getAttribute("CurrentUser");
 		System.out.println(user.getEmail());
 		System.out.println("Session Destroyed.!");*/

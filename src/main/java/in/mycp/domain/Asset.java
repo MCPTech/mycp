@@ -77,7 +77,7 @@ public class Asset {
             q = em.createQuery("SELECT o FROM Asset AS o WHERE o.user.department.id = :departmentId AND o.assetType = :assetType and o.startTime is not null " + "  ", Asset.class);
             q.setParameter("departmentId", departmentId);
             q.setParameter("assetType", assetType);
-            System.out.println(assetType.getName() + " , findAssets4Report4Department q.getResultList().size() = " + q.getResultList().size());
+            
             return q;
         } catch (Exception e) {
             logger.info(e.getMessage());

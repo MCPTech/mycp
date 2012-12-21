@@ -78,7 +78,7 @@ public class AccountLogService {
 	
 	@RemoteMethod
 	public List<AccountLog> getLog(String logType) {
-		System.out.println("logType = "+logType);
+		
 		return null;
 	}
 

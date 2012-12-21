@@ -618,7 +618,7 @@ public class WorkflowService {
 
 	@RemoteMethod
 	public void cleanupAllProcessDefinitions() {
-		System.out.println("In cleanupAllProcessDefinitions...");
+		
 		try {
 			workflowImpl4Jbpm.cleanupAllProcessDefinitions();
 
@@ -634,7 +634,7 @@ public class WorkflowService {
 
 	@RemoteMethod
 	public void setupProcessDefinitions() {
-		System.out.println("In setupProcessDefinitions...");
+		
 		try {
 
 			workflowImpl4Jbpm.setupProcessDefinitions();

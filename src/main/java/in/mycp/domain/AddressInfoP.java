@@ -125,7 +125,7 @@ public class AddressInfoP {
         TypedQuery<AddressInfoP> q = null;
         q = em.createQuery("SELECT o FROM AddressInfoP AS o WHERE o.instanceId like :instanceId and  o.asset.active = 1 " + " " +
         		"and o.asset.productCatalog.infra = :infra and o.publicIp like :ip", AddressInfoP.class);
-        System.out.println("instanceId = "+instanceId+" ip = "+ip);
+       
         q.setParameter("instanceId", "%"+instanceId+"%");
         q.setParameter("ip", "%"+ip+"%");
         

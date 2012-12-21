@@ -156,7 +156,7 @@ public class InstanceP {
             List l = q.getResultList();
             for (Iterator iterator = l.iterator(); iterator.hasNext(); ) {
                 InstanceP ins = (InstanceP) iterator.next();
-                System.out.println("ins.getInstanceId() = " + ins.getInstanceId());
+                
             }
         }
         String queryStr = "SELECT COUNT(i.id) FROM InstanceP i where i.state = :status and  i.asset.active = 1 ";

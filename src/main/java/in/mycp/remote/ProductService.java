@@ -132,7 +132,7 @@ public class ProductService {
 			List<Infra> infras = null;
 			if (Commons.EDITION_ENABLED== Commons.SERVICE_PROVIDER_EDITION_ENABLED || Commons.getCurrentUser().getRole().getName()
 					.equals(Commons.ROLE.ROLE_SUPERADMIN + "")) {
-				System.out.println("ProductCatalog.findAllProductCatalogs().size() = "+ProductCatalog.findAllProductCatalogs().size());
+				
 				return ProductCatalog.findAllProductCatalogs();
 			} else {
 				return ProductCatalog.findProductCatalogsByCompany(Company.findCompany(Commons.getCurrentSession().getCompanyId())).getResultList();

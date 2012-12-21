@@ -318,7 +318,7 @@ public class InstancePService {
 				InstanceP instanceP = (InstanceP) iterator.next();
 				try {
 					AddressInfoP addressInfoP = AddressInfoP.findAddressInfoPsByInstanceIdLike(instanceP.getInstanceId()).getSingleResult();
-					System.out.println("addressInfoP.getStatus() = " + addressInfoP.getStatus() + "  " + addressInfoP.getPublicIp());
+					
 					// get instances which are auto_assigned, skip the rest
 					// which is usually in status associated.
 					if (addressInfoP.getStatus().equals(Commons.ipaddress_STATUS.associated + "")) {
