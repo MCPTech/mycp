@@ -17,6 +17,7 @@
 		    <li><a href="/enterprise/department">Department</a></li>
 		    <li><a href="/enterprise/project">Project</a></li>
 		    <li><a href="/realm/user">User</a></li>
+		    <li><a href="/reports/assignAsset">Asset Assignment</a></li>
 		</ul>
 		</li>
 		

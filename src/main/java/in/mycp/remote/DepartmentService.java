@@ -136,6 +136,18 @@ public class DepartmentService {
 		}
 		return null;
 	}// end of method findAll
+	
+	@RemoteMethod
+	public List<Department> findDepartmentsByCompany(Company company) {
+		try {
+			company = Company.findCompany(company.getId());
+			return Department.findDepartmentsByCompany(company).getResultList();
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error(e.getMessage());
+		}
+		return null;
+	}// end of method findAll
 
 }// end of class Department
 

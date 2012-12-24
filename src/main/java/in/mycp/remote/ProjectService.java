@@ -150,6 +150,16 @@ public class ProjectService {
 		}
 		return null;
 	}// end of method findAll
+	
+	@RemoteMethod
+	public List<Project> findProjectsByDepartment(Department department) {
+		try {
+			return Project.findProjectsByDepartment(department).getResultList();
+		} catch (Exception e) {
+			log.error(e.getMessage());// e.printStackTrace();
+		}
+		return null;
+	}
 
 }// end of class Project
 

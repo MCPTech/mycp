@@ -20,6 +20,7 @@
 package in.mycp.remote;
 
 import in.mycp.domain.Company;
+import in.mycp.domain.Department;
 import in.mycp.domain.Project;
 import in.mycp.domain.Role;
 import in.mycp.domain.User;
@@ -232,5 +233,9 @@ public class RealmService {
 		return User.findUsersByEmailEquals(email).getResultList();
 	}
 
+	@RemoteMethod
+	public List<User> findUsersByDepartment(Department department ){
+		return User.findUsersByDepartment(department).getResultList();
+	}
 }// end of class UserController
 

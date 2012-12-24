@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
@@ -1080,7 +1081,40 @@ public class ReportService {
 			log.error(e.getMessage());
 		}
 		return assets;
-		}//end findAssets4AllDepartment
+	}//end findAssets4AllDepartment
+	
+	@RemoteMethod
+	public List<Asset> unassignedAssets4Company(){
+		return Asset.unassignedAssets4Company().getResultList();
+	}
+	
+	@RemoteMethod
+	public List<Asset> findAllAssets() {
+		System.out.println(Asset.findAllAssets().size());
+		return Asset.findAllAssets();
+    }
+	
+	@RemoteMethod
+	public void updateAsset(String assetId, String compId, String deptId, String projId, String userId) {
+		Asset asset = Asset.findAsset(Integer.parseInt(assetId));
+		if(asset != null){
+			System.out.println(asset.getId());
+			if(StringUtils.isNotBlank(projId)){
+				Project project = Project.findProject(Integer.parseInt(projId));
+				if(project != null)	asset.setProject(project);
+			}
+			if(StringUtils.isNotBlank(userId)){
+				User user = User.findUser(Integer.parseInt(userId));
+				asset.setUser(user);
+			}
+			asset.merge();
+		}
+    }
+	
+	@RemoteMethod
+	public List<in.mycp.domain.Asset> findAllAssets4Reassign() {
+        return Asset.findAllAssets4Reassign();
+    }
 	
 }// end of class ReportService
 

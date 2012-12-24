@@ -171,4 +171,20 @@ public class Asset {
     public static List<in.mycp.domain.Asset> findAssetEntries(int firstResult, int maxResults) {
         return entityManager().createQuery("SELECT o FROM Asset o where  o.startTime is not null ", Asset.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
+    
+    public static TypedQuery<in.mycp.domain.Asset> unassignedAssets4Company() {
+        try {
+            EntityManager em = Asset.entityManager();
+            TypedQuery<Asset> q = null;
+            q = em.createQuery("SELECT o FROM Asset AS o WHERE o.project is null OR o.user is null", Asset.class);
+            return q;
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+        return null;
+    }
+    
+    public static List<in.mycp.domain.Asset> findAllAssets4Reassign() {
+        return entityManager().createQuery("SELECT o FROM Asset o ", Asset.class).getResultList();
+    }
 }

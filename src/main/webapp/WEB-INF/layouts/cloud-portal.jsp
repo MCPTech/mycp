@@ -26,8 +26,8 @@
 
 <script>
 $(function(){
-	$("#divSignUp").attr("hidden", true);
-	$("#divForgotPwd").attr("hidden", true);
+	$("#divSignUp").hide();
+	$("#divForgotPwd").hide();
 });
 
 $("#lnkSignUp").click(function(){

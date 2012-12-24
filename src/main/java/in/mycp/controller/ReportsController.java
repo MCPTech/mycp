@@ -37,6 +37,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -58,6 +59,17 @@ public class ReportsController {
 	@Autowired
 	ReportService reportService;
 
+	@RequestMapping(value = "/assignAsset", produces = "text/html")
+	public String unassignedAssets(HttpServletRequest req, HttpServletResponse resp) {
+		String strFilter = req.getParameter("filterAsset");
+		if(StringUtils.isBlank(strFilter))
+			req.setAttribute("ASSET_LIST", reportService.unassignedAssets4Company());
+		else
+			req.setAttribute("ASSET_LIST", reportService.findAllAssets4Reassign());
+		req.setAttribute("FILTER", strFilter);
+		return "reports/assignAsset";
+	}
+	
 	@RequestMapping(value = "/usage", produces = "text/html")
 	public String usage(HttpServletRequest req, HttpServletResponse resp) {
 		return "reports/usage";

@@ -18,5 +18,8 @@
      <definition extends="plain" name="reports/usageUser">
         <put-attribute name="body" value="/WEB-INF/views/reports/usageUser.jsp"/>
     </definition>
+    <definition extends="plain" name="reports/assignAsset">
+        <put-attribute name="body" value="/WEB-INF/views/reports/assignAsset.jsp"/>
+    </definition>
       
 </tiles-definitions>
